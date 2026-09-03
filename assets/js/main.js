@@ -21,18 +21,15 @@
     feedInterval: 6500,      // ms entre vídeos na demonstração
 
     // Comentários reais (Giscus — usa GitHub Discussions).
-    // 1) Publique o site em um repositório PÚBLICO no GitHub.
-    // 2) No repositório, ative GitHub Discussions e escolha uma categoria.
-    // 3) Gere os valores em https://giscus.app (o site detecta o tema escuro
-    //    desta página) e cole aqui. Enquanto estiver vazio, a seção mostra
-    //    apenas um aviso discreto e nenhum script externo é carregado.
+    // Repositório público Tal1725/pulso com Discussions habilitadas e o app
+    // Giscus autorizado. IDs gerados pela API do GitHub (giscus.app).
     comments: {
-      enabled: false,
-      repo: '',            // ex.: 'usuario/pulso'
-      repoId: '',          // ex.: 'R_kgDOABC123'
-      category: 'Announcements',  // nome exato da categoria nas Discussions
-      categoryId: '',      // ex.: 'DIC_kwDOABC123'
-      mapping: 'pathname', // como ligar o comentário à página
+      enabled: true,
+      repo: 'Tal1725/pulso',
+      repoId: 'R_kgDOUNnINw',
+      category: 'General',
+      categoryId: 'DIC_kwDOUNnIN84DE04M',
+      mapping: 'pathname', // liga cada página a um tópico nas Discussions
       lang: 'pt',
       theme: 'dark'
     }
