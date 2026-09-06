@@ -1,0 +1,19 @@
+{
+  "name": "PULSO — O ritmo é seu. O momento é agora.",
+  "short_name": "PULSO",
+  "description": "Plataforma social de vídeos curtos em desenvolvimento, criada por Ayslan Silva.",
+  "lang": "pt-BR",
+  "start_url": "/pulso/",
+  "scope": "/pulso/",
+  "display": "standalone",
+  "theme_color": "#05060b",
+  "background_color": "#05060b",
+  "icons": [
+    {
+      "src": "/pulso/assets/img/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
