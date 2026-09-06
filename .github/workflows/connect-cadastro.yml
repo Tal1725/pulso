@@ -1,0 +1,45 @@
+name: Conectar cadastro ao PULSO
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  connect-cadastro:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar repositório
+        uses: actions/checkout@v4
+
+      - name: Conectar botões Começar ao cadastro
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          replacements = {
+              'href="#download" class="btn btn--primary btn--sm nav__cta-2"': 'href="cadastro.html" class="btn btn--primary btn--sm nav__cta-2"',
+              'href="#download" class="btn btn--primary btn--lg"': 'href="cadastro.html" class="btn btn--primary btn--lg"',
+              'href="#download" class="btn btn--primary btn--block"': 'href="cadastro.html" class="btn btn--primary btn--block"',
+          }
+          for old, new in replacements.items():
+              s = s.replace(old, new)
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Salvar alteração no GitHub
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "Nenhuma alteração necessária."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "feat: conecta botao Comecar ao cadastro real"
+          git push
