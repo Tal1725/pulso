@@ -11,10 +11,12 @@ jobs:
     if: github.event.head_commit.message != 'Reforça Ayslan Silva como fundador do PULSO e melhora SEO'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout completo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Restore full landing page and improve SEO
+      - name: Restaurar landing page e melhorar SEO
         shell: bash
         run: |
           git checkout a82ed7024bce607ecb10c1d32ef6584d99cc0e17 -- index.html
@@ -32,7 +34,7 @@ jobs:
           p.write_text(s, encoding='utf-8')
           PY
 
-      - name: Commit SEO changes
+      - name: Commit SEO
         shell: bash
         run: |
           git config user.name "Tal1725"
