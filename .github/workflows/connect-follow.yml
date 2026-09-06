@@ -1,0 +1,36 @@
+name: Connect PULSO follow system
+
+on:
+  push:
+    paths:
+      - '.github/workflows/connect-follow.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  connect-follow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Add follow script to landing page
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          text = p.read_text(encoding='utf-8')
+          tag = '  <script src="assets/js/follow.js" defer></script>\n'
+          if 'assets/js/follow.js' not in text:
+              text = text.replace('  <script src="assets/js/main.js" defer></script>', tag + '  <script src="assets/js/main.js" defer></script>')
+              p.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit connection
+        run: |
+          git config user.name 'PULSO Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || git commit -m 'feat: connect persistent follow system'
+          git push
