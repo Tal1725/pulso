@@ -16,12 +16,13 @@ jobs:
       - name: Baixar repositório
         uses: actions/checkout@v4
 
-      - name: Conectar botões Começar ao cadastro
+      - name: Conectar cadastro e entrada ao PULSO
         run: |
           python - <<'PY'
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
+
           replacements = {
               'href="#download" class="btn btn--primary btn--sm nav__cta-2"': 'href="cadastro.html" class="btn btn--primary btn--sm nav__cta-2"',
               'href="#download" class="btn btn--primary btn--lg"': 'href="cadastro.html" class="btn btn--primary btn--lg"',
@@ -29,6 +30,17 @@ jobs:
           }
           for old, new in replacements.items():
               s = s.replace(old, new)
+
+          login_desktop = '<a href="entrar.html" class="btn btn--ghost btn--sm nav__login">Entrar</a>'
+          marker = '<a href="cadastro.html" class="btn btn--primary btn--sm nav__cta-2">Começar</a>'
+          if login_desktop not in s and marker in s:
+              s = s.replace(marker, login_desktop + '\n        ' + marker, 1)
+
+          login_mobile = '<a href="entrar.html" class="btn btn--ghost btn--block">Entrar no PULSO</a>'
+          mobile_marker = '<a href="cadastro.html" class="btn btn--primary btn--block">Baixar o PULSO</a>'
+          if login_mobile not in s and mobile_marker in s:
+              s = s.replace(mobile_marker, login_mobile + '\n      ' + mobile_marker, 1)
+
           p.write_text(s, encoding='utf-8')
           PY
 
@@ -41,5 +53,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "feat: conecta botao Comecar ao cadastro real"
+          git commit -m "feat: adiciona entrada ao PULSO"
           git push
