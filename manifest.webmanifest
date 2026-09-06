@@ -1,0 +1,25 @@
+{
+  "name": "PULSO — O ritmo é seu",
+  "short_name": "PULSO",
+  "description": "PULSO — uma nova experiência social de vídeos curtos.",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "id": "/pulso/",
+  "start_url": "/pulso/",
+  "scope": "/pulso/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "background_color": "#05060b",
+  "theme_color": "#05060b",
+  "categories": ["social", "entertainment"],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "assets/img/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
