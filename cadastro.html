@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Criar conta — PULSO</title>
+  <meta name="description" content="Crie sua conta no PULSO e faça parte da nova experiência social de vídeos curtos.">
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/auth.css">
+</head>
+<body>
+  <div class="auth-bg" aria-hidden="true"></div>
+  <main class="auth-card">
+    <a class="brand" href="./" aria-label="Voltar ao PULSO">
+      <img src="assets/img/logo.svg" alt="PULSO">
+      <span>PULSO</span>
+    </a>
+
+    <p class="eyebrow">Entre no ritmo</p>
+    <h1 class="title" id="formTitle">Crie sua conta</h1>
+    <h1 class="title hidden" id="successTitle">Bem-vindo ao PULSO!</h1>
+    <p class="subtitle" id="formSubtitle">Seu perfil começa aqui. Escolha seu @ e faça parte da próxima geração social.</p>
+    <p class="subtitle" id="successText"></p>
+
+    <form id="signupForm" novalidate>
+      <div class="field">
+        <label for="displayName">Seu nome</label>
+        <input id="displayName" name="displayName" type="text" autocomplete="name" placeholder="Ex.: Ayslan Silva" maxlength="60" required>
+      </div>
+
+      <div class="field">
+        <label for="username">Nome de usuário</label>
+        <input id="username" name="username" type="text" autocomplete="username" placeholder="Ex.: ayslan" maxlength="24" required>
+        <div class="hint">Seu perfil ficará como @seuusuario.</div>
+      </div>
+
+      <div class="field">
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="email" autocomplete="email" placeholder="voce@email.com" required>
+      </div>
+
+      <div class="field">
+        <label for="password">Senha</label>
+        <input id="password" name="password" type="password" autocomplete="new-password" placeholder="Mínimo de 8 caracteres" minlength="8" required>
+      </div>
+
+      <div class="field">
+        <label for="passwordConfirm">Confirmar senha</label>
+        <input id="passwordConfirm" name="passwordConfirm" type="password" autocomplete="new-password" placeholder="Digite a senha novamente" minlength="8" required>
+      </div>
+
+      <label class="check">
+        <input id="terms" type="checkbox" required>
+        <span>Eu concordo com os termos de uso e a política de privacidade do PULSO.</span>
+      </label>
+
+      <button class="btn" id="submitBtn" type="submit">Criar minha conta</button>
+      <div class="message" id="message" role="status" aria-live="polite"></div>
+    </form>
+
+    <a class="back" href="./">← Voltar para o PULSO</a>
+    <div class="footer-note">PULSO — O ritmo é seu. O momento é agora.</div>
+  </main>
+
+  <script type="module" src="assets/js/auth.js"></script>
+</body>
+</html>
