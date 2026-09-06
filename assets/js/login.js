@@ -1,0 +1,5 @@
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/+esm';
+const supabase=createClient('https://vqpavcyehgdifbtvzhcn.supabase.co','sb_publishable_915zO84U7fk0ZAjE4vdsFQ_yRWDA6Cm',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const form=document.getElementById('loginForm'),msg=document.getElementById('message'),btn=document.getElementById('submitBtn');
+function show(t,c='error'){msg.textContent=t;msg.className=`message show ${c}`}
+form.addEventListener('submit',async e=>{e.preventDefault();btn.disabled=true;btn.textContent='Entrando...';try{const email=document.getElementById('email').value.trim().toLowerCase();const password=document.getElementById('password').value;const {error}=await supabase.auth.signInWithPassword({email,password});if(error)throw error;location.href='app.html'}catch(err){show(err.message==='Invalid login credentials'?'E-mail ou senha incorretos.':(err.message||'Não foi possível entrar agora.'));btn.disabled=false;btn.textContent='Entrar'}});
