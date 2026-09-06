@@ -6,6 +6,7 @@ on:
       - 'manifest.webmanifest'
       - 'service-worker.js'
       - 'assets/js/pwa.js'
+      - 'assets/img/favicon.svg'
       - '.github/workflows/connect-pwa.yml'
 
 permissions:
@@ -18,19 +19,37 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Connect manifest and PWA runtime
+      - name: Prepare iPhone icon
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y librsvg2-bin
+          rsvg-convert -w 180 -h 180 assets/img/favicon.svg -o assets/img/apple-touch-icon.png
+
+      - name: Connect manifest and iPhone PWA metadata
         run: |
           python - <<'PY'
           from pathlib import Path
           p = Path('index.html')
           text = p.read_text(encoding='utf-8')
 
-          manifest = '  <link rel="manifest" href="manifest.webmanifest">\n'
+          additions = [
+              '  <link rel="manifest" href="manifest.webmanifest">\n',
+              '  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png">\n',
+              '  <meta name="apple-mobile-web-app-capable" content="yes">\n',
+              '  <meta name="apple-mobile-web-app-title" content="PULSO">\n',
+              '  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">\n',
+              '  <meta name="mobile-web-app-capable" content="yes">\n'
+          ]
+
           if 'rel="manifest"' not in text:
               marker = '  <link rel="stylesheet" href="assets/css/styles.css">'
               if marker not in text:
                   raise SystemExit('styles.css link not found')
-              text = text.replace(marker, manifest + marker, 1)
+              text = text.replace(marker, additions[0] + marker, 1)
+
+          if 'rel="apple-touch-icon"' not in text:
+              marker = '  <link rel="manifest" href="manifest.webmanifest">'
+              text = text.replace(marker, marker + '\n' + ''.join(additions[1:]), 1)
 
           pwa = '  <script src="assets/js/pwa.js" defer></script>\n'
           if 'assets/js/pwa.js' not in text:
@@ -42,10 +61,10 @@ jobs:
           p.write_text(text, encoding='utf-8')
           PY
 
-      - name: Commit PWA connection
+      - name: Commit PWA and iPhone support
         run: |
           git config user.name 'PULSO Bot'
           git config user.email 'actions@users.noreply.github.com'
-          git add index.html
-          git diff --cached --quiet || git commit -m 'feat: enable PULSO as installable PWA'
+          git add index.html assets/img/apple-touch-icon.png
+          git diff --cached --quiet || git commit -m 'feat: optimize PULSO PWA for iPhone'
           git push
