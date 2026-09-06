@@ -1,0 +1,60 @@
+name: SEO Founder Fix
+
+on:
+  push:
+    paths:
+      - '.github/workflows/seo-founder-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore full landing page and improve SEO
+        shell: bash
+        run: |
+          git checkout a82ed7024bce607ecb10c1d32ef6584d99cc0e17 -- index.html
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          s = s.replace(
+              '<meta name="description" content="PULSO é a nova plataforma social de vídeos curtos. Descubra, crie e conecte-se através de conteúdo rápido, espontâneo, autêntico e envolvente. O ritmo é seu. O momento é agora.">',
+              '<meta name="description" content="PULSO é uma nova plataforma social de vídeos curtos, criada por Ayslan Silva. Descubra, crie e conecte-se através de conteúdo rápido, espontâneo e autêntico. O ritmo é seu. O momento é agora.">\n  <meta name="author" content="Ayslan Silva">\n  <meta name="creator" content="Ayslan Silva">'
+          )
+          s = s.replace(
+              '<meta property="og:description" content="Uma nova experiência social para descobrir vídeos, criar conteúdo, encontrar pessoas e fazer parte do que está acontecendo agora.">',
+              '<meta property="og:description" content="PULSO, plataforma social de vídeos curtos criada por Ayslan Silva. Descubra, crie e conecte-se.">'
+          )
+          s = s.replace(
+              '<meta name="twitter:description" content="A nova plataforma social de vídeos curtos. Descubra, crie e conecte-se.">',
+              '<meta name="twitter:description" content="PULSO, plataforma social de vídeos curtos criada por Ayslan Silva. Descubra, crie e conecte-se.">'
+          )
+          s = s.replace(
+              '<link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">',
+              '<link rel="canonical" href="https://tal1725.github.io/pulso/">\n  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">'
+          )
+          old_json = '''  <script type="application/ld+json">\n  {\n    "@context": "https://schema.org",\n    "@type": "WebSite",\n    "name": "PULSO",\n    "url": "https://pulso.app",\n    "description": "Nova plataforma social de vídeos curtos. Descubra, crie e conecte-se.",\n    "slogan": "O ritmo é seu. O momento é agora.",\n    "inLanguage": "pt-BR"\n  }\n  </script>'''
+          new_json = '''  <script type="application/ld+json">\n  {\n    "@context": "https://schema.org",\n    "@type": "WebSite",\n    "name": "PULSO",\n    "url": "https://tal1725.github.io/pulso/",\n    "description": "PULSO é uma nova plataforma social de vídeos curtos criada por Ayslan Silva.",\n    "slogan": "O ritmo é seu. O momento é agora.",\n    "inLanguage": "pt-BR",\n    "publisher": {\n      "@type": "Person",\n      "name": "Ayslan Silva",\n      "jobTitle": "Fundador do PULSO"\n    },\n    "creator": {\n      "@type": "Person",\n      "name": "Ayslan Silva",\n      "jobTitle": "Fundador do PULSO"\n    }\n  }\n  </script>'''
+          if old_json in s:
+              s = s.replace(old_json, new_json)
+          founder = '''\n    <meta name="founder" content="Ayslan Silva">'''
+          marker = '  <meta name="creator" content="Ayslan Silva">'
+          if founder.strip() not in s:
+              s = s.replace(marker, marker + founder)
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit SEO changes
+        shell: bash
+        run: |
+          git config user.name "Tal1725"
+          git config user.email "123480279+Tal1725@users.noreply.github.com"
+          git add index.html
+          git commit -m "Reforça Ayslan Silva como fundador do PULSO e melhora SEO" || exit 0
+          git push
