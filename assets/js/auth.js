@@ -9,6 +9,10 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
 const form = document.getElementById('signupForm');
 const message = document.getElementById('message');
 const submit = document.getElementById('submitBtn');
+const successTitle = document.getElementById('successTitle');
+const successText = document.getElementById('successText');
+const formTitle = document.getElementById('formTitle');
+const formSubtitle = document.getElementById('formSubtitle');
 
 function showMessage(text, type) {
   message.textContent = text;
@@ -17,6 +21,40 @@ function showMessage(text, type) {
 
 function cleanUsername(value) {
   return value.trim().toLowerCase().replace(/^@+/, '');
+}
+
+function showConfirmationScreen(email, username) {
+  form.classList.add('hidden');
+  formTitle.classList.add('hidden');
+  formSubtitle.classList.add('hidden');
+  successTitle.classList.remove('hidden');
+  successText.innerHTML = `Conta criada para <strong>@${username}</strong>.<br><br>Enviamos a confirmação para <strong>${email}</strong>. Verifique também a pasta de spam/lixo eletrônico.<br><br>Depois de confirmar, entre no PULSO.`;
+  showMessage('Cadastro realizado. Confirme seu e-mail para continuar.', 'success');
+}
+
+function addResendButton(email) {
+  if (document.getElementById('resendConfirmation')) return;
+  const button = document.createElement('button');
+  button.id = 'resendConfirmation';
+  button.type = 'button';
+  button.className = 'btn';
+  button.style.marginTop = '12px';
+  button.textContent = 'Reenviar e-mail de confirmação';
+  button.addEventListener('click', async () => {
+    button.disabled = true;
+    button.textContent = 'Reenviando...';
+    const { error } = await supabase.auth.resend({ type: 'signup', email });
+    if (error) {
+      showMessage(error.message || 'Não foi possível reenviar agora. Aguarde alguns segundos e tente novamente.', 'error');
+      button.disabled = false;
+      button.textContent = 'Reenviar e-mail de confirmação';
+      return;
+    }
+    showMessage('Novo e-mail de confirmação solicitado. Verifique sua caixa de entrada e o spam.', 'success');
+    button.disabled = false;
+    button.textContent = 'Reenviar e-mail de confirmação';
+  });
+  successText.insertAdjacentElement('afterend', button);
 }
 
 form.addEventListener('submit', async (event) => {
@@ -46,17 +84,20 @@ form.addEventListener('submit', async (event) => {
       password,
       options: {
         data: { display_name: displayName, username },
-        emailRedirectTo: 'https://tal1725.github.io/pulso/cadastro.html'
+        emailRedirectTo: 'https://tal1725.github.io/pulso/entrar.html'
       }
     });
 
     if (error) throw error;
 
+    if (data.session) {
+      window.location.href = 'app.html';
+      return;
+    }
+
     if (data.user) {
-      form.classList.add('hidden');
-      document.getElementById('successTitle').classList.remove('hidden');
-      document.getElementById('successText').textContent = `Conta criada para @${username}. Verifique seu e-mail para confirmar o cadastro e continuar no PULSO.`;
-      showMessage('Cadastro realizado com sucesso!', 'success');
+      showConfirmationScreen(email, username);
+      addResendButton(email);
     }
   } catch (error) {
     const friendly = error?.message || 'Não foi possível criar sua conta agora.';
