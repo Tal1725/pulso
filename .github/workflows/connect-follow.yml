@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - '.github/workflows/connect-follow.yml'
+      - 'assets/js/follow.js'
 
 permissions:
   contents: write
@@ -15,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Add follow script to landing page
+      - name: Connect persistent follow script
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -23,7 +24,10 @@ jobs:
           text = p.read_text(encoding='utf-8')
           tag = '  <script src="assets/js/follow.js" defer></script>\n'
           if 'assets/js/follow.js' not in text:
-              text = text.replace('  <script src="assets/js/main.js" defer></script>', tag + '  <script src="assets/js/main.js" defer></script>')
+              marker = '  <script src="assets/js/main.js" defer></script>'
+              if marker not in text:
+                  raise SystemExit('main.js script tag not found')
+              text = text.replace(marker, tag + marker, 1)
               p.write_text(text, encoding='utf-8')
           PY
 
