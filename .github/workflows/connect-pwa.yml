@@ -1,0 +1,51 @@
+name: Connect PULSO PWA
+
+on:
+  push:
+    paths:
+      - 'manifest.webmanifest'
+      - 'service-worker.js'
+      - 'assets/js/pwa.js'
+      - '.github/workflows/connect-pwa.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  connect-pwa:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Connect manifest and PWA runtime
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          text = p.read_text(encoding='utf-8')
+
+          manifest = '  <link rel="manifest" href="manifest.webmanifest">\n'
+          if 'rel="manifest"' not in text:
+              marker = '  <link rel="stylesheet" href="assets/css/styles.css">'
+              if marker not in text:
+                  raise SystemExit('styles.css link not found')
+              text = text.replace(marker, manifest + marker, 1)
+
+          pwa = '  <script src="assets/js/pwa.js" defer></script>\n'
+          if 'assets/js/pwa.js' not in text:
+              marker = '  <script src="assets/js/main.js" defer></script>'
+              if marker not in text:
+                  raise SystemExit('main.js script tag not found')
+              text = text.replace(marker, pwa + marker, 1)
+
+          p.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit PWA connection
+        run: |
+          git config user.name 'PULSO Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || git commit -m 'feat: enable PULSO as installable PWA'
+          git push
