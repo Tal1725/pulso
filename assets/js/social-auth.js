@@ -1,0 +1,6 @@
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/+esm';
+const supabase=createClient('https://vqpavcyehgdifbtvzhcn.supabase.co','sb_publishable_915zO84U7fk0ZAjE4vdsFQ_yRWDA6Cm',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const friendly={google:'Google',facebook:'Facebook',twitter:'X'};
+async function login(provider){const msg=document.getElementById('socialMessage');document.querySelectorAll('[data-social-provider]').forEach(b=>b.disabled=true);if(msg){msg.textContent=`Conectando com ${friendly[provider]}...`;msg.className='social-message'}try{const{error}=await supabase.auth.signInWithOAuth({provider,options:{redirectTo:new URL('app.html',window.location.href).href}});if(error)throw error}catch(e){if(msg){msg.textContent=`Não foi possível conectar com ${friendly[provider]}. O provedor ainda pode estar aguardando configuração no PULSO.`;msg.className='message show error'}document.querySelectorAll('[data-social-provider]').forEach(b=>b.disabled=false)}}
+window.pulsoSocialLogin=login;
+document.querySelectorAll('[data-social-provider]').forEach(b=>b.addEventListener('click',()=>login(b.dataset.socialProvider)));
