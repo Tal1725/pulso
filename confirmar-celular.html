@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Confirmar celular — PULSO</title>
+<meta name="description" content="Confirme seu celular para entrar no PULSO.">
+<link rel="icon" href="assets/img/favicon.svg"><link rel="stylesheet" href="assets/css/auth.css?v=20260909c">
+</head>
+<body><div class="auth-bg" aria-hidden="true"></div><main class="auth-card">
+<a class="brand" href="./"><img src="assets/img/logo.svg" alt="PULSO"><span>PULSO</span></a>
+<p class="eyebrow">Último passo</p><h1 class="title">Confirmar celular</h1>
+<p class="subtitle">Digite o código de 6 dígitos enviado por SMS para concluir seu cadastro.</p>
+<form id="otpForm" novalidate><div class="field"><label for="phone">Celular</label><input id="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="+55 12 99999-9999" required></div>
+<div class="field"><label for="code">Código de confirmação</label><input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" required></div>
+<button class="btn" id="confirmBtn" type="submit">Confirmar e entrar</button><div class="message" id="message" role="status" aria-live="polite"></div></form>
+<a class="back" href="entrar.html">← Voltar para entrar</a><div class="footer-note">PULSO — O ritmo é seu. O momento é agora.</div>
+</main><script type="module" src="assets/js/confirm-phone.js?v=20260909a"></script></body></html>
