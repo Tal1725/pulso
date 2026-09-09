@@ -1,108 +1,20 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/+esm';
 
-const SUPABASE_URL = 'https://vqpavcyehgdifbtvzhcn.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_915zO84U7fk0ZAjE4vdsFQ_yRWDA6Cm';
-const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
-});
-
-const form = document.getElementById('signupForm');
-const message = document.getElementById('message');
-const submit = document.getElementById('submitBtn');
-const successTitle = document.getElementById('successTitle');
-const successText = document.getElementById('successText');
-const formTitle = document.getElementById('formTitle');
-const formSubtitle = document.getElementById('formSubtitle');
-
-function showMessage(text, type) {
-  message.textContent = text;
-  message.className = `message show ${type}`;
-}
-
-function cleanUsername(value) {
-  return value.trim().toLowerCase().replace(/^@+/, '');
-}
-
-function showConfirmationScreen(email, username) {
-  form.classList.add('hidden');
-  formTitle.classList.add('hidden');
-  formSubtitle.classList.add('hidden');
-  successTitle.classList.remove('hidden');
-  successText.innerHTML = `Conta criada para <strong>@${username}</strong>.<br><br>Enviamos a confirmação para <strong>${email}</strong>. Verifique também a pasta de spam/lixo eletrônico.<br><br>Depois de confirmar, entre no PULSO.`;
-  showMessage('Cadastro realizado. Confirme seu e-mail para continuar.', 'success');
-}
-
-function addResendButton(email) {
-  if (document.getElementById('resendConfirmation')) return;
-  const button = document.createElement('button');
-  button.id = 'resendConfirmation';
-  button.type = 'button';
-  button.className = 'btn';
-  button.style.marginTop = '12px';
-  button.textContent = 'Reenviar e-mail de confirmação';
-  button.addEventListener('click', async () => {
-    button.disabled = true;
-    button.textContent = 'Reenviando...';
-    const { error } = await supabase.auth.resend({ type: 'signup', email });
-    if (error) {
-      showMessage(error.message || 'Não foi possível reenviar agora. Aguarde alguns segundos e tente novamente.', 'error');
-      button.disabled = false;
-      button.textContent = 'Reenviar e-mail de confirmação';
-      return;
-    }
-    showMessage('Novo e-mail de confirmação solicitado. Verifique sua caixa de entrada e o spam.', 'success');
-    button.disabled = false;
-    button.textContent = 'Reenviar e-mail de confirmação';
-  });
-  successText.insertAdjacentElement('afterend', button);
-}
-
-form.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  message.className = 'message';
-
-  const displayName = document.getElementById('displayName').value.trim();
-  const username = cleanUsername(document.getElementById('username').value);
-  const email = document.getElementById('email').value.trim().toLowerCase();
-  const password = document.getElementById('password').value;
-  const passwordConfirm = document.getElementById('passwordConfirm').value;
-  const terms = document.getElementById('terms').checked;
-
-  if (displayName.length < 2) return showMessage('Digite seu nome.', 'error');
-  if (!/^[a-z0-9_.]{3,24}$/.test(username)) return showMessage('O usuário deve ter 3–24 caracteres: letras, números, _ ou .', 'error');
-  if (!/^\S+@\S+\.\S+$/.test(email)) return showMessage('Digite um e-mail válido.', 'error');
-  if (password.length < 8) return showMessage('A senha precisa ter pelo menos 8 caracteres.', 'error');
-  if (password !== passwordConfirm) return showMessage('As senhas não são iguais.', 'error');
-  if (!terms) return showMessage('Aceite os termos para continuar.', 'error');
-
-  submit.disabled = true;
-  submit.textContent = 'Criando sua conta...';
-
-  try {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { display_name: displayName, username },
-        emailRedirectTo: 'https://tal1725.github.io/pulso/entrar.html'
-      }
-    });
-
-    if (error) throw error;
-
-    if (data.session) {
-      window.location.href = 'app.html';
-      return;
-    }
-
-    if (data.user) {
-      showConfirmationScreen(email, username);
-      addResendButton(email);
-    }
-  } catch (error) {
-    const friendly = error?.message || 'Não foi possível criar sua conta agora.';
-    showMessage(friendly, 'error');
-    submit.disabled = false;
-    submit.textContent = 'Criar minha conta';
-  }
-});
+const SUPABASE_URL='https://vqpavcyehgdifbtvzhcn.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_915zO84U7fk0ZAjE4vdsFQ_yRWDA6Cm';
+const supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const form=document.getElementById('signupForm'),message=document.getElementById('message'),submit=document.getElementById('submitBtn');
+const successTitle=document.getElementById('successTitle'),successText=document.getElementById('successText'),formTitle=document.getElementById('formTitle'),formSubtitle=document.getElementById('formSubtitle');
+const emailTab=document.getElementById('emailTab'),phoneTab=document.getElementById('phoneTab'),emailField=document.getElementById('emailField'),phoneField=document.getElementById('phoneField');
+let method='email';
+function showMessage(text,type){message.textContent=text;message.className=`message show ${type}`}
+function cleanUsername(v){return v.trim().toLowerCase().replace(/^@+/,'')}
+function normalizePhone(v){const digits=v.replace(/\D/g,'');if(digits.startsWith('55')&&digits.length>=12)return `+${digits}`;return `+55${digits}`}
+function setMethod(next){method=next;const phone=next==='phone';emailTab.classList.toggle('active',!phone);phoneTab.classList.toggle('active',phone);emailField.classList.toggle('hidden',phone);phoneField.classList.toggle('hidden',!phone);document.getElementById('email').required=!phone;document.getElementById('phone').required=phone;document.getElementById(phone?'phone':'email').focus()}
+emailTab.addEventListener('click',()=>setMethod('email'));phoneTab.addEventListener('click',()=>setMethod('phone'));
+function showConfirmation(text){form.classList.add('hidden');document.getElementById('authTabs').classList.add('hidden');formTitle.classList.add('hidden');formSubtitle.classList.add('hidden');successTitle.classList.remove('hidden');successText.innerHTML=text;showMessage('Cadastro realizado. Confirme seus dados para continuar.','success')}
+function addResendEmail(email){const b=document.createElement('button');b.type='button';b.className='btn';b.style.marginTop='12px';b.textContent='Reenviar e-mail de confirmação';b.addEventListener('click',async()=>{b.disabled=true;b.textContent='Reenviando...';const {error}=await supabase.auth.resend({type:'signup',email});if(error)showMessage(error.message||'Não foi possível reenviar agora.','error');else showMessage('Novo e-mail enviado. Verifique também o spam.','success');b.disabled=false;b.textContent='Reenviar e-mail de confirmação'});successText.insertAdjacentElement('afterend',b)}
+form.addEventListener('submit',async event=>{event.preventDefault();message.className='message';const displayName=document.getElementById('displayName').value.trim();const username=cleanUsername(document.getElementById('username').value);const email=document.getElementById('email').value.trim().toLowerCase();const phone=normalizePhone(document.getElementById('phone').value);const password=document.getElementById('password').value;const passwordConfirm=document.getElementById('passwordConfirm').value;const terms=document.getElementById('terms').checked;
+if(displayName.length<2)return showMessage('Digite seu nome.','error');if(!/^[a-z0-9_.]{3,24}$/.test(username))return showMessage('O usuário deve ter 3–24 caracteres: letras, números, _ ou .','error');if(method==='email'&&!/^\S+@\S+\.\S+$/.test(email))return showMessage('Digite um e-mail válido.','error');if(method==='phone'&&phone.replace(/\D/g,'').length<12)return showMessage('Digite um celular válido com DDD.','error');if(password.length<8)return showMessage('A senha precisa ter pelo menos 8 caracteres.','error');if(password!==passwordConfirm)return showMessage('As senhas não são iguais.','error');if(!terms)return showMessage('Aceite os termos para continuar.','error');
+submit.disabled=true;submit.textContent='Criando sua conta...';try{const payload={password,options:{data:{display_name:displayName,username}}};if(method==='email'){payload.email=email;payload.options.emailRedirectTo='https://tal1725.github.io/pulso/entrar.html'}else{payload.phone=phone}
+const {data,error}=await supabase.auth.signUp(payload);if(error)throw error;if(data.session){window.location.href='app.html';return}if(data.user){if(method==='email'){showConfirmation(`Conta criada para <strong>@${username}</strong>.<br><br>Enviamos a confirmação para <strong>${email}</strong>. Verifique também o spam.`);addResendEmail(email)}else{showConfirmation(`Conta criada para <strong>@${username}</strong>.<br><br>Enviamos um código de confirmação por SMS para <strong>${phone}</strong>.<br><br>Após confirmar o código, entre no PULSO.`)}}}catch(error){showMessage(error?.message||'Não foi possível criar sua conta agora.','error');submit.disabled=false;submit.textContent='Criar minha conta'}});
