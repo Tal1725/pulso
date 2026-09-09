@@ -8,7 +8,7 @@
   <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="assets/css/auth.css?v=20260909c">
+  <link rel="stylesheet" href="assets/css/auth.css?v=20260909d">
 </head>
 <body>
   <div class="auth-bg" aria-hidden="true"></div>
@@ -26,17 +26,18 @@
     <form id="signupForm" novalidate>
       <div class="field"><label for="displayName">Seu nome</label><input id="displayName" name="displayName" type="text" autocomplete="name" placeholder="Ex.: Ayslan Silva" maxlength="60" required></div>
       <div class="field"><label for="username">Nome de usuário</label><input id="username" name="username" type="text" autocomplete="username" placeholder="Ex.: ayslan" maxlength="24" required><div class="hint">Seu perfil ficará como @seuusuario.</div></div>
+      <div class="field"><label for="birthDate">Data de nascimento</label><input id="birthDate" name="birthDate" type="date" autocomplete="bday" required><div class="hint">O PULSO usa sua idade para aplicar proteção adequada. Menores de 13 anos não podem criar conta. De 13 a 17 anos, a conta fica em modo protegido e exige aprovação de um responsável adulto para publicar.</div></div>
       <div class="field" id="emailField"><label for="email">E-mail</label><input id="email" name="email" type="email" autocomplete="email" placeholder="voce@email.com"></div>
       <div class="field hidden" id="phoneField"><label for="phone">Celular</label><input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="(12) 99999-9999"><div class="hint">Usaremos seu número com código do Brasil (+55) para confirmar a conta.</div></div>
       <div class="field"><label for="password">Senha</label><input id="password" name="password" type="password" autocomplete="new-password" placeholder="Mínimo de 8 caracteres" minlength="8" required></div>
       <div class="field"><label for="passwordConfirm">Confirmar senha</label><input id="passwordConfirm" name="passwordConfirm" type="password" autocomplete="new-password" placeholder="Digite a senha novamente" minlength="8" required></div>
-      <label class="check"><input id="terms" type="checkbox" required><span>Eu concordo com os <a href="termos.html" target="_blank" rel="noopener">termos de uso</a> e a <a href="privacidade.html" target="_blank" rel="noopener">política de privacidade</a> do PULSO.</span></label>
+      <label class="check"><input id="terms" type="checkbox" required><span>Eu concordo com os <a href="termos.html" target="_blank" rel="noopener">termos de uso</a>, a <a href="privacidade.html" target="_blank" rel="noopener">política de privacidade</a> e as <a href="seguranca.html" target="_blank" rel="noopener">regras de segurança do PULSO</a>.</span></label>
       <button class="btn" id="submitBtn" type="submit">Criar minha conta</button>
       <div class="message" id="message" role="status" aria-live="polite"></div>
     </form>
     <a class="back" href="entrar.html">Já tenho uma conta → Entrar no PULSO</a><a class="back" href="./">← Voltar para o PULSO</a>
     <div class="footer-note">PULSO — O ritmo é seu. O momento é agora.</div>
   </main>
-  <script type="module" src="assets/js/auth.js?v=20260909d"></script>
+  <script type="module" src="assets/js/auth.js?v=20260909e"></script>
 </body>
 </html>
