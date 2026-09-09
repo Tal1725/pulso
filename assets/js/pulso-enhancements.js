@@ -5,3 +5,4 @@ async function syncSidebarStats(){const{data:s}=await sb.auth.getSession(),id=s.
 function install(){style();const b=document.querySelector('#profileBtn');if(b)b.removeAttribute('data-enhanced');syncSidebarStats()}
 window.addEventListener('load',install);window.addEventListener('pulso-follow-changed',syncSidebarStats);install();
 import('./pulso-collective.js?v=20260908b');
+import('./pulso-ai-media.js?v=20260909a');
