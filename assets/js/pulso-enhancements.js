@@ -7,3 +7,4 @@ window.addEventListener('load',install);window.addEventListener('pulso-follow-ch
 import('./pulso-collective.js?v=20260908b');
 import('./pulso-ai-media.js?v=20260909k');
 import('./pulso-age-gate.js?v=20260909a');
+import('./pulso-approval-publish.js?v=20260910a');
