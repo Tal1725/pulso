@@ -1,4 +1,4 @@
-/* PULSO — PUBLICAÇÃO FINAL V3 */
+/* PULSO — PUBLICAÇÃO FINAL V4 */
 (() => {
   'use strict';
   const SUPABASE_URL='https://vqpavcyehgdifbtvzhcn.supabase.co';
@@ -24,16 +24,18 @@
     return window.pulsoApprovedMedia?.file || $('#video')?.files?.[0] || $('#audioInput')?.files?.[0] || null;
   }
   function getType(file){
-    const forced=window.pulsoApprovedMedia?.type || $('#mediaType')?.value || '';
-    if(!file) return 'text';
+    const approved=window.pulsoApprovedMedia?.type;
+    if(approved&&['video','image','audio'].includes(approved)) return approved;
+    if(file?.type?.startsWith('image/')) return 'image';
+    if(file?.type?.startsWith('audio/')) return 'audio';
+    if(file?.type?.startsWith('video/')) return 'video';
+    const forced=$('#mediaType')?.value||'';
     if(['video','image','audio'].includes(forced)) return forced;
-    if(file.type?.startsWith('image/')) return 'image';
-    if(file.type?.startsWith('audio/')) return 'audio';
-    return 'video';
+    return file?'video':'text';
   }
   function ext(file,type){
     const x=(file?.name||'').match(/\.([a-z0-9]{2,5})$/i)?.[1];
-    return x?.toLowerCase() || (type==='image'?'jpg':type==='audio'?'mp3':'mp4');
+    return x?.toLowerCase()||(type==='image'?'jpg':type==='audio'?'webm':'webm');
   }
   async function publish(){
     if(publishing)return;
@@ -45,9 +47,9 @@
     const hiveId=$('#hivePublishSelect')?.value||null;
     if(!file&&!caption){msg('Escreva uma legenda ou escolha uma mídia para publicar.',true);return;}
     if(file&&file.size>MAX_FILE){msg('A mídia precisa ter no máximo 100 MB.',true);return;}
-    if(file&&type==='video'&&!file.type.startsWith('video/')){msg('Escolha um vídeo válido.',true);return;}
-    if(file&&type==='image'&&!file.type.startsWith('image/')){msg('Escolha uma imagem válida.',true);return;}
-    if(file&&type==='audio'&&!file.type.startsWith('audio/')){msg('Escolha um áudio válido.',true);return;}
+    if(file&&type==='video'&&!file.type.startsWith('video/')){msg('O arquivo selecionado não é um vídeo válido.',true);return;}
+    if(file&&type==='image'&&!file.type.startsWith('image/')){msg('O arquivo selecionado não é uma imagem válida.',true);return;}
+    if(file&&type==='audio'&&!file.type.startsWith('audio/')){msg('O arquivo selecionado não é um áudio válido.',true);return;}
     publishing=true;button.disabled=true;button.textContent='Publicando...';
     let path=null;
     try{
@@ -57,11 +59,12 @@
       const uid=session.user.id;
       let mediaUrl=null;
       if(file){
-        msg('⏳ Enviando mídia...');
+        msg(type==='video'?'⏳ Enviando vídeo...':type==='image'?'⏳ Enviando foto...':'⏳ Enviando áudio...');
         path=`${uid}/${type}/${crypto.randomUUID()}_${ext(file,type)}`;
         const up=await db.storage.from(BUCKET).upload(path,file,{contentType:file.type||'application/octet-stream',cacheControl:'3600',upsert:false});
         if(up.error)throw new Error(up.error.message);
         mediaUrl=db.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+        if(!mediaUrl)throw new Error('Não foi possível obter o endereço da mídia.');
       }
       msg('⏳ Salvando publicação...');
       const row={user_id:uid,caption,media_type:type,media_url:mediaUrl,video_url:type==='video'?mediaUrl:null};
@@ -75,12 +78,12 @@
       if($('#audioInput'))$('#audioInput').value='';
       msg('✅ Publicado no PULSO!');
       document.dispatchEvent(new CustomEvent('pulso-published',{detail:{postId:ins.data.id}}));
-      setTimeout(()=>location.reload(),500);
-    }catch(e){console.error('[PULSO V3]',e);msg('❌ '+(e?.message||'Não foi possível publicar agora.'),true);}
+      setTimeout(()=>location.reload(),700);
+    }catch(e){console.error('[PULSO V4]',e);msg('❌ '+(e?.message||'Não foi possível publicar agora.'),true);}
     finally{publishing=false;button.disabled=false;button.textContent='Publicar';}
   }
   window.pulsoPublish=publish;
-  window.pulsoPublishVersion='v3';
+  window.pulsoPublishVersion='v4';
   function bind(){
     const b=$('#publishBtn');
     if(!b||b.dataset.pulsoPublishBound==='1')return;
@@ -88,6 +91,5 @@
     b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();publish();},{capture:true});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
-  const observer=new MutationObserver(bind);
-  observer.observe(document.documentElement,{childList:true,subtree:true});
+  new MutationObserver(bind).observe(document.documentElement,{childList:true,subtree:true});
 })();
