@@ -1,54 +1,69 @@
-/* PULSO — PUBLICADOR V10 — limite compatível com Supabase Free */
+/* PULSO — PUBLICADOR V11 — compressão local para o limite do Supabase Free */
 (() => {
   'use strict';
   const SUPABASE_URL='https://vqpavcyehgdifbtvzhcn.supabase.co';
   const SUPABASE_KEY='sb_publishable_915zO84U7fk0ZAjE4vdsFQ_yRWDA6Cm';
-  const BUCKET='pulso-videos', MAX_FILE=50*1024*1024;
+  const BUCKET='pulso-videos', MAX_UPLOAD=50*1024*1024, TARGET=47*1024*1024;
   let dbPromise=null,publishing=false;
   const $=s=>document.querySelector(s);
   const msg=(t,e=false)=>{const x=$('#publishMsg');if(x){x.textContent=t;x.style.color=e?'#ff6b6b':''}};
   function ensureComposer(){
     let c=document.querySelector('.composer'), section=document.querySelector('main .grid section');
-    if(!c&&section){
-      c=document.createElement('div');c.className='composer';
-      c.innerHTML='<textarea id="caption" maxlength="500" placeholder="O que está acontecendo agora?"></textarea><div class="row"><label class="upload-icon">🎥<span>Vídeo</span><input id="video" type="file" accept="video/*"></label><label class="upload-icon">📸<span>Foto</span><input id="photoInput" type="file" accept="image/*"></label><label class="upload-icon">🎧<span>Áudio</span><input id="audioInput" type="file" accept="audio/*"></label><button class="pill primary" id="publishBtn" type="button">Publicar</button></div><div id="publishMsg" class="file"></div>';section.prepend(c)
-    }
+    if(!c&&section){c=document.createElement('div');c.className='composer';c.innerHTML='<textarea id="caption" maxlength="500" placeholder="O que está acontecendo agora?"></textarea><div class="row"><label class="upload-icon">🎥<span>Vídeo</span><input id="video" type="file" accept="video/*"></label><label class="upload-icon">📸<span>Foto</span><input id="photoInput" type="file" accept="image/*"></label><label class="upload-icon">🎧<span>Áudio</span><input id="audioInput" type="file" accept="audio/*"></label><button class="pill primary" id="publishBtn" type="button">Publicar</button></div><div id="publishMsg" class="file"></div>';section.prepend(c)}
     if(c){c.hidden=false;c.style.display='block';c.style.visibility='visible';c.style.opacity='1'}
-    const b=$('#publishBtn');if(b){b.hidden=false;b.style.display='inline-flex';b.style.visibility='visible';b.style.opacity='1'}
-    return b;
+    const b=$('#publishBtn');if(b){b.hidden=false;b.style.display='inline-flex';b.style.visibility='visible';b.style.opacity='1'} return b;
   }
   async function db(){if(!dbPromise)dbPromise=import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/+esm').then(({createClient})=>createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}));return dbPromise}
   function extension(file,type){const n=(file?.name||'').split('.').pop()?.toLowerCase();return n&&/^[a-z0-9]{2,5}$/.test(n)?n:(type==='image'?'jpg':type==='audio'?'webm':'mp4')}
+  function supportedMime(){return ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(x=>window.MediaRecorder?.isTypeSupported?.(x))||''}
+  async function compressVideo(file){
+    if(file.size<=MAX_UPLOAD)return file;
+    if(!window.MediaRecorder)throw new Error('Seu navegador não suporta a compressão automática de vídeo.');
+    msg('⏳ Seu vídeo é grande. O PULSO está reduzindo o tamanho automaticamente...');
+    const src=URL.createObjectURL(file), video=document.createElement('video');
+    video.src=src;video.playsInline=true;video.muted=false;video.volume=0;video.preload='auto';video.style.position='fixed';video.style.left='-10000px';video.style.width='1px';video.style.height='1px';document.body.appendChild(video);
+    try{
+      await new Promise((resolve,reject)=>{video.onloadedmetadata=resolve;video.onerror=()=>reject(new Error('Não foi possível ler este vídeo.'));});
+      const duration=Number.isFinite(video.duration)&&video.duration>0?video.duration:60;
+      const maxW=1280,maxH=720,scale=Math.min(1,maxW/video.videoWidth||1,maxH/video.videoHeight||1);
+      const w=Math.max(2,Math.round((video.videoWidth*scale)/2)*2),h=Math.max(2,Math.round((video.videoHeight*scale)/2)*2);
+      const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d',{alpha:false});
+      const fps=30, canvasStream=canvas.captureStream(fps), sourceStream=video.captureStream?video.captureStream():null;
+      if(sourceStream?.getAudioTracks?.().length)sourceStream.getAudioTracks().forEach(t=>canvasStream.addTrack(t));
+      const audioBps=96000,targetBits=TARGET*8,videoBps=Math.max(500000,Math.min(6500000,Math.floor(targetBits/duration-audioBps)));
+      const mime=supportedMime(); if(!mime)throw new Error('Este navegador não oferece o formato necessário para comprimir o vídeo.');
+      const chunks=[];let raf=0,stopped=false;
+      const recorder=new MediaRecorder(canvasStream,{mimeType:mime,videoBitsPerSecond:videoBps,audioBitsPerSecond:audioBps});
+      const done=new Promise((resolve,reject)=>{
+        recorder.ondataavailable=e=>{if(e.data?.size)chunks.push(e.data)};
+        recorder.onerror=e=>reject(e.error||new Error('Falha na compressão.'));
+        recorder.onstop=()=>resolve(new Blob(chunks,{type:mime.split(';')[0]}));
+      });
+      const draw=()=>{if(stopped)return;ctx.drawImage(video,0,0,w,h);raf=requestAnimationFrame(draw)};
+      video.onended=()=>{stopped=true;cancelAnimationFrame(raf);if(recorder.state!=='inactive')recorder.stop();canvasStream.getTracks().forEach(t=>t.stop());sourceStream?.getTracks?.().forEach(t=>t.stop())};
+      await video.play();draw();recorder.start(1000);await done;
+      const blob=await done.catch(()=>null);
+      const out=blob||new Blob(chunks,{type:mime.split(';')[0]});
+      if(out.size>MAX_UPLOAD)throw new Error('O vídeo continua acima de 50 MB depois da compressão. Tente um vídeo mais curto.');
+      return new File([out],(file.name||'pulso-video').replace(/\.[^.]+$/,'')+'.webm',{type:'video/webm',lastModified:Date.now()});
+    }finally{URL.revokeObjectURL(src);video.remove()}
+  }
   async function publish(){
-    if(publishing)return;
-    const b=ensureComposer();if(!b)return;
-    const text=($('#caption')?.value||'').trim();
-    const approved=window.pulsoApprovedMedia;
-    const f=approved?.file||$('#video')?.files?.[0]||$('#photoInput')?.files?.[0]||$('#audioInput')?.files?.[0];
+    if(publishing)return;const b=ensureComposer();if(!b)return;
+    const text=($('#caption')?.value||'').trim(),approved=window.pulsoApprovedMedia;let f=approved?.file||$('#video')?.files?.[0]||$('#photoInput')?.files?.[0]||$('#audioInput')?.files?.[0];
     if(!f&&!text)return msg('Escolha um vídeo, foto, áudio ou escreva algo.',true);
-    if(f&&f.size>MAX_FILE)return msg('❌ Este arquivo passa do limite de 50 MB do PULSO neste momento. Escolha um arquivo menor.',true);
     publishing=true;b.disabled=true;b.textContent='Publicando...';let path=null;
     try{
-      msg('Publicando no PULSO...');
-      const sup=await db(), session=await sup.auth.getSession();
-      if(session.error)throw session.error;
-      const uid=session.data.session?.user?.id;if(!uid)throw new Error('Sessão expirada. Entre novamente no PULSO.');
+      const sup=await db(),session=await sup.auth.getSession();if(session.error)throw session.error;const uid=session.data.session?.user?.id;if(!uid)throw new Error('Sessão expirada. Entre novamente no PULSO.');
       let type='text',url=null;
-      if(f){type=f.type?.startsWith('image/')?'image':f.type?.startsWith('audio/')?'audio':'video';path=`${uid}/${type}/${crypto.randomUUID()}.${extension(f,type)}`;const up=await sup.storage.from(BUCKET).upload(path,f,{contentType:f.type||'application/octet-stream',upsert:false});if(up.error)throw new Error('Falha no envio: '+up.error.message);url=sup.storage.from(BUCKET).getPublicUrl(path).data.publicUrl}
+      if(f){type=f.type?.startsWith('image/')?'image':f.type?.startsWith('audio/')?'audio':'video';if(type==='video')f=await compressVideo(f);if(f.size>MAX_UPLOAD)throw new Error('A mídia ultrapassa o limite de 50 MB.');msg('Enviando para o PULSO...');path=`${uid}/${type}/${crypto.randomUUID()}.${extension(f,type)}`;const up=await sup.storage.from(BUCKET).upload(path,f,{contentType:f.type||'application/octet-stream',upsert:false});if(up.error)throw new Error('Falha no envio: '+up.error.message);url=sup.storage.from(BUCKET).getPublicUrl(path).data.publicUrl}
       const ins=await sup.from('posts').insert({user_id:uid,caption:text,media_type:type,media_url:url,video_url:type==='video'?url:null}).select('id').single();
       if(ins.error){if(path)await sup.storage.from(BUCKET).remove([path]);throw new Error('Falha ao salvar: '+ins.error.message)}
-      if(!ins.data?.id)throw new Error('O banco não confirmou a publicação.');
-      window.pulsoApprovedMedia=null;
-      ['caption','video','photoInput','audioInput'].forEach(id=>{const x=$('#'+id);if(x)x.value=''});
-      msg('✅ Publicado com sucesso!');
-      document.dispatchEvent(new CustomEvent('pulso-published',{detail:{postId:ins.data.id}}));
-      setTimeout(()=>location.reload(),400);
-    }catch(e){console.error('[PULSO V10]',e);msg('❌ '+(e?.message||'Não foi possível publicar.'),true)}
-    finally{publishing=false;b.disabled=false;b.textContent='Publicar'}
+      if(!ins.data?.id)throw new Error('O banco não confirmou a publicação.');window.pulsoApprovedMedia=null;['caption','video','photoInput','audioInput'].forEach(id=>{const x=$('#'+id);if(x)x.value=''});msg('✅ Publicado com sucesso!');document.dispatchEvent(new CustomEvent('pulso-published',{detail:{postId:ins.data.id}}));setTimeout(()=>location.reload(),400);
+    }catch(e){console.error('[PULSO V11]',e);msg('❌ '+(e?.message||'Não foi possível publicar.'),true)}finally{publishing=false;b.disabled=false;b.textContent='Publicar'}
   }
   window.pulsoPublish=publish;
-  function bind(){const b=ensureComposer();if(!b||b.dataset.pulsoV10)return;b.dataset.pulsoV10='1';b.addEventListener('click',e=>{e.preventDefault();publish()})}
+  function bind(){const b=ensureComposer();if(!b||b.dataset.pulsoV11)return;b.dataset.pulsoV11='1';b.addEventListener('click',e=>{e.preventDefault();publish()})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
-  new MutationObserver(bind).observe(document.documentElement,{childList:true,subtree:true});
-  window.pulsoPublisherVersion='v10';
+  new MutationObserver(bind).observe(document.documentElement,{childList:true,subtree:true});window.pulsoPublisherVersion='v11';
 })();
