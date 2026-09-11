@@ -1,4 +1,5 @@
-/* PULSO — correção de publicação somente-texto V2 */
+/* PULSO — correção de publicação somente-texto V3
+   Corrige texto sem criar loop de MutationObserver. */
 (() => {
   'use strict';
   function installStyle(){
@@ -28,10 +29,15 @@
         box.innerHTML='✦ <span>Publicação de texto</span>';
         caption.before(box);
       }
-      caption.textContent=text;
     });
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fixTextPosts,{once:true});
   else fixTextPosts();
-  new MutationObserver(fixTextPosts).observe(document.documentElement,{childList:true,subtree:true});
+  let scheduled=false;
+  const observer=new MutationObserver(()=>{
+    if(scheduled)return;
+    scheduled=true;
+    requestAnimationFrame(()=>{scheduled=false;fixTextPosts()});
+  });
+  observer.observe(document.getElementById('feed')||document.documentElement,{childList:true,subtree:true});
 })();
