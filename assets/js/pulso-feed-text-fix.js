@@ -1,23 +1,37 @@
-/* PULSO — correção de publicação somente-texto */
+/* PULSO — correção de publicação somente-texto V2 */
 (() => {
   'use strict';
-  function fixTextPosts() {
-    document.querySelectorAll('#feed article.post').forEach(card => {
-      const media = card.querySelector('.video');
-      if (!media) return;
-      const src = media.getAttribute('src') || '';
-      if (media.tagName === 'VIDEO' && !src.trim()) {
-        media.remove();
-        if (!card.querySelector('.pulso-text-media')) {
-          const box = document.createElement('div');
-          box.className = 'pulso-text-media';
-          box.textContent = '✦ Publicação de texto';
-          card.querySelector('.caption')?.before(box);
-        }
+  function installStyle(){
+    if(document.getElementById('pulso-text-post-style')) return;
+    const s=document.createElement('style');
+    s.id='pulso-text-post-style';
+    s.textContent=`
+      #feed article.post[data-pulso-text="1"] .pulso-text-media{display:flex!important;align-items:center;gap:8px;margin:0;padding:28px 18px 10px;color:#ff4b86;font-size:12px;font-weight:900;letter-spacing:.04em}
+      #feed article.post[data-pulso-text="1"] .caption{display:block!important;visibility:visible!important;opacity:1!important;color:#fff!important;font-size:17px!important;line-height:1.55!important;white-space:pre-wrap!important;padding:10px 18px 18px!important;min-height:0!important;background:transparent!important}
+    `;
+    document.head.appendChild(s);
+  }
+  function fixTextPosts(){
+    installStyle();
+    document.querySelectorAll('#feed article.post').forEach(card=>{
+      const caption=card.querySelector('.caption');
+      if(!caption)return;
+      const media=card.querySelector('.video');
+      const text=caption.textContent.trim();
+      const looksText=!media || (media.tagName==='VIDEO' && !(media.getAttribute('src')||'').trim());
+      if(!looksText)return;
+      card.dataset.pulsoText='1';
+      if(media)media.remove();
+      if(!card.querySelector('.pulso-text-media')){
+        const box=document.createElement('div');
+        box.className='pulso-text-media';
+        box.innerHTML='✦ <span>Publicação de texto</span>';
+        caption.before(box);
       }
+      caption.textContent=text;
     });
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fixTextPosts, {once:true});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fixTextPosts,{once:true});
   else fixTextPosts();
-  new MutationObserver(fixTextPosts).observe(document.documentElement, {childList:true, subtree:true});
+  new MutationObserver(fixTextPosts).observe(document.documentElement,{childList:true,subtree:true});
 })();
