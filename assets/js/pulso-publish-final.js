@@ -1,9 +1,9 @@
-/* PULSO — PUBLICADOR V9 — mídia até 500 MB */
+/* PULSO — PUBLICADOR V10 — limite compatível com Supabase Free */
 (() => {
   'use strict';
   const SUPABASE_URL='https://vqpavcyehgdifbtvzhcn.supabase.co';
   const SUPABASE_KEY='sb_publishable_915zO84U7fk0ZAjE4vdsFQ_yRWDA6Cm';
-  const BUCKET='pulso-videos', MAX_FILE=500*1024*1024;
+  const BUCKET='pulso-videos', MAX_FILE=50*1024*1024;
   let dbPromise=null,publishing=false;
   const $=s=>document.querySelector(s);
   const msg=(t,e=false)=>{const x=$('#publishMsg');if(x){x.textContent=t;x.style.color=e?'#ff6b6b':''}};
@@ -26,7 +26,7 @@
     const approved=window.pulsoApprovedMedia;
     const f=approved?.file||$('#video')?.files?.[0]||$('#photoInput')?.files?.[0]||$('#audioInput')?.files?.[0];
     if(!f&&!text)return msg('Escolha um vídeo, foto, áudio ou escreva algo.',true);
-    if(f&&f.size>MAX_FILE)return msg('A mídia deve ter no máximo 500 MB.',true);
+    if(f&&f.size>MAX_FILE)return msg('❌ Este arquivo passa do limite de 50 MB do PULSO neste momento. Escolha um arquivo menor.',true);
     publishing=true;b.disabled=true;b.textContent='Publicando...';let path=null;
     try{
       msg('Publicando no PULSO...');
@@ -43,12 +43,12 @@
       msg('✅ Publicado com sucesso!');
       document.dispatchEvent(new CustomEvent('pulso-published',{detail:{postId:ins.data.id}}));
       setTimeout(()=>location.reload(),400);
-    }catch(e){console.error('[PULSO V9]',e);msg('❌ '+(e?.message||'Não foi possível publicar.'),true)}
+    }catch(e){console.error('[PULSO V10]',e);msg('❌ '+(e?.message||'Não foi possível publicar.'),true)}
     finally{publishing=false;b.disabled=false;b.textContent='Publicar'}
   }
   window.pulsoPublish=publish;
-  function bind(){const b=ensureComposer();if(!b||b.dataset.pulsoV9)return;b.dataset.pulsoV9='1';b.addEventListener('click',e=>{e.preventDefault();publish()})}
+  function bind(){const b=ensureComposer();if(!b||b.dataset.pulsoV10)return;b.dataset.pulsoV10='1';b.addEventListener('click',e=>{e.preventDefault();publish()})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
   new MutationObserver(bind).observe(document.documentElement,{childList:true,subtree:true});
-  window.pulsoPublisherVersion='v9';
+  window.pulsoPublisherVersion='v10';
 })();
