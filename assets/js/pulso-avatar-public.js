@@ -1,0 +1,1 @@
+// Compatibility stub. Public avatar is handled by the final avatar launcher.
