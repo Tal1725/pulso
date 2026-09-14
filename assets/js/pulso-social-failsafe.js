@@ -1,4 +1,5 @@
 import'./pulso-avatar-rede.js?v=20260914a';
+import'./pulso-avatar-public.js?v=20260914a';
 import{createClient}from'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/+esm';
 const sb=createClient('https://vqpavcyehgdifbtvzhcn.supabase.co','sb_publishable_915zO84U7fk0ZAjE4vdsFQ_yRWDA6Cm',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 let uid=null;
@@ -6,4 +7,4 @@ async function me(){const{data,error}=await sb.auth.getSession();if(error)throw 
 function setBusy(b,v){if(b){b.disabled=v;b.dataset.likeBusy=v?'1':''}}
 async function like(button){const card=button?.closest('article[data-post]');const postId=card?.dataset?.post;if(!postId||button?.dataset.likeBusy==='1')return;setBusy(button,true);try{const u=await me();const q=await sb.from('likes').select('post_id,reaction').eq('post_id',postId).eq('user_id',u).limit(1);if(q.error)throw q.error;const exists=!!q.data?.length;if(exists){const r=await sb.from('likes').delete().eq('post_id',postId).eq('user_id',u);if(r.error)throw r.error}else{const r=await sb.from('likes').insert({post_id:postId,user_id:u,reaction:'like'});if(r.error)throw r.error}const c=await sb.from('likes').select('post_id').eq('post_id',postId);if(c.error)throw c.error;const mine=exists?false:true,total=c.data?.length||0;button.classList.toggle('active',mine);button.textContent=`${mine?'👍':'♡'} ${mine?'Curtido':'Curtir'} · ${total}`;card.querySelector('.reaction-picker')?.classList.remove('is-open');document.dispatchEvent(new CustomEvent('pulso-like-changed',{detail:{postId,liked:mine,count:total}}))}catch(e){console.error('[PULSO LIKE]',e);alert('Não foi possível curtir: '+(e?.message||'erro'))}finally{setBusy(button,false)}}
 document.addEventListener('click',e=>{const b=e.target.closest('button[data-like]');if(!b)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();like(b)},true);
-window.pulsoLikeFailsafe='2026-09-14-v4';
+window.pulsoLikeFailsafe='2026-09-14-v5';
