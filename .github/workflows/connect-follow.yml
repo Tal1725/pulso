@@ -1,11 +1,7 @@
 name: Connect PULSO follow system
 
 on:
-  push:
-    paths:
-      - '.github/workflows/connect-follow.yml'
-      - 'assets/js/follow.js'
-      - 'assets/js/seguidos.js'
+  workflow_dispatch:
 
 permissions:
   contents: write
