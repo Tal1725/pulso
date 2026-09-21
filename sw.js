@@ -1,4 +1,4 @@
-const CACHE='pulso-shell-v1';
+const CACHE='pulso-shell-v2';
 const CORE=['/pulso/','/pulso/index.html','/pulso/app.html','/pulso/entrar.html','/pulso/cadastro.html','/pulso/manifest.webmanifest','/pulso/assets/img/logo.svg','/pulso/assets/img/favicon.svg'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE).catch(()=>{})).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
