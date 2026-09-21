@@ -1,0 +1,39 @@
+name: PULSO smoke test
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate required pages and assets
+        run: |
+          set -e
+          test -f index.html
+          test -f app.html
+          test -f entrar.html
+          test -f cadastro.html
+          test -f assets/img/logo.svg
+          grep -q 'assets/js/app.js' app.html
+          grep -q 'assets/js/pulso-publish-final.js' app.html
+          grep -q 'assets/js/notifications.js' app.html
+          echo "HTML/assets OK"
+      - name: Syntax-check JavaScript modules
+        run: |
+          set -e
+          find assets/js -type f -name '*.js' -print0 | xargs -0 -n1 node --check
+          echo "JavaScript syntax OK"
+      - name: Check for removed Mini Avatar IA references
+        run: |
+          if grep -RniE 'mini.?avatar|avatar.?ia|network.?avatar' app.html assets/js assets/css; then
+            echo "WARNING: legacy Mini Avatar references remain in source"
+          else
+            echo "Mini Avatar IA references not found in app source"
+          fi
