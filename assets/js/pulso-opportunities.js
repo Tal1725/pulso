@@ -35,3 +35,16 @@ function boot(){
  window.pulsoOpenOpportunities=openOpportunities;
 }
 boot();
+async function openWallet(){
+ const modal=document.getElementById('opportunitiesModal'),body=document.getElementById('opportunitiesBody'),title=document.getElementById('opportunitiesTitle');
+ if(!modal||!body)return;
+ modal.hidden=false;title.textContent='💰 Minha carteira';
+ const{data:s}=await sb.auth.getSession(),uid=s.session?.user?.id;
+ if(!uid){body.innerHTML='<div class="opportunity-empty"><strong>Entre no PULSO para acessar sua carteira.</strong></div>';return}
+ const{data:rows,error}=await sb.from('pulso_wallet_ledger').select('amount,currency,status,description,created_at').eq('user_id',uid).order('created_at',{ascending:false}).limit(50);
+ if(error){body.innerHTML='<div class="opportunity-empty"><strong>Não foi possível carregar sua carteira.</strong></div>';return}
+ const available=(rows||[]).filter(x=>x.status==='available').reduce((a,x)=>a+Number(x.amount),0),pending=(rows||[]).filter(x=>x.status==='pending').reduce((a,x)=>a+Number(x.amount),0);
+ const fmt=n=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(n);
+ body.innerHTML='<div class="wallet-hero"><span>Saldo disponível</span><strong>'+fmt(available)+'</strong><small>Pendente: '+fmt(pending)+'</small></div><div class="opportunity-hero"><strong>Como funciona</strong><span>Ganhos só entram aqui quando uma oportunidade, campanha ou outra fonte de receita gerar um lançamento confirmado. Nenhum saldo fictício é criado.</span></div>'+((rows||[]).map(x=>'<div class="wallet-row"><strong>'+esc(x.description||x.status)+'</strong><span>'+new Intl.NumberFormat('pt-BR',{style:'currency',currency:x.currency||'BRL'}).format(Number(x.amount))+'</span></div>').join('')||'<div class="opportunity-empty"><strong>Ainda não há lançamentos.</strong><span>Participe das oportunidades para começar sua trajetória.</span></div>');
+}
+window.pulsoOpenWallet=openWallet;
