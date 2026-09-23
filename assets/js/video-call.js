@@ -40,6 +40,21 @@ async function startCall(){if(!me||!contact)return;const other=contact.id;if(!na
 async function acceptIncoming(){if(pendingCaller){const{data}=await sb.from('profiles').select('id,display_name,username,avatar_url,birth_date').eq('id',pendingCaller).maybeSingle();if(data)contact=data}if(!contact){$('#incomingCallModal').hidden=true;return}$('#incomingCallModal').hidden=true;try{await ensureMedia();$('#videoCallTitle').textContent='📹 '+(contact.display_name||'Chamada de vídeo');$('#videoCallModal').hidden=false;setStatus('Conectando…');await joinPair(contact.id,false)}catch(e){setStatus('Não foi possível atender.',true)}}
 async function endCall(notify=true){if(notify&&contact&&callChannel)await sendSignal(contact.id,{type:'hangup',from:me,to:contact.id});if(callChannel){try{await sb.removeChannel(callChannel)}catch{}callChannel=null}if(pc){pc.close();pc=null}cleanupMedia();$('#videoCallModal')?.setAttribute('hidden','');if($('#videoCallModal'))$('#videoCallModal').hidden=true;currentCallId=null}
 function cleanupMedia(){iceQueue=[];localStream?.getTracks().forEach(t=>t.stop());localStream=null;if($('#videoCallLocal'))$('#videoCallLocal').srcObject=null;if($('#videoCallRemote'))$('#videoCallRemote').srcObject=null;if($('#videoCallEmpty'))$('#videoCallEmpty').hidden=false}
+async function startPrivateCallTo(id){
+ if(!id||id===me)return;
+ try{
+  const{data,error}=await sb.from('profiles').select('id,display_name,username,avatar_url,birth_date').eq('id',id).maybeSingle();
+  if(error)throw error;
+  if(!data)throw new Error('Perfil não encontrado');
+  contact=data;
+  ensureUI();
+  await startCall();
+ }catch(e){
+  console.error('PULSO private call',e);
+  alert('Não foi possível iniciar a chamada privada. Verifique a câmera e o microfone.');
+ }
+}
+window.pulsoStartPrivateCall=startPrivateCallTo;
 function addVideoButton(){
  const compose=document.querySelector('.message-compose');
  if(compose&&!$('#videoCallLaunch')){
