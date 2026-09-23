@@ -23,11 +23,11 @@ title.textContent='Perfil';
 body.innerHTML='<div class="file" style="padding:30px;text-align:center">Carregando perfil...</div>';
 m.hidden=false;
 try{
-const{data:p,error:pe}=await sb.from('profiles').select('id,display_name,username,avatar_url,status,member_number,birth_date,bio').eq('id',id).maybeSingle();
+const{data:rpc,error:pe}=await sb.rpc('get_public_profile',{p_user_id:id});
 if(pe)throw pe;
+const p=rpc?.[0];
 if(!p){body.innerHTML='<div class="file" style="padding:30px;text-align:center">Perfil não encontrado.</div>';return}
-let c={followers:0,following:0,posts:0},following=false,recent={data:[]};
-try{c=await counts(id)}catch(e){console.warn('PULSO perfil: contadores indisponíveis',e)}
+let c={followers:p.followers||0,following:p.following||0,posts:p.posts||0},following=false,recent={data:[]};
 try{following=await isFollowing(id)}catch(e){console.warn('PULSO perfil: seguir indisponível',e)}
 try{const r=await sb.from('posts').select('id,video_url,media_url,media_type,caption,created_at').eq('user_id',id).order('created_at',{ascending:false}).limit(6);if(!r.error)recent=r;else console.warn('PULSO perfil: publicações indisponíveis',r.error)}catch(e){console.warn('PULSO perfil: publicações indisponíveis',e)}
 title.textContent='Perfil';
