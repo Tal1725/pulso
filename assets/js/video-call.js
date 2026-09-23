@@ -22,9 +22,18 @@ async function ensureMedia(){if(localStream)return localStream;localStream=await
 async function joinPair(other,caller){
  const topic=pairTopic(other);try{await sb.realtime.setAuth()}catch{}
  if(callChannel)await sb.removeChannel(callChannel);
- callChannel=sb.channel(topic,{config:{private:true,broadcast:{ack:true}}}).on('broadcast',{event:'signal'},({payload})=>handleSignal(payload)).subscribe(async(status,err)=>{
-   if(status==='CHANNEL_ERROR'){setStatus('Não foi possível conectar a chamada.',true);console.warn('PULSO call channel',err);return}
-   if(status==='SUBSCRIBED'){setStatus(caller?'Aguardando o outro usuário…':'Conectando…');if(!caller)await sendSignal(other,{type:'ready',from:me,to:other,callId:currentCallId})}
+ return await new Promise(resolve=>{
+  let settled=false;
+  const finish=(ok,error)=>{if(!settled){settled=true;resolve({ok,error})}};
+  callChannel=sb.channel(topic,{config:{private:true,broadcast:{ack:true}}}).on('broadcast',{event:'signal'},({payload})=>handleSignal(payload)).subscribe(async(status,err)=>{
+    if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){setStatus('Não foi possível conectar a chamada. Verifique se vocês se seguem e são maiores de 18 anos.',true);console.warn('PULSO call channel',err);finish(false,err||new Error(status));return}
+    if(status==='SUBSCRIBED'){
+      setStatus(caller?'Aguardando o outro usuário…':'Conectando…');
+      if(!caller)await sendSignal(other,{type:'ready',from:me,to:other,callId:currentCallId});
+      finish(true,null);
+    }
+  });
+  setTimeout(()=>finish(false,new Error('Tempo esgotado ao conectar a chamada')),10000);
  });
 }
 function setStatus(t,error=false){const el=$('#videoCallStatus');if(el){el.textContent=t;el.classList.toggle('video-call-status-error',error)}}
@@ -36,7 +45,7 @@ else if(p.type==='answer'&&pc&&!pc.currentRemoteDescription){await pc.setRemoteD
 else if(p.type==='ice'&&p.candidate){if(pc?.remoteDescription){try{await pc.addIceCandidate(p.candidate)}catch{}}else iceQueue.push(p.candidate)}
 else if(p.type==='hangup'){endCall(false)}
 }
-async function startCall(){if(!me||!contact)return;const other=contact.id;if(!navigator.mediaDevices?.getUserMedia){alert('Seu navegador não oferece chamada de vídeo segura. Use Chrome ou Edge atualizado.');return}try{currentCallId=crypto.randomUUID();await ensureMedia();$('#videoCallTitle').textContent='📹 '+(contact.display_name||'Chamada de vídeo');$('#videoCallModal').hidden=false;setStatus('Chamando '+(contact.display_name||'usuário')+'…');await joinPair(other,true);const name=contact.display_name||'Seu contato';const ready=await inboxReady;if(!ready){throw new Error('Canal de chamada indisponível')}const sent=await inbox.send({type:'broadcast',event:'call',payload:{type:'invite',from:me,callId:currentCallId,name}});if(!sent?.ok)throw new Error('Convite não enviado')}catch(e){console.error(e);setStatus('Não foi possível iniciar a câmera/microfone.',true);cleanupMedia()}}
+async function startCall(){if(!me||!contact)return;const other=contact.id;if(!navigator.mediaDevices?.getUserMedia){alert('Seu navegador não oferece chamada de vídeo segura. Use Chrome ou Edge atualizado.');return}try{currentCallId=crypto.randomUUID();await ensureMedia();$('#videoCallTitle').textContent='📹 '+(contact.display_name||'Chamada de vídeo');$('#videoCallModal').hidden=false;setStatus('Chamando '+(contact.display_name||'usuário')+'…');const pair=await joinPair(other,true);if(!pair.ok)throw pair.error||new Error('Canal privado indisponível');const name=contact.display_name||'Seu contato';const ready=await inboxReady;if(!ready)throw new Error('Canal de chamada indisponível');const sent=await inbox.send({type:'broadcast',event:'call',payload:{type:'invite',from:me,callId:currentCallId,name}});if(!sent?.ok)throw new Error('Convite não enviado')}catch(e){console.error(e);setStatus('Não foi possível iniciar a câmera/microfone.',true);cleanupMedia()}}
 async function acceptIncoming(){if(pendingCaller){const{data}=await sb.from('profiles').select('id,display_name,username,avatar_url,birth_date').eq('id',pendingCaller).maybeSingle();if(data)contact=data}if(!contact){$('#incomingCallModal').hidden=true;return}$('#incomingCallModal').hidden=true;try{await ensureMedia();$('#videoCallTitle').textContent='📹 '+(contact.display_name||'Chamada de vídeo');$('#videoCallModal').hidden=false;setStatus('Conectando…');await joinPair(contact.id,false)}catch(e){setStatus('Não foi possível atender.',true)}}
 async function endCall(notify=true){if(notify&&contact&&callChannel)await sendSignal(contact.id,{type:'hangup',from:me,to:contact.id});if(callChannel){try{await sb.removeChannel(callChannel)}catch{}callChannel=null}if(pc){pc.close();pc=null}cleanupMedia();$('#videoCallModal')?.setAttribute('hidden','');if($('#videoCallModal'))$('#videoCallModal').hidden=true;currentCallId=null}
 function cleanupMedia(){iceQueue=[];localStream?.getTracks().forEach(t=>t.stop());localStream=null;if($('#videoCallLocal'))$('#videoCallLocal').srcObject=null;if($('#videoCallRemote'))$('#videoCallRemote').srcObject=null;if($('#videoCallEmpty'))$('#videoCallEmpty').hidden=false}
@@ -51,7 +60,7 @@ async function startPrivateCallTo(id){
   await startCall();
  }catch(e){
   console.error('PULSO private call',e);
-  alert('Não foi possível iniciar a chamada privada. Verifique a câmera e o microfone.');
+  alert('Não foi possível iniciar a chamada. Os dois usuários precisam ser maiores de 18 anos e seguir um ao outro, além de permitir câmera e microfone.');
  }
 }
 window.pulsoStartPrivateCall=startPrivateCallTo;
