@@ -1,6 +1,6 @@
 import{createClient}from'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/+esm';
 const sb=createClient('https://vqpavcyehgdifbtvzhcn.supabase.co','sb_publishable_915zO84U7fk0ZAjE4vdsFQ_yRWDA6Cm',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-let me=null,contact=null,pendingCaller=null,inbox=null,inboxReady=null,callChannel=null,pc=null,localStream=null,currentCallId=null,inCall=false;
+let me=null,contact=null,pendingCaller=null,inbox=null,inboxReady=null,callChannel=null,pc=null,localStream=null,currentCallId=null,inCall=false,iceQueue=[];
 const $=s=>document.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const pairTopic=id=>{const p=[me,id].sort();return`pulso-call:${p[0]}:${p[1]}`};
@@ -22,24 +22,24 @@ async function ensureMedia(){if(localStream)return localStream;localStream=await
 async function joinPair(other,caller){
  const topic=pairTopic(other);try{await sb.realtime.setAuth()}catch{}
  if(callChannel)await sb.removeChannel(callChannel);
- callChannel=sb.channel(topic,{config:{private:true}}).on('broadcast',{event:'signal'},({payload})=>handleSignal(payload)).subscribe(async(status,err)=>{
+ callChannel=sb.channel(topic,{config:{private:true,broadcast:{ack:true}}}).on('broadcast',{event:'signal'},({payload})=>handleSignal(payload)).subscribe(async(status,err)=>{
    if(status==='CHANNEL_ERROR'){setStatus('Não foi possível conectar a chamada.',true);console.warn('PULSO call channel',err);return}
-   if(status==='SUBSCRIBED'&&caller){await createOffer(other)}
+   if(status==='SUBSCRIBED'){setStatus(caller?'Aguardando o outro usuário…':'Conectando…');if(!caller)await sendSignal(other,{type:'ready',from:me,to:other,callId:currentCallId})}
  });
 }
 function setStatus(t,error=false){const el=$('#videoCallStatus');if(el){el.textContent=t;el.classList.toggle('video-call-status-error',error)}}
 async function createOffer(other){if(!callChannel)return;pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]});localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));bindPeer(other);const offer=await pc.createOffer();await pc.setLocalDescription(offer);await sendSignal(other,{type:'offer',from:me,to:other,sdp:pc.localDescription,callId:currentCallId})}
 function bindPeer(other){pc.ontrack=e=>{const v=$('#videoCallRemote');if(e.streams[0]){v.srcObject=e.streams[0];$('#videoCallEmpty').hidden=true}};pc.onicecandidate=e=>{if(e.candidate)sendSignal(other,{type:'ice',from:me,to:other,candidate:e.candidate,callId:currentCallId})};pc.onconnectionstatechange=()=>{if(pc&&['failed','disconnected','closed'].includes(pc.connectionState))setStatus('Conexão encerrada.')}} 
-async function sendSignal(other,payload){if(callChannel)try{await callChannel.send({type:'broadcast',event:'signal',payload})}catch(e){console.warn(e)}}
-async function handleSignal(p){if(!p||p.to!==me)return;if(p.type==='offer'){if(!pc){pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]});localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));bindPeer(p.from)}await pc.setRemoteDescription(p.sdp);const answer=await pc.createAnswer();await pc.setLocalDescription(answer);await sendSignal(p.from,{type:'answer',from:me,to:p.from,sdp:pc.localDescription,callId:p.callId});setStatus('🟢 Chamada conectada');}
+async function sendSignal(other,payload){if(callChannel)try{const r=await callChannel.send({type:'broadcast',event:'signal',payload});if(r&&!r.ok)console.warn('PULSO signal rejected',r)}catch(e){console.warn('PULSO signal',e)}}
+async function handleSignal(p){if(!p||p.to!==me)return;if(p.type==='ready'){if(contact&&p.from===contact.id){await createOffer(p.from)}return}if(p.type==='offer'){if(!pc){pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]});localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));bindPeer(p.from)}await pc.setRemoteDescription(p.sdp);for(const candidate of iceQueue){try{await pc.addIceCandidate(candidate)}catch{}}iceQueue=[];const answer=await pc.createAnswer();await pc.setLocalDescription(answer);await sendSignal(p.from,{type:'answer',from:me,to:p.from,sdp:pc.localDescription,callId:p.callId});setStatus('🟢 Chamada conectada');}
 else if(p.type==='answer'&&pc&&!pc.currentRemoteDescription){await pc.setRemoteDescription(p.sdp);setStatus('🟢 Chamada conectada')}
-else if(p.type==='ice'&&pc&&p.candidate){try{await pc.addIceCandidate(p.candidate)}catch{}}
+else if(p.type==='ice'&&p.candidate){if(pc?.remoteDescription){try{await pc.addIceCandidate(p.candidate)}catch{}}else iceQueue.push(p.candidate)}
 else if(p.type==='hangup'){endCall(false)}
 }
 async function startCall(){if(!me||!contact)return;const other=contact.id;if(!navigator.mediaDevices?.getUserMedia){alert('Seu navegador não oferece chamada de vídeo segura. Use Chrome ou Edge atualizado.');return}try{currentCallId=crypto.randomUUID();await ensureMedia();$('#videoCallTitle').textContent='📹 '+(contact.display_name||'Chamada de vídeo');$('#videoCallModal').hidden=false;setStatus('Chamando '+(contact.display_name||'usuário')+'…');await joinPair(other,true);const name=contact.display_name||'Seu contato';const ready=await inboxReady;if(!ready){throw new Error('Canal de chamada indisponível')}const sent=await inbox.send({type:'broadcast',event:'call',payload:{type:'invite',from:me,callId:currentCallId,name}});if(!sent?.ok)throw new Error('Convite não enviado')}catch(e){console.error(e);setStatus('Não foi possível iniciar a câmera/microfone.',true);cleanupMedia()}}
 async function acceptIncoming(){if(pendingCaller){const{data}=await sb.from('profiles').select('id,display_name,username,avatar_url,birth_date').eq('id',pendingCaller).maybeSingle();if(data)contact=data}if(!contact){$('#incomingCallModal').hidden=true;return}$('#incomingCallModal').hidden=true;try{await ensureMedia();$('#videoCallTitle').textContent='📹 '+(contact.display_name||'Chamada de vídeo');$('#videoCallModal').hidden=false;setStatus('Conectando…');await joinPair(contact.id,false)}catch(e){setStatus('Não foi possível atender.',true)}}
 async function endCall(notify=true){if(notify&&contact&&callChannel)await sendSignal(contact.id,{type:'hangup',from:me,to:contact.id});if(callChannel){try{await sb.removeChannel(callChannel)}catch{}callChannel=null}if(pc){pc.close();pc=null}cleanupMedia();$('#videoCallModal')?.setAttribute('hidden','');if($('#videoCallModal'))$('#videoCallModal').hidden=true;currentCallId=null}
-function cleanupMedia(){localStream?.getTracks().forEach(t=>t.stop());localStream=null;if($('#videoCallLocal'))$('#videoCallLocal').srcObject=null;if($('#videoCallRemote'))$('#videoCallRemote').srcObject=null;if($('#videoCallEmpty'))$('#videoCallEmpty').hidden=false}
+function cleanupMedia(){iceQueue=[];localStream?.getTracks().forEach(t=>t.stop());localStream=null;if($('#videoCallLocal'))$('#videoCallLocal').srcObject=null;if($('#videoCallRemote'))$('#videoCallRemote').srcObject=null;if($('#videoCallEmpty'))$('#videoCallEmpty').hidden=false}
 function addVideoButton(){
  const compose=document.querySelector('.message-compose');
  if(compose&&!$('#videoCallLaunch')){
