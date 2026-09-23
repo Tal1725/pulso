@@ -43,5 +43,9 @@ function hook(){styles();bindProfileButton();if(!window.__pulsoProfilesClickHook
 window.pulsoOpenProfile=openPublic;window.pulsoOpenEditor=openEditor;
 let ageGateShown=false;
 async function ensureBirthDate(){if(!me||ageGateShown)return;ageGateShown=true;const{data:p,error}=await sb.from('profiles').select('birth_date').eq('id',me).maybeSingle();if(error||p?.birth_date)return;setTimeout(()=>{if(document.getElementById('socialModal')?.hidden===false)return;alert('🛡️ Para liberar recursos que dependem de idade, incluindo chamadas privadas, complete sua data de nascimento no perfil.');openEditor()},350)}
-window.addEventListener('load',()=>{bindProfileButton();getMe().then(async()=>{hook();await ensureBirthDate()})});
+// Inicializa o botão imediatamente e novamente após o carregamento do app.
+// Isso evita falhas quando o app é carregado pelo PWA/cache ou quando o evento load já ocorreu.
+bindProfileButton();
+window.addEventListener('DOMContentLoaded',()=>bindProfileButton());
+window.addEventListener('load',()=>{bindProfileButton();getMe().then(async()=>{hook();await ensureBirthDate()}).catch(e=>console.error('PULSO sessão/perfil',e))});
 window.addEventListener('pulso-profile-updated',refreshOwnUI);
