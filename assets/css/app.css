@@ -9,3 +9,13 @@
 .pulso-effect-preview[data-effect="pulse"]{font-size:clamp(18px,5vw,46px);padding-top:5%;letter-spacing:.08em}
 .pulso-effects{position:relative;margin:10px 0}.pulso-effects-panel{display:flex;gap:7px;flex-wrap:wrap;padding:10px;margin-top:8px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:rgba(17,19,29,.97);box-shadow:0 14px 40px rgba(0,0,0,.35)}
 .pulso-effects-panel button{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);color:#fff;border-radius:999px;padding:8px 11px;cursor:pointer}.pulso-effects-panel button:hover{background:rgba(255,61,126,.14);border-color:rgba(255,61,126,.3)}
+
+/* PULSO FX — camera + live */
+.pulso-camera-stage,.live-preview-wrap{position:relative;overflow:hidden;border-radius:18px;background:#000}
+.pulso-camera-stage .camera-preview,.live-preview-wrap .live-preview{display:block;width:100%;max-height:68vh;object-fit:cover;background:#000}
+.pulso-effect-preview,.pulso-live-effect-preview{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;font-size:clamp(34px,9vw,82px);text-shadow:0 4px 24px rgba(0,0,0,.45);padding:8%}
+.pulso-effects,.pulso-live-effects{position:relative;margin:12px 0;z-index:5}
+.pulso-effects-panel{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px;padding:10px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:rgba(17,19,29,.96);box-shadow:0 18px 50px rgba(0,0,0,.35)}
+.pulso-effects-panel button{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;border-radius:12px;padding:9px 11px;cursor:pointer}
+.pulso-effects-panel button:hover{background:rgba(255,61,126,.13);border-color:rgba(255,61,126,.3)}
+@media(max-width:640px){.pulso-effects-panel{display:grid;grid-template-columns:1fr 1fr}.pulso-effects-panel button{width:100%}.live-preview-wrap .live-preview,.pulso-camera-stage .camera-preview{max-height:60vh}}
