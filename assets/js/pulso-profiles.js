@@ -41,5 +41,7 @@ document.getElementById('publicEdit')?.addEventListener('click',openEditor);
 function bindProfileButton(){const b=document.getElementById('profileBtn');if(!b)return;b.onclick=e=>{e.preventDefault();e.stopPropagation();openPublic()}}
 function hook(){styles();bindProfileButton();if(!window.__pulsoProfilesClickHook){window.__pulsoProfilesClickHook=true;document.addEventListener('click',e=>{const b=e.target.closest('[data-open-profile]');if(b){e.preventDefault();e.stopPropagation();openPublic(b.dataset.openProfile)}})}refreshOwnUI();new MutationObserver(()=>renderStatusesInFeed()).observe(document.body,{childList:true,subtree:true})}
 window.pulsoOpenProfile=openPublic;
-window.addEventListener('load',()=>{bindProfileButton();getMe().then(hook)});
+let ageGateShown=false;
+async function ensureBirthDate(){if(!me||ageGateShown)return;ageGateShown=true;const{data:p,error}=await sb.from('profiles').select('birth_date').eq('id',me).maybeSingle();if(error||p?.birth_date)return;setTimeout(()=>{if(document.getElementById('socialModal')?.hidden===false)return;alert('🛡️ Para liberar recursos que dependem de idade, incluindo chamadas privadas, complete sua data de nascimento no perfil.');openEditor()},350)}
+window.addEventListener('load',()=>{bindProfileButton();getMe().then(async()=>{hook();await ensureBirthDate()})});
 window.addEventListener('pulso-profile-updated',refreshOwnUI);
