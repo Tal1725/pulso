@@ -6,14 +6,11 @@ title.textContent='Perfil';
 body.innerHTML='<div class="file" style="padding:30px;text-align:center">Carregando perfil...</div>';
 modal.hidden=false;
 try{
-const{data:p,error}=await supabase.from('profiles').select('id,display_name,username,avatar_url,status,member_number,bio').eq('id',id).maybeSingle();
+const{data:rpc,error}=await supabase.rpc('get_public_profile',{p_user_id:id});
 if(error)throw error;
+const p=rpc?.[0];
 if(!p){body.innerHTML='<div class="file" style="padding:30px;text-align:center">Perfil não encontrado.</div>';return}
-const[{count:followers},{count:following},{count:posts}]=await Promise.all([
-supabase.from('follows').select('*',{count:'exact',head:true}).eq('following_id',id),
-supabase.from('follows').select('*',{count:'exact',head:true}).eq('follower_id',id),
-supabase.from('posts').select('*',{count:'exact',head:true}).eq('user_id',id)
-]);
+const followers=p.followers||0,following=p.following||0,posts=p.posts||0;
 const{data:recent}=await supabase.from('posts').select('id,video_url,media_url,media_type,caption,created_at').eq('user_id',id).order('created_at',{ascending:false}).limit(6);
 const{data:fr}=id!==user.id?await supabase.from('follows').select('follower_id').eq('follower_id',user.id).eq('following_id',id).limit(1):{data:[]};
 const followed=!!fr?.length;
