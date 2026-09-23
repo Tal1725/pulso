@@ -23,4 +23,4 @@ async function send(){const input=document.getElementById('messageInput'),body=i
 function startRealtime(){if(!me)return;channel=sb.channel(`pulso-messages:${me}`).on('postgres_changes',{event:'INSERT',schema:'public',table:'direct_messages',filter:`receiver_id=eq.${me}`},payload=>{setUnread();if(current&&payload.new.sender_id===current.id)refresh();else loadPeople()}).subscribe(status=>{if(status==='CHANNEL_ERROR')console.warn('messages realtime channel error')})}
 async function open(){modal().hidden=false;document.getElementById('messagePeople').hidden=false;document.getElementById('messageThread').hidden=true;document.getElementById('messageTitle').textContent='💬 Mensagens';document.getElementById('messageInput').value='';setMsg('');current=null;await stopTypingChannel();await loadPeople();await setUnread()}
 async function close(){await stopTypingChannel();modal().hidden=true;current=null}
-window.pulsoOpenMessage=openConversation;window.addEventListener('load',init);
+window.pulsoOpenMessage=openConversation;window.addEventListener('load',()=>{init();sb.auth.onAuthStateChange(()=>init())});
