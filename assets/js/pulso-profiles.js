@@ -38,9 +38,9 @@ document.getElementById('publicVideoCall')?.addEventListener('click',async()=>{c
 document.getElementById('publicEdit')?.addEventListener('click',openEditor);
 }catch(e){console.error('PULSO perfil',e);body.innerHTML='<div class="file" style="padding:30px;text-align:center">Não foi possível carregar o perfil agora. Tente novamente.</div>'}
 }
-function bindProfileButton(){const b=document.getElementById('profileBtn');if(!b)return;b.onclick=e=>{e.preventDefault();e.stopPropagation();openEditor()};if(!b.dataset.pulsoEditCapture){b.dataset.pulsoEditCapture='1';b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();openEditor()},true)}}
+function bindProfileButton(){const b=document.getElementById('profileBtn');if(!b)return;if(!window.__pulsoProfileButtonCapture){window.__pulsoProfileButtonCapture=true;document.addEventListener('click',e=>{const target=e.target.closest?.('#profileBtn');if(!target)return;e.preventDefault();e.stopImmediatePropagation();openEditor().catch(err=>{console.error('PULSO abrir edição',err);alert('Não foi possível abrir a edição do perfil. Tente novamente.')})},true)}window.pulsoOpenEditor=openEditor}
 function hook(){styles();bindProfileButton();if(!window.__pulsoProfilesClickHook){window.__pulsoProfilesClickHook=true;document.addEventListener('click',e=>{const b=e.target.closest('[data-open-profile]');if(b){e.preventDefault();e.stopPropagation();openPublic(b.dataset.openProfile)}})}refreshOwnUI();new MutationObserver(()=>renderStatusesInFeed()).observe(document.body,{childList:true,subtree:true})}
-window.pulsoOpenProfile=openPublic;
+window.pulsoOpenProfile=openPublic;window.pulsoOpenEditor=openEditor;
 let ageGateShown=false;
 async function ensureBirthDate(){if(!me||ageGateShown)return;ageGateShown=true;const{data:p,error}=await sb.from('profiles').select('birth_date').eq('id',me).maybeSingle();if(error||p?.birth_date)return;setTimeout(()=>{if(document.getElementById('socialModal')?.hidden===false)return;alert('🛡️ Para liberar recursos que dependem de idade, incluindo chamadas privadas, complete sua data de nascimento no perfil.');openEditor()},350)}
 window.addEventListener('load',()=>{bindProfileButton();getMe().then(async()=>{hook();await ensureBirthDate()})});
