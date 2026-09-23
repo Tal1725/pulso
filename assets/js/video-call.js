@@ -52,15 +52,32 @@ function cleanupMedia(){iceQueue=[];localStream?.getTracks().forEach(t=>t.stop()
 async function startPrivateCallTo(id){
  if(!id||id===me)return;
  try{
+  await auth();
+  if(!me)throw new Error('Você precisa estar conectado à sua conta.');
   const{data,error}=await sb.from('profiles').select('id,display_name,username,avatar_url,birth_date').eq('id',id).maybeSingle();
   if(error)throw error;
   if(!data)throw new Error('Perfil não encontrado');
+  const[{data:mine,error:mineErr},{data:f1,error:f1Err},{data:f2,error:f2Err}]=await Promise.all([
+    sb.from('profiles').select('birth_date').eq('id',me).maybeSingle(),
+    sb.from('follows').select('follower_id').eq('follower_id',me).eq('following_id',id).maybeSingle(),
+    sb.from('follows').select('follower_id').eq('follower_id',id).eq('following_id',me).maybeSingle()
+  ]);
+  if(mineErr||f1Err||f2Err)throw(mineErr||f1Err||f2Err);
+  const adult=d=>d&&new Date(d)<=new Date(new Date().setFullYear(new Date().getFullYear()-18));
+  if(!adult(mine?.birth_date)||!adult(data.birth_date)){
+    alert('📹 A chamada privada exige que os dois perfis tenham data de nascimento cadastrada e sejam maiores de 18 anos.');
+    return;
+  }
+  if(!f1||!f2){
+    alert('📹 Para fazer uma chamada privada, os dois usuários precisam seguir um ao outro.');
+    return;
+  }
   contact=data;
   ensureUI();
   await startCall();
  }catch(e){
   console.error('PULSO private call',e);
-  alert('Não foi possível iniciar a chamada. Os dois usuários precisam ser maiores de 18 anos e seguir um ao outro, além de permitir câmera e microfone.');
+  alert('Não foi possível iniciar a chamada: '+(e?.message||'verifique câmera e microfone.'));
  }
 }
 window.pulsoStartPrivateCall=startPrivateCallTo;
