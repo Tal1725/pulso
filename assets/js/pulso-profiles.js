@@ -37,6 +37,5 @@ document.getElementById('publicEdit')?.addEventListener('click',openEditor);
 function bindProfileButton(){const b=document.getElementById('profileBtn');if(!b)return;b.onclick=e=>{e.preventDefault();e.stopPropagation();openPublic()}}
 function hook(){styles();bindProfileButton();if(!window.__pulsoProfilesClickHook){window.__pulsoProfilesClickHook=true;document.addEventListener('click',e=>{const b=e.target.closest('[data-open-profile]');if(b){e.preventDefault();e.stopPropagation();openPublic(b.dataset.openProfile)}})}refreshOwnUI();new MutationObserver(()=>renderStatusesInFeed()).observe(document.body,{childList:true,subtree:true})}
 window.pulsoOpenProfile=openPublic;
-bindProfileButton();
-getMe().then(hook);
+window.addEventListener('load',()=>{bindProfileButton();getMe().then(hook)});
 window.addEventListener('pulso-profile-updated',refreshOwnUI);
