@@ -38,7 +38,7 @@ document.getElementById('publicVideoCall')?.addEventListener('click',async()=>{c
 document.getElementById('publicEdit')?.addEventListener('click',openEditor);
 }catch(e){console.error('PULSO perfil',e);body.innerHTML='<div class="file" style="padding:30px;text-align:center">Não foi possível carregar o perfil agora. Tente novamente.</div>'}
 }
-function bindProfileButton(){const b=document.getElementById('profileBtn');if(!b)return;b.onclick=e=>{e.preventDefault();e.stopPropagation();openPublic()}}
+function bindProfileButton(){const b=document.getElementById('profileBtn');if(!b)return;b.onclick=async e=>{e.preventDefault();e.stopPropagation();try{if(!me)await getMe();if(!me){alert('Sua sessão expirou. Entre novamente no PULSO.');return}await openEditor()}catch(err){console.error('PULSO editar perfil',err);alert('Não foi possível abrir a edição do perfil. Tente novamente.')}}}
 function hook(){styles();bindProfileButton();if(!window.__pulsoProfilesClickHook){window.__pulsoProfilesClickHook=true;document.addEventListener('click',e=>{const b=e.target.closest('[data-open-profile]');if(b){e.preventDefault();e.stopPropagation();openPublic(b.dataset.openProfile)}})}refreshOwnUI();new MutationObserver(()=>renderStatusesInFeed()).observe(document.body,{childList:true,subtree:true})}
 window.pulsoOpenProfile=openPublic;
 let ageGateShown=false;
