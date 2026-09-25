@@ -10,8 +10,7 @@
         if (now - lastTap < 320) {
           const card = media.closest('[data-post]');
           const id = card?.dataset.post;
-          if (id && typeof window.pulsoToggleReaction === 'function') window.pulsoToggleReaction(id, 'like');
-          else if (id) media.dispatchEvent(new CustomEvent('pulso-double-like', { bubbles: true, detail: { postId: id } }));
+          if (id) media.dispatchEvent(new CustomEvent('pulso-double-like', { bubbles: true, detail: { postId: id } }));
         }
         lastTap = now;
       });
