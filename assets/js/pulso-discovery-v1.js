@@ -1,6 +1,9 @@
 /* PULSO DISCOVERY V4 — uma única descoberta por feed, sem duplicações */
 (function(){
  if(window.__pulsoDiscoveryV4)return; window.__pulsoDiscoveryV4=true;
+ // Limpa qualquer versão/duplicata antiga que ainda tenha ficado no DOM ou sido montada por cache.
+ function dedupe(){const all=[...document.querySelectorAll('.pulso-discovery')];all.slice(1).forEach(x=>x.remove());}
+ dedupe();
  const terms={'Humor':['humor','comedia','comédia','piada','meme','risada','engraçado','engracado'],'Música':['musica','música','sertanejo','funk','rock','rap','cantor','violao','violão','canção','cancao'],'Futebol':['futebol','gol','campeonato','torcida','time','brasileirao','brasileirão'],'Negócios':['negocio','negócio','empresa','vendas','venda','empreendedor','marketing'],'Tecnologia':['tecnologia','app','aplicativo','celular','software','computador','internet'],'Carros':['carro','carros','moto','motos','motor','oficina','automovel','automóvel'],'Fitness':['fitness','academia','treino','corrida','musculacao','musculação','saude','saúde'],'Games':['game','games','gamer','playstation','xbox','nintendo'],'Culinária':['comida','culinaria','culinária','receita','cozinha','bolo','churrasco'],'Notícias':['noticia','notícia','noticias','notícias','urgente','informacao','informação'],'Arte':['arte','desenho','pintura','fotografia','artista','design'],'Viagem':['viagem','viajar','turismo','praia','hotel'],'Moda':['moda','roupa','look','beleza','estilo'],'Educação':['educacao','educação','estudo','escola','curso','aprender'],'Criatividade':['criatividade','criativo','criativa','criar','criacao','criação']};
  const norm=s=>(s||'').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'');
  const getSB=()=>window.supabase;
