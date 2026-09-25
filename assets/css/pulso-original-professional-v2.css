@@ -1,0 +1,140 @@
+/* PULSO Original — Professional Feed V2
+   Foco: conteúdo primeiro, menos ruído, experiência mobile profissional. */
+:root{
+  --po-bg:#08090d;
+  --po-panel:#11131a;
+  --po-line:rgba(255,255,255,.09);
+  --po-text:#f7f7fa;
+  --po-muted:#9b9eaa;
+  --po-accent:#ff2f78;
+}
+body.pulso-app-shell{
+  background:var(--po-bg)!important;
+  color:var(--po-text)!important;
+}
+body.pulso-app-shell .top{
+  background:rgba(8,9,13,.94)!important;
+  border-bottom:1px solid var(--po-line)!important;
+  backdrop-filter:blur(18px);
+}
+body.pulso-app-shell .wrap{
+  max-width:1080px!important;
+  padding-top:12px!important;
+}
+body.pulso-app-shell #notice{
+  margin:0 0 8px!important;
+  min-height:0!important;
+  padding:8px 12px!important;
+  border-radius:12px!important;
+  font-size:12px!important;
+  opacity:.82;
+}
+body.pulso-app-shell .grid{
+  grid-template-columns:minmax(0,720px)!important;
+  justify-content:center!important;
+}
+body.pulso-app-shell .side{display:none!important}
+body.pulso-app-shell .composer{
+  background:var(--po-panel)!important;
+  border:1px solid var(--po-line)!important;
+  border-radius:16px!important;
+  padding:11px!important;
+  margin-bottom:8px!important;
+}
+body.pulso-app-shell .composer textarea{
+  min-height:46px!important;
+  font-size:14px!important;
+}
+body.pulso-app-shell .composer .row{
+  border-top:1px solid var(--po-line)!important;
+  padding-top:8px!important;
+  margin-top:6px!important;
+}
+body.pulso-app-shell .upload-icon{
+  min-width:44px!important;
+  height:38px!important;
+  padding:5px 8px!important;
+  font-size:18px!important;
+}
+body.pulso-app-shell .upload-icon span{font-size:9px!important}
+body.pulso-app-shell .composer-actions .pill{
+  min-height:38px!important;
+  padding:7px 14px!important;
+}
+body.pulso-app-shell .feed-switch{
+  margin:0 0 8px!important;
+  padding:4px!important;
+  background:transparent!important;
+  border:0!important;
+  justify-content:center!important;
+}
+body.pulso-app-shell .feed-switch-btn{
+  padding:8px 18px!important;
+  font-size:13px!important;
+}
+body.pulso-app-shell .feed-switch-note{display:none!important}
+body.pulso-app-shell .post{
+  border-radius:18px!important;
+  overflow:hidden!important;
+  background:#101218!important;
+  border:1px solid var(--po-line)!important;
+  box-shadow:0 10px 30px rgba(0,0,0,.18)!important;
+}
+body.pulso-app-shell .posthead{
+  padding:11px 13px!important;
+}
+body.pulso-app-shell .caption{
+  padding:9px 13px!important;
+  font-size:14px!important;
+}
+body.pulso-app-shell .actions{
+  padding:7px 12px 10px!important;
+}
+body.pulso-app-shell .comments{
+  padding:8px 12px!important;
+}
+body.pulso-app-shell .pulso-home,
+body.pulso-app-shell #pulsoHomeHero{display:none!important}
+body.pulso-app-shell .pulso-video-shell{
+  border-radius:0!important;
+}
+@media(max-width:820px){
+  body.pulso-app-shell{padding-bottom:70px!important}
+  body.pulso-app-shell .top{height:56px!important}
+  body.pulso-app-shell .topin{height:56px!important}
+  body.pulso-app-shell .wrap{padding:4px 0 16px!important}
+  body.pulso-app-shell #notice{margin:0 8px 5px!important}
+  body.pulso-app-shell .composer{
+    border-radius:0!important;
+    border-left:0!important;border-right:0!important;
+    margin-bottom:4px!important;
+  }
+  body.pulso-app-shell .feed-switch{margin-bottom:3px!important}
+  body.pulso-app-shell .post{
+    border-radius:0!important;
+    border-left:0!important;border-right:0!important;
+    box-shadow:none!important;
+  }
+  body.pulso-app-shell .video{
+    aspect-ratio:9/15!important;
+    max-height:78vh!important;
+  }
+  body.pulso-app-shell .actions{
+    overflow-x:auto!important;
+    scrollbar-width:none;
+  }
+  body.pulso-app-shell .actions::-webkit-scrollbar{display:none}
+  body.pulso-app-shell .app-bottom-nav{
+    height:66px!important;
+    background:rgba(8,9,13,.97)!important;
+  }
+  body.pulso-app-shell .app-bottom-nav button{
+    font-size:9px!important;
+    color:#858894!important;
+  }
+  body.pulso-app-shell .app-bottom-nav button.active{color:#fff!important}
+  body.pulso-app-shell .app-bottom-nav .create span{
+    width:38px!important;height:30px!important;
+    border-radius:10px!important;
+  }
+}
