@@ -19,3 +19,51 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(run,1200),{once:true});else setTimeout(run,1200);
   new MutationObserver(()=>{if(!document.querySelector('.pulso-discovery'))run()}).observe(document.body,{childList:true,subtree:true});
 })();
+/* PULSO DISCOVERY V2 — filtro visual por interesse, sem IA e sem dados inventados */
+(function(){
+  if(window.__pulsoDiscoveryV2)return; window.__pulsoDiscoveryV2=true;
+  const terms={
+    'Humor':['humor','comedia','comédia','piada','meme','risada','engraçado','engracado'],
+    'Música':['musica','música','sertanejo','funk','rock','rap','cantor','violao','violão','canção','cancao'],
+    'Futebol':['futebol','gol','campeonato','torcida','time','brasileirao','brasileirão'],
+    'Negócios':['negocio','negócio','empresa','vendas','venda','empreendedor','marketing'],
+    'Tecnologia':['tecnologia','app','aplicativo','celular','software','computador','internet'],
+    'Carros':['carro','carros','moto','motos','motor','oficina','automovel','automóvel'],
+    'Fitness':['fitness','academia','treino','corrida','musculacao','musculação','saude','saúde'],
+    'Games':['game','games','gamer','playstation','xbox','nintendo'],
+    'Culinária':['comida','culinaria','culinária','receita','cozinha','bolo','churrasco'],
+    'Notícias':['noticia','notícia','noticias','notícias','urgente','informacao','informação'],
+    'Arte':['arte','desenho','pintura','fotografia','artista','design'],
+    'Viagem':['viagem','viajar','turismo','praia','hotel'],
+    'Moda':['moda','roupa','look','beleza','estilo'],
+    'Educação':['educacao','educação','estudo','escola','curso','aprender'],
+    'Criatividade':['criatividade','criativo','criativa','criar','criacao','criação']
+  };
+  const norm=s=>(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  function apply(name){
+    const wanted=terms[name]||[];
+    const cards=[...document.querySelectorAll('#feed [data-post]')];
+    if(!cards.length)return;
+    let visible=0;
+    cards.forEach(card=>{
+      const text=norm(card.querySelector('.caption')?.textContent||'');
+      const match=wanted.some(w=>text.includes(norm(w)));
+      card.style.display=match?'':'none';
+      if(match)visible++;
+    });
+    let msg=document.getElementById('pulsoDiscoveryResult');
+    if(!msg){
+      msg=document.createElement('div');msg.id='pulsoDiscoveryResult';
+      msg.style.cssText='margin:0 8px 10px;padding:9px 12px;border:1px solid rgba(255,255,255,.08);border-radius:12px;color:#aeb4c2;font-size:12px;background:rgba(255,255,255,.025)';
+      const f=document.getElementById('feed');f?.parentNode.insertBefore(msg,f);
+    }
+    msg.textContent=visible?visible+' publicação(ões) em '+name:'Nenhuma publicação encontrada em '+name+' ainda.';
+  }
+  function clear(){
+    document.querySelectorAll('#feed [data-post]').forEach(c=>c.style.display='');
+    document.getElementById('pulsoDiscoveryResult')?.remove();
+  }
+  document.addEventListener('pulso-discovery-interest',e=>apply(e.detail?.interest));
+  document.addEventListener('pulso-discovery-clear',clear);
+  new MutationObserver(()=>{const active=document.querySelector('.pulso-discovery-chip.active');if(active&&active.dataset.interest)apply(active.dataset.interest)}).observe(document.getElementById('feed')||document.body,{childList:true,subtree:true});
+})();
