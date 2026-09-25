@@ -29,6 +29,7 @@
  }
  function apply(name){const cards=[...document.querySelectorAll('#feed [data-post]')];if(!cards.length)return;const wanted=terms[name]||[];let visible=0;cards.forEach(c=>{const text=norm(c.querySelector('.caption')?.textContent||'');const ok=wanted.some(w=>text.includes(norm(w)));c.style.display=ok?'':'none';if(ok)visible++});let msg=document.getElementById('pulsoDiscoveryResult');if(!msg){msg=document.createElement('div');msg.id='pulsoDiscoveryResult';msg.className='pulso-discovery-result';document.getElementById('feed')?.parentNode.insertBefore(msg,document.getElementById('feed'))}msg.textContent=visible?visible+' publicação(ões) em '+name:'Nenhuma publicação encontrada em '+name+' ainda.'}
  function clear(){document.querySelectorAll('#feed [data-post]').forEach(c=>c.style.display='');document.getElementById('pulsoDiscoveryResult')?.remove()}
- document.addEventListener('pulso-feed-rendered',()=>setTimeout(mount,50));
+ document.addEventListener('pulso-feed-rendered',()=>{dedupe();setTimeout(()=>{dedupe();mount()},50)});
+ setInterval(dedupe,500);
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(mount,1200),{once:true});else setTimeout(mount,1200);
 })();
