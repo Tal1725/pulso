@@ -7,7 +7,7 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&
 const REACTIONS={like:'👍',love:'❤️',haha:'😂',wow:'😮',sad:'😢',angry:'😡'};
 function token(){try{const k='sb-vqpavcyehgdifbtvzhcn-auth-token',v=JSON.parse(localStorage.getItem(k)||'null');return v?.access_token||''}catch{return ''}}
 function headers(){const t=token(),h={apikey:KEY,'Content-Type':'application/json'};if(t)h.Authorization='Bearer '+t;return h}
-async function api(path,opt={}){const r=await fetch(API+'/rest/v1/'+path,{...opt,headers:{...headers(),...(opt.headers||{})},cache:'no-store'});let data=null;try{data=await r.json()}catch{}if(!r.ok)throw new Error(data?.message||data?.hint||('HTTP '+r.status));return data}
+async function api(path,opt={}){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);try{const r=await fetch(API+'/rest/v1/'+path,{...opt,headers:{...headers(),...(opt.headers||{})},cache:'no-store',signal:controller.signal});let data=null;try{data=await r.json()}catch{}if(!r.ok)throw new Error(data?.message||data?.hint||('HTTP '+r.status));return data}catch(e){if(e?.name==='AbortError')throw new Error('Tempo limite ao conectar ao PULSO');throw e}finally{clearTimeout(timer)}}
 function avatarHtml(p){return p?.avatar_url?'<img class="avatar-photo" src="'+esc(p.avatar_url)+'" alt="Foto de perfil" loading="lazy">':'<span>'+esc((p?.display_name||'?').charAt(0).toUpperCase())+'</span>'}
 async function init(){
  try{
@@ -23,13 +23,13 @@ async function init(){
    $('#handle').textContent='Entre para interagir';
   }
   $('#notice').textContent='PULSO — Sinta o ritmo do conteúdo real.';
-  await loadFeed();
-  if(user?.id) await loadSocialStats();
+  loadFeed();
+  if(user?.id) loadSocialStats();
   bindGlobal();
  }catch(e){
   console.error('[PULSO CORE]',e);
   $('#notice').textContent='PULSO carregado. Alguns recursos podem exigir login.';
-  await loadFeed();
+  loadFeed();
   bindGlobal();
  }
 }
