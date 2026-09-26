@@ -37,4 +37,36 @@ window.addEventListener('DOMContentLoaded',function(){
   if(close) close.addEventListener('click',function(){var m=document.getElementById('socialModal');if(m)m.hidden=true;});
 });
 </script><script type="module" src="assets/js/pulso-profile-editor-fallback.js?v=20260923a"></script>
-<script type="module" src="assets/js/pulso-delete-menu-fix.js?v=20260926a"></script></body></html>
+<script type="module" src="assets/js/pulso-delete-menu-fix.js?v=20260926a"></script><script>
+/* PULSO — exclusão do próprio post: camada final */
+(function(){
+  async function ensureDelete(){
+    try{
+      if(!window.supabase)return;
+      var sg=await window.supabase.auth.getSession(), me=String(sg.data?.session?.user?.id||'').trim().toLowerCase();
+      if(!me)return;
+      document.querySelectorAll('#feed article[data-post]').forEach(async function(card){
+        if(card.querySelector('[data-delete]'))return;
+        var id=card.getAttribute('data-post'); if(!id)return;
+        var r=await window.supabase.from('posts').select('user_id').eq('id',id).maybeSingle();
+        if(r.error || String(r.data?.user_id||'').trim().toLowerCase()!==me)return;
+        card.style.position='relative';
+        var b=document.createElement('button');
+        b.type='button'; b.dataset.delete=''; b.className='post-menu';
+        b.setAttribute('aria-label','Excluir publicação'); b.title='Excluir publicação'; b.textContent='⋯';
+        b.style.cssText='position:absolute!important;top:12px!important;right:12px!important;z-index:99999!important;display:flex!important;visibility:visible!important;opacity:1!important;width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;padding:0!important;margin:0!important;align-items:center!important;justify-content:center!important;border:1px solid #bbb!important;border-radius:50%!important;background:#fff!important;color:#111!important;font:800 25px/1 Arial,sans-serif!important;cursor:pointer!important;box-shadow:0 3px 14px rgba(0,0,0,.25)!important;';
+        b.onclick=async function(e){
+          e.preventDefault();e.stopImmediatePropagation();
+          if(!confirm('Excluir esta publicação? Esta ação não pode ser desfeita.'))return;
+          var del=await window.supabase.from('posts').delete().eq('id',id).eq('user_id',sg.data.session.user.id);
+          if(del.error){alert('Não foi possível excluir: '+del.error.message);return}
+          card.remove();
+        };
+        card.appendChild(b);
+      });
+    }catch(e){}
+  }
+  setInterval(ensureDelete,1200);
+  window.addEventListener('load',function(){setTimeout(ensureDelete,800)});
+})();
+</script></body></html>
