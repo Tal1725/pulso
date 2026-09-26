@@ -1,4 +1,4 @@
-const{createClient}=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/+esm').catch(()=>import('https://unpkg.com/@supabase/supabase-js@2.115.0/+esm')).catch(()=>import('https://esm.sh/@supabase/supabase-js@2.115.0'));
+const{createClient}=await import('https://unpkg.com/@supabase/supabase-js@2.115.0/+esm').catch(()=>import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/+esm')).catch(()=>import('https://esm.sh/@supabase/supabase-js@2.115.0'));
 const sb=createClient('https://vqpavcyehgdifbtvzhcn.supabase.co','sb_publishable_915zO84U7fk0ZAjE4vdsFQ_yRWDA6Cm',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});let me=null;
 const esc=v=>String(v??'').replace(/[&<>\\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\\':'&#92;','"':'&quot;',"'":'&#39;'}[m]));
 const avatar=(p,cls='')=>p?.avatar_url?`<img class="pulso-avatar-img ${cls}" src="${esc(p.avatar_url)}" alt="Foto de ${esc(p.display_name||'usuário')}">`:`<span class="pulso-avatar-fallback ${cls}">${esc((p?.display_name||'?')[0].toUpperCase())}</span>`;
