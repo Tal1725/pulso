@@ -1,0 +1,35 @@
+/* PULSO 2.0 — First-screen simplification
+   Visual layer only. Keeps Supabase/data/application logic unchanged.
+*/
+@media (min-width:851px){
+  .grid{grid-template-columns:minmax(0,920px);justify-content:center}
+  .side{display:none!important}
+  .wrap{max-width:1080px}
+}
+@media (max-width:850px){
+  .side{display:none!important}
+}
+.notice{
+  max-width:920px;
+  margin-left:auto;
+  margin-right:auto;
+}
+.composer,.post{max-width:920px;margin-left:auto;margin-right:auto}
+#feed{width:100%}
+.composer{
+  position:relative;
+}
+.composer:before{
+  content:"PULSO • conteúdo real";
+  display:block;
+  margin:0 0 8px;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:#9a9ba5;
+}
+@media(max-width:850px){
+  .notice{margin-left:10px!important;margin-right:10px!important}
+  .composer:before{padding-left:2px}
+}
