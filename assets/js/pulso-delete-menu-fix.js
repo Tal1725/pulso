@@ -16,5 +16,5 @@ card.appendChild(b)}
 }finally{busy=false}}
 document.addEventListener('pulso-feed-rendered',()=>setTimeout(repair,50));
 window.addEventListener('load',()=>setTimeout(repair,500));
-setInterval(repair,1500);
+setInterval(repair,5000);
 setTimeout(repair,1000)})();
