@@ -43,7 +43,7 @@ window.addEventListener('DOMContentLoaded',function(){
   function ensureDelete(){
     try{
       document.querySelectorAll('#feed article[data-post]').forEach(function(card){
-        if(card.querySelector('[data-pulso-delete]'))return;
+        if(card.querySelector('[data-delete],[data-pulso-delete]'))return;
         var id=card.getAttribute('data-post'); if(!id)return;
         card.style.position='relative';
         var b=document.createElement('button');
