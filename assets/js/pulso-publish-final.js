@@ -1,17 +1,262 @@
-/* PULSO — PUBLICADOR V13 — publicação sem recarregar a página */
+/* PULSO — PUBLICADOR V14 — publicação sem recarregar a página */
 (() => {
   'use strict';
-  const SUPABASE_URL='https://vqpavcyehgdifbtvzhcn.supabase.co';
-  const SUPABASE_KEY='sb_publishable_915zO84U7fk0ZAjE4vdsFQ_yRWDA6Cm';
-  const BUCKET='pulso-videos', MAX_UPLOAD=50*1024*1024, TARGET=47*1024*1024;
-  let dbPromise=null,publishing=false;
-  const $=s=>document.querySelector(s);
-  const msg=(t,e=false)=>{const x=$('#publishMsg');if(x){x.textContent=t;x.style.color=e?'#ff6b6b':''}};
-  function ensureComposer(){let c=document.querySelector('.composer'),section=document.querySelector('main .grid section');if(!c&&section){c=document.createElement('div');c.className='composer';c.innerHTML='<textarea id="caption" maxlength="500" placeholder="O que está acontecendo agora?"></textarea><div class="row"><label class="upload-icon">🎥<span>Vídeo</span><input id="video" type="file" accept="video/*"></label><label class="upload-icon">📸<span>Foto</span><input id="photoInput" type="file" accept="image/*"></label><label class="upload-icon">🎧<span>Áudio</span><input id="audioInput" type="file" accept="audio/*"></label><button class="pill primary" id="publishBtn" type="button">Publicar</button></div><div id="publishMsg" class="file"></div>';section.prepend(c)}if(c){c.hidden=false;c.style.display='block';c.style.visibility='visible';c.style.opacity='1'}const b=$('#publishBtn');if(b){b.hidden=false;b.style.display='inline-flex';b.style.visibility='visible';b.style.opacity='1'}return b}
-  async function db(){if(!dbPromise)dbPromise=import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/+esm').then(({createClient})=>createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}));return dbPromise}
-  function extension(file,type){const n=(file?.name||'').split('.').pop()?.toLowerCase();return n&&/^[a-z0-9]{2,5}$/.test(n)?n:(type==='image'?'jpg':type==='audio'?'webm':'mp4')}
-  function supportedMime(){return ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(x=>window.MediaRecorder?.isTypeSupported?.(x))||''}
-  async function compressVideo(file){if(file.size<=MAX_UPLOAD)return file;if(!window.MediaRecorder)throw new Error('Seu navegador não suporta a compressão automática de vídeo.');msg('⏳ Seu vídeo é grande. O PULSO está reduzindo o tamanho automaticamente...');const src=URL.createObjectURL(file),video=document.createElement('video');video.src=src;video.playsInline=true;video.muted=false;video.volume=0;video.preload='auto';video.style.position='fixed';video.style.left='-10000px';video.style.width='1px';video.style.height='1px';document.body.appendChild(video);try{await new Promise((resolve,reject)=>{video.onloadedmetadata=resolve;video.onerror=()=>reject(new Error('Não foi possível ler este vídeo.'))});const duration=Number.isFinite(video.duration)&&video.duration>0?video.duration:60,maxW=1280,maxH=720,scale=Math.min(1,maxW/video.videoWidth||1,maxH/video.videoHeight||1),w=Math.max(2,Math.round(video.videoWidth*scale/2)*2),h=Math.max(2,Math.round(video.videoHeight*scale/2)*2),canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d',{alpha:false}),fps=30,canvasStream=canvas.captureStream(fps),sourceStream=video.captureStream?video.captureStream():null;if(sourceStream?.getAudioTracks?.().length)sourceStream.getAudioTracks().forEach(t=>canvasStream.addTrack(t));const audioBps=96000,targetBits=TARGET*8,videoBps=Math.max(500000,Math.min(6500000,Math.floor(targetBits/duration-audioBps))),mime=supportedMime();if(!mime)throw new Error('Este navegador não oferece o formato necessário para comprimir o vídeo.');const chunks=[];let raf=0,stopped=false;const recorder=new MediaRecorder(canvasStream,{mimeType:mime,videoBitsPerSecond:videoBps,audioBitsPerSecond:audioBps});const done=new Promise((resolve,reject)=>{recorder.ondataavailable=e=>{if(e.data?.size)chunks.push(e.data)};recorder.onerror=e=>reject(e.error||new Error('Falha na compressão.'));recorder.onstop=()=>resolve(new Blob(chunks,{type:mime.split(';')[0]}))});const draw=()=>{if(stopped)return;ctx.drawImage(video,0,0,w,h);raf=requestAnimationFrame(draw)};video.onended=()=>{stopped=true;cancelAnimationFrame(raf);if(recorder.state!=='inactive')recorder.stop();canvasStream.getTracks().forEach(t=>t.stop());sourceStream?.getTracks?.().forEach(t=>t.stop())};await video.play();draw();recorder.start(1000);const blob=await done,out=blob||new Blob(chunks,{type:mime.split(';')[0]});if(out.size>MAX_UPLOAD)throw new Error('O vídeo continua acima de 50 MB depois da compressão. Tente um vídeo mais curto.');return new File([out],(file.name||'pulso-video').replace(/\.[^.]+$/,'')+'.webm',{type:'video/webm',lastModified:Date.now()})}finally{URL.revokeObjectURL(src);video.remove()}}
-  async function publish(){if(publishing)return;const b=ensureComposer();if(!b)return;const text=($('#caption')?.value||'').trim(),approved=window.pulsoApprovedMedia;let f=approved?.file||$('#video')?.files?.[0]||$('#photoInput')?.files?.[0]||$('#audioInput')?.files?.[0];if(!f&&!text)return msg('Escolha um vídeo, foto, áudio ou escreva algo.',true);publishing=true;b.disabled=true;b.textContent='Publicando...';let path=null;try{const sup=await db(),session=await sup.auth.getSession();if(session.error)throw session.error;const uid=session.data.session?.user?.id;if(!uid)throw new Error('Sessão expirada. Entre novamente no PULSO.');let type='text',url=null;if(f){type=f.type?.startsWith('image/')?'image':f.type?.startsWith('audio/')?'audio':'video';if(type==='video')f=await compressVideo(f);if(f.size>MAX_UPLOAD)throw new Error('A mídia ultrapassa o limite de 50 MB.');msg('Enviando para o PULSO...');path=`${uid}/${type}/${crypto.randomUUID()}.${extension(f,type)}`;const allowed=['video/mp4','video/webm','video/quicktime','image/jpeg','image/png','image/webp','image/gif','audio/webm','audio/mpeg','audio/wav','audio/ogg','audio/mp4'];const ext=(f.name||'').split('.').pop()?.toLowerCase();const inferred=type==='video'?(ext==='webm'?'video/webm':ext==='mov'?'video/quicktime':ext==='mp4'?'video/mp4':''):type==='image'?(ext==='png'?'image/png':ext==='webp'?'image/webp':ext==='gif'?'image/gif':'image/jpeg'):type==='audio'?(ext==='mp3'?'audio/mpeg':ext==='wav'?'audio/wav':ext==='ogg'?'audio/ogg':ext==='mp4'?'audio/mp4':'audio/webm');const contentType=allowed.includes(f.type)?f.type:(allowed.includes(inferred)?inferred:'');if(!contentType)throw new Error('Formato de mídia não aceito pelo PULSO. Use MP4, WebM, MOV, JPG, PNG, WEBP, GIF, MP3, WAV ou OGG.');const up=await sup.storage.from(BUCKET).upload(path,f,{contentType,upsert:false});if(up.error){const detail=[up.error.message,up.error.statusCode||up.error.status,up.error.name].filter(Boolean).join(' | ');throw new Error('Falha no envio: '+detail)}url=sup.storage.from(BUCKET).getPublicUrl(path).data.publicUrl}const ins=await sup.from('posts').insert({user_id:uid,caption:text,media_type:type,media_url:url,video_url:type==='video'?url:null}).select('id').single();if(ins.error){if(path)await sup.storage.from(BUCKET).remove([path]);throw new Error('Falha ao salvar: '+ins.error.message)}if(!ins.data?.id)throw new Error('O banco não confirmou a publicação.');window.pulsoApprovedMedia=null;['caption','video','photoInput','audioInput'].forEach(id=>{const x=$('#'+id);if(x)x.value=''});msg('✅ Publicado com sucesso!');document.dispatchEvent(new CustomEvent('pulso-published',{detail:{postId:ins.data.id}}));}catch(e){console.error('[PULSO V12]',e);msg('❌ '+(e?.message||'Não foi possível publicar.'),true)}finally{publishing=false;b.disabled=false;b.textContent='Publicar'}}
-  window.pulsoPublish=publish;if(!window.__pulsoPublishCapture){window.__pulsoPublishCapture=true;document.addEventListener('click',e=>{const b=e.target.closest?.('#publishBtn');if(!b)return;e.preventDefault();e.stopImmediatePropagation();publish()},true)}function bind(){const b=ensureComposer();if(!b||b.dataset.pulsoV12)return;b.dataset.pulsoV12='1';b.addEventListener('click',e=>{e.preventDefault();publish()})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();new MutationObserver(bind).observe(document.documentElement,{childList:true,subtree:true});window.pulsoPublisherVersion='v13';
+
+  const SUPABASE_URL = 'https://vqpavcyehgdifbtvzhcn.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_915zO84U7fk0ZAjE4vdsFQ_yRWDA6Cm';
+  const BUCKET = 'pulso-videos';
+  const MAX_UPLOAD = 50 * 1024 * 1024;
+  let dbPromise = null;
+  let publishing = false;
+
+  const $ = (selector) => document.querySelector(selector);
+
+  function msg(text, error) {
+    const el = $('#publishMsg');
+    if (!el) return;
+    el.textContent = text;
+    el.style.color = error ? '#ff6b6b' : '';
+  }
+
+  function ensureComposer() {
+    let composer = document.querySelector('.composer');
+    const section = document.querySelector('main .grid section');
+
+    if (!composer && section) {
+      composer = document.createElement('div');
+      composer.className = 'composer';
+      composer.innerHTML =
+        '<textarea id="caption" maxlength="500" placeholder="O que está acontecendo agora?"></textarea>' +
+        '<div class="row">' +
+        '<label class="upload-icon">🎥<span>Vídeo</span><input id="video" type="file" accept="video/*"></label>' +
+        '<label class="upload-icon">📸<span>Foto</span><input id="photoInput" type="file" accept="image/*"></label>' +
+        '<label class="upload-icon">🎧<span>Áudio</span><input id="audioInput" type="file" accept="audio/*"></label>' +
+        '<button class="pill primary" id="publishBtn" type="button">Publicar</button>' +
+        '</div><div id="publishMsg" class="file"></div>';
+      section.prepend(composer);
+    }
+
+    if (composer) {
+      composer.hidden = false;
+      composer.style.display = 'block';
+      composer.style.visibility = 'visible';
+      composer.style.opacity = '1';
+    }
+
+    const button = $('#publishBtn');
+    if (button) {
+      button.hidden = false;
+      button.style.display = 'inline-flex';
+      button.style.visibility = 'visible';
+      button.style.opacity = '1';
+    }
+    return button;
+  }
+
+  async function getDb() {
+    if (!dbPromise) {
+      dbPromise = import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/+esm')
+        .then((mod) => mod.createClient(
+          SUPABASE_URL,
+          SUPABASE_KEY,
+          {
+            auth: {
+              persistSession: true,
+              autoRefreshToken: true,
+              detectSessionInUrl: true
+            }
+          }
+        ));
+    }
+    return dbPromise;
+  }
+
+  function extension(file, type) {
+    const name = file && file.name ? file.name : '';
+    const parts = name.split('.');
+    const ext = parts.length > 1 ? parts.pop().toLowerCase() : '';
+    if (ext && /^[a-z0-9]{2,5}$/.test(ext)) return ext;
+    if (type === 'image') return 'jpg';
+    if (type === 'audio') return 'webm';
+    return 'mp4';
+  }
+
+  async function publish() {
+    if (publishing) return;
+
+    const button = ensureComposer();
+    if (!button) return;
+
+    const captionEl = $('#caption');
+    const videoEl = $('#video');
+    const photoEl = $('#photoInput');
+    const audioEl = $('#audioInput');
+
+    const caption = captionEl && captionEl.value ? captionEl.value.trim() : '';
+    const approved = window.pulsoApprovedMedia;
+    let file = (approved && approved.file) ||
+      (videoEl && videoEl.files && videoEl.files[0]) ||
+      (photoEl && photoEl.files && photoEl.files[0]) ||
+      (audioEl && audioEl.files && audioEl.files[0]);
+
+    if (!file && !caption) {
+      msg('Escolha um vídeo, foto, áudio ou escreva algo.', true);
+      return;
+    }
+
+    publishing = true;
+    button.disabled = true;
+    button.textContent = 'Publicando...';
+
+    let path = null;
+
+    try {
+      const supabase = await getDb();
+      const sessionResult = await supabase.auth.getSession();
+
+      if (sessionResult.error) throw sessionResult.error;
+
+      const session = sessionResult.data && sessionResult.data.session;
+      const uid = session && session.user && session.user.id;
+
+      if (!uid) {
+        throw new Error('Sessão expirada. Entre novamente no PULSO.');
+      }
+
+      let type = 'text';
+      let publicUrl = null;
+
+      if (file) {
+        const mime = file.type || '';
+        if (mime.indexOf('image/') === 0) type = 'image';
+        else if (mime.indexOf('audio/') === 0) type = 'audio';
+        else type = 'video';
+
+        if (file.size > MAX_UPLOAD) {
+          throw new Error('A mídia ultrapassa o limite de 50 MB.');
+        }
+
+        msg('Enviando para o PULSO...');
+
+        path = uid + '/' + type + '/' + crypto.randomUUID() + '.' + extension(file, type);
+
+        const allowed = [
+          'video/mp4', 'video/webm', 'video/quicktime',
+          'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+          'audio/webm', 'audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp4'
+        ];
+
+        let contentType = mime;
+        if (allowed.indexOf(contentType) === -1) {
+          const ext = extension(file, type);
+          if (type === 'video') {
+            contentType = ext === 'webm' ? 'video/webm' :
+              ext === 'mov' ? 'video/quicktime' : 'video/mp4';
+          } else if (type === 'image') {
+            contentType = ext === 'png' ? 'image/png' :
+              ext === 'webp' ? 'image/webp' :
+              ext === 'gif' ? 'image/gif' : 'image/jpeg';
+          } else {
+            contentType = ext === 'mp3' ? 'audio/mpeg' :
+              ext === 'wav' ? 'audio/wav' :
+              ext === 'ogg' ? 'audio/ogg' :
+              ext === 'mp4' ? 'audio/mp4' : 'audio/webm';
+          }
+        }
+
+        if (allowed.indexOf(contentType) === -1) {
+          throw new Error('Formato de mídia não aceito pelo PULSO.');
+        }
+
+        const upload = await supabase.storage
+          .from(BUCKET)
+          .upload(path, file, { contentType: contentType, upsert: false });
+
+        if (upload.error) {
+          throw new Error('Falha no envio: ' + upload.error.message);
+        }
+
+        publicUrl = supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+      }
+
+      const insertResult = await supabase
+        .from('posts')
+        .insert({
+          user_id: uid,
+          caption: caption,
+          media_type: type,
+          media_url: publicUrl,
+          video_url: type === 'video' ? publicUrl : null
+        })
+        .select('id')
+        .single();
+
+      if (insertResult.error) {
+        if (path) {
+          await supabase.storage.from(BUCKET).remove([path]);
+        }
+        throw new Error('Falha ao salvar: ' + insertResult.error.message);
+      }
+
+      if (!insertResult.data || !insertResult.data.id) {
+        throw new Error('O banco não confirmou a publicação.');
+      }
+
+      window.pulsoApprovedMedia = null;
+
+      ['caption', 'video', 'photoInput', 'audioInput'].forEach((id) => {
+        const el = $('#' + id);
+        if (el) el.value = '';
+      });
+
+      msg('✅ Publicado com sucesso!');
+      document.dispatchEvent(new CustomEvent('pulso-published', {
+        detail: { postId: insertResult.data.id }
+      }));
+    } catch (error) {
+      console.error('[PULSO V14]', error);
+      msg('❌ ' + (error && error.message ? error.message : 'Não foi possível publicar.'), true);
+    } finally {
+      publishing = false;
+      button.disabled = false;
+      button.textContent = 'Publicar';
+    }
+  }
+
+  window.pulsoPublish = publish;
+  window.pulsoPublisherVersion = 'v14';
+
+  function bind() {
+    const button = ensureComposer();
+    if (!button || button.dataset.pulsoV14) return;
+    button.dataset.pulsoV14 = '1';
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      publish();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bind, { once: true });
+  } else {
+    bind();
+  }
+
+  if (!window.__pulsoPublishCapture) {
+    window.__pulsoPublishCapture = true;
+    document.addEventListener('click', (event) => {
+      const target = event.target;
+      const button = target && target.closest ? target.closest('#publishBtn') : null;
+      if (!button) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      publish();
+    }, true);
+  }
+
+  new MutationObserver(bind).observe(document.documentElement, {
+    childList: true,
+    subtree: true
+  });
 })();
