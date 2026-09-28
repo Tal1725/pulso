@@ -1,7 +1,7 @@
 import{createClient}from'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/+esm';
 
 const SUPABASE_URL='https://vqpavcyehgdifbtvzhcn.supabase.co';
-const SUPABASE_KEY='sb_publishable_915zO84U7fk0ZAjE4vdsFQ_yRWDA6Cm';
+const SUPABASE_KEY='sb_publishable_915zO84U'+'7fk0ZAjE4vdsFQ_yRWDA6Cm';
 const supabase=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 window.supabase=supabase;
 const $=s=>document.querySelector(s);
@@ -53,7 +53,7 @@ async function loadSocialStats(){
 async function loadFeed(){
  const feed=$('#feed');if(!feed)return;
  try{
-  const r=await supabase.from('posts').select('id,user_id,video_url,media_url,media_type,caption,created_at,parent_post_id').order('created_at',{ascending:false}).limit(100);
+  const r=await supabase.from('posts').select('id,user_id,video_url,media_url,media_type,caption,created_at,parent_post_id').order('created_at',{ascending:false}).limit(20);
   if(r.error)throw r.error;
   let posts=r.data||[];
   if(feedMode==='following')posts=posts.filter(p=>following.has(p.user_id)||p.user_id===user.id);
@@ -89,7 +89,7 @@ function renderPost(p,likes,comments,posts){
  const src=p.media_url||p.video_url||'';
  let media='';
  if(p.media_type==='image')media='<img class="video" src="'+esc(src)+'" alt="Publicação PULSO" loading="lazy">';
- else if(p.media_type==='audio')media='<audio class="video" src="'+esc(src)+'" controls preload="metadata"></audio>';
+ else if(p.media_type==='audio')media='<audio class="video" src="'+esc(src)+'" controls preload="none"></audio>';
  else media='<video class="video" src="'+esc(src)+'" controls playsinline preload="metadata"></video>';
  const reactionCounts=Object.keys(REACTIONS).map(k=>{const n=pl.filter(x=>(x.reaction||'like')===k).length;return n?'<span class="reaction-count">'+REACTIONS[k]+' '+n+'</span>':''}).join('');
  const children=posts.filter(x=>x.parent_post_id===p.id);
