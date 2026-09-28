@@ -1,104 +1,188 @@
-import{createClient}from'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/+esm';const supabase=createClient('https://vqpavcyehgdifbtvzhcn.supabase.co','sb_publishable_915zO84U7fk0ZAjE4vdsFQ_yRWDA6Cm',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});window.supabase=supabase;const $=s=>document.querySelector(s);let user=null,profiles=new Map;window._following=new Set;let feedMode='forYou';const esc=v=>String(v??'').replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m]));const REACTIONS={like:'👍',love:'❤️',haha:'😂',wow:'😮',sad:'😢',angry:'😡'};const avatarHtml=p=>p?.avatar_url?`<img class="avatar-photo" src="${esc(p.avatar_url)}" alt="Foto de perfil" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">`:`<span>${esc((p?.display_name||'?').charAt(0).toUpperCase())}</span>`;async function init(){
+import{createClient}from'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/+esm';
+
+const SUPABASE_URL='https://vqpavcyehgdifbtvzhcn.supabase.co';
+const SUPABASE_KEY='sb_publishable_915zO84U7fk0ZAjE4vdsFQ_yRWDA6Cm';
+const supabase=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+window.supabase=supabase;
+const $=s=>document.querySelector(s);
+let user=null;
+let feedMode='forYou';
+let following=new Set();
+let profiles=new Map();
+const REACTIONS={like:'👍',love:'❤️',haha:'😂',wow:'😮',sad:'😢',angry:'😡'};
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const avatarHtml=p=>p?.avatar_url?'<img class="avatar-photo" src="'+esc(p.avatar_url)+'" alt="Foto de perfil" loading="lazy">':'<span>'+esc((p?.display_name||'?').charAt(0).toUpperCase())+'</span>';
+
+async function init(){
+ try{
   const notice=$('#notice');
-  try{
-    const s=await supabase.auth.getSession();
-    let session=s.data?.session;
-    if(!session){await new Promise(r=>setTimeout(r,1200));session=(await supabase.auth.getSession()).data?.session;}
-    if(!session){location.href='entrar.html?next=app';return;}
-    user=session.user;
-    console.log('[PULSO] sessão encontrada',user.id);
-    let p=null;
-    try{
-      const r=await supabase.from('profiles').select('*').eq('id',user.id).maybeSingle();
-      if(r.error)console.warn('[PULSO] perfil com erro',r.error);
-      p=r.data||null;
-    }catch(e){console.warn('[PULSO] perfil falhou',e)}
-    if(p?.account_status==='suspended'){await supabase.auth.signOut();location.href='entrar.html?blocked=1';return;}
-    if(p){$('#name').textContent=p.display_name||user.email||'Membro PULSO';$('#handle').textContent=p.username?'@'+p.username:'';$('#avatar').innerHTML=avatarHtml(p);}
-    notice.textContent='Você está dentro do PULSO. Carregando publicações...';
-    try{await refreshFollowing();}catch(e){console.warn('[PULSO] seguindo indisponível',e);window._following=new Set();}
-    await loadFeed();
-    try{await loadSocialStats();}catch(e){console.warn('[PULSO] estatísticas indisponíveis',e)}
-  }catch(e){console.error('[PULSO] falha crítica ao abrir conta',e);notice.textContent='O PULSO encontrou um problema ao abrir sua conta. Abra o console para diagnóstico.';}
-}
-async function refreshFollowing(){const{data,error}=await supabase.from('follows').select('following_id').eq('follower_id',user.id);if(error)return console.error('follow load',error);window._following=new Set((data||[]).map(x=>x.following_id));paintFollowButtons()}function paintFollowButtons(){document.querySelectorAll('[data-follow-user]').forEach(b=>{const on=window._following.has(b.dataset.followUser);b.textContent=on?'✓ Seguindo':'+ Seguir';b.classList.toggle('is-following',on);b.disabled=false})}async function toggleFollow(id,b){if(!user||!id||id===user.id||b?.dataset.busy==='1')return;if(b)b.dataset.busy='1';const was=window._following.has(id);if(b){b.textContent=was?'+ Seguir':'✓ Seguindo';b.classList.toggle('is-following',!was);b.disabled=true}try{const r=was?await supabase.from('follows').delete().eq('follower_id',user.id).eq('following_id',id):await supabase.from('follows').insert({follower_id:user.id,following_id:id});if(r.error)throw r.error;if(was)window._following.delete(id);else window._following.add(id);document.querySelectorAll(`[data-follow-user="${id}"]`).forEach(x=>{x.textContent=!was?'✓ Seguindo':'+ Seguir';x.classList.toggle('is-following',!was);x.disabled=false;delete x.dataset.busy});await loadSocialStats();document.dispatchEvent(new CustomEvent('pulso-follow-changed'))}catch(e){if(b){b.textContent=was?'✓ Seguindo':'+ Seguir';b.classList.toggle('is-following',was);b.disabled=false;delete b.dataset.busy}alert('Não foi possível seguir agora: '+(e.message||'erro desconhecido'))}}window.loadFeed=async function loadFeed(){
-  const feedEl=$('#feed');
-  if(!feedEl)return;
-  try{
-    console.log('[PULSO] iniciando carregamento do feed');
-    const result=await supabase.from('posts').select('id,user_id,video_url,media_url,media_type,caption,created_at').order('created_at',{ascending:false}).limit(100);
-    if(result.error)throw result.error;
-    const allPosts=result.data||[];
-    let posts=feedMode==='following'?allPosts.filter(p=>window._following.has(p.user_id)||p.user_id===user.id):allPosts;
-    if(!posts.length){feedEl.innerHTML=feedMode==='following'?'<div class="card empty">Você ainda não segue ninguém. Explore o PULSO e siga criadores para montar seu feed.</div>':'<div class="card empty">Ainda não há publicações.<br>Seja o primeiro a dar o primeiro PULSO.</div>';return;}
-    const postIds=posts.map(p=>p.id),ids=[...new Set(posts.map(p=>p.user_id))];
-    profiles=new Map();
-    try{const{data:ps}=await supabase.from('profiles').select('id,username,display_name,avatar_url').in('id',ids);(ps||[]).forEach(p=>profiles.set(p.id,p));}catch(e){console.warn('[PULSO] perfis indisponíveis',e)}
-    let likes=[],comments=[];
-    try{const results=await Promise.all([supabase.from('likes').select('post_id,user_id,reaction').in('post_id',postIds),supabase.from('comments').select('id,post_id,user_id,content,created_at').in('post_id',postIds).order('created_at',{ascending:true})]);likes=results[0].data||[];comments=results[1].data||[];}catch(e){console.warn('[PULSO] interações indisponíveis',e)}
-    feedEl.innerHTML=posts.map(p=>{try{return renderPost(p,likes,comments,posts)}catch(e){console.error('[PULSO] erro em publicação',p.id,e);return '<article class="card empty">Não foi possível exibir uma publicação.</article>'}}).join('');
-    bindFeed();
-    document.dispatchEvent(new CustomEvent('pulso-feed-rendered'));
-  }catch(e){
-    console.error('[PULSO] FALHA REAL NO FEED',e);
-    if(!feedEl.querySelector('[data-post]')){
-      feedEl.innerHTML='<div class="card empty">Não foi possível carregar o feed agora. Tente atualizar a página.</div>';
-    }
+  let session=(await supabase.auth.getSession()).data?.session;
+  if(!session){await new Promise(r=>setTimeout(r,800));session=(await supabase.auth.getSession()).data?.session;}
+  if(!session){location.href='entrar.html?next=app';return;}
+  user=session.user;
+  const p=await supabase.from('profiles').select('id,display_name,username,avatar_url,account_status').eq('id',user.id).maybeSingle();
+  if(p.data){
+   if(p.data.account_status==='suspended'){await supabase.auth.signOut();location.href='entrar.html?blocked=1';return;}
+   $('#name')?.replaceChildren(document.createTextNode(p.data.display_name||user.email||'Membro PULSO'));
+   $('#handle')&&( $('#handle').textContent=p.data.username?'@'+p.data.username:'' );
+   $('#avatar')&&($('#avatar').innerHTML=avatarHtml(p.data));
   }
+  if(notice)notice.textContent='Você está dentro do PULSO. Carregando publicações...';
+  await refreshFollowing();
+  await loadFeed();
+  await loadSocialStats();
+ }catch(e){
+  console.error('[PULSO] inicialização',e);
+  const n=$('#notice');if(n)n.textContent='PULSO carregado, mas houve um erro de conexão. Recarregue a página.';
+ }
 }
 
-function renderPost(p,likes,comments,posts){const prof=profiles.get(p.user_id)||{},mine=likes.find(l=>l.post_id===p.id&&l.user_id===user.id),postLikes=likes.filter(l=>l.post_id===p.id),cs=comments.filter(c=>c.post_id===p.id),children=posts.filter(x=>x.parent_post_id===p.id),src=p.media_url||p.video_url||'';let media=p.media_type==='image'?`<img class="video" src="${esc(src)}" alt="Publicação PULSO" loading="lazy">`:p.media_type==='audio'?`<audio class="video" src="${esc(src)}" controls preload="metadata"></audio>`:`<video class="video" src="${esc(src)}" controls playsinline preload="metadata"></video>`;const counts=Object.keys(REACTIONS).map(k=>{const n=postLikes.filter(l=>(l.reaction||'like')===k).length;return n?`<span class="reaction-count">${REACTIONS[k]} ${n}</span>`:''}).join('');const mineEmoji=mine?REACTIONS[mine.reaction||'like']:'♡';const continuationHtml=children.length?`<section class="pulso-continuity-chain"><div class="pulso-continuity-title">🐝 Colmeia · ${children.length} ${children.length===1?'continuação':'continuações'}</div>${children.map(ch=>{const cp=profiles.get(ch.user_id)||{},csrc=ch.media_url||ch.video_url||'';return `<article class="pulso-continuation-item" data-post="${ch.id}"><div class="pulso-continuation-head"><strong>${esc(cp.display_name||'Usuário')}</strong><span>${cp.username?'@'+esc(cp.username):'membro PULSO'} · continuação</span></div><video class="pulso-continuation-video" src="${esc(csrc)}" controls playsinline preload="metadata"></video>${ch.caption?`<div class="pulso-continuation-caption">${esc(ch.caption)}</div>`:''}</article>`}).join('')}</section>`:'';return `<article class="card post" data-post="${p.id}" data-parent="${p.parent_post_id||''}"><div class="posthead" data-open-profile="${p.user_id}" role="button" tabindex="0" aria-label="Abrir perfil de ${esc(prof.display_name||'Usuário')}"><div class="avatar">${avatarHtml(prof)}<span style="display:none">${esc((prof.display_name||'?').charAt(0).toUpperCase())}</span></div><div class="meta"><strong>${esc(prof.display_name||'Usuário')}</strong><span>${prof.username?'@'+esc(prof.username):'membro PULSO'}${p.parent_post_id?' · continuação':' · origem'}</span></div>${String(p.user_id).trim().toLowerCase()===String(user.id).trim().toLowerCase()?`<button class="post-menu" data-delete type="button" title="Excluir publicação" aria-label="Excluir publicação" style="display:inline-flex!important;align-items:center;justify-content:center;gap:6px;min-width:88px;min-height:40px;padding:0 12px;border:0;border-radius:999px;cursor:pointer;font-size:14px;font-weight:700;line-height:1;background:rgba(0,0,0,.06);color:inherit;position:relative;z-index:20">🗑️ Excluir</button>`:''}</div>${media}<div class="caption">${esc(p.caption)}</div><div class="actions"><div class="reaction-wrap"><button class="action ${mine?'active':''}" data-like aria-label="Escolher reação">${mineEmoji} ${mine?'Reagir':'Curtir'} · ${postLikes.length}</button><div class="reaction-picker" data-reaction-picker role="menu">${Object.entries(REACTIONS).map(([k,e])=>`<button type="button" data-reaction="${k}" title="${k}">${e}</button>`).join('')}</div></div>${counts?`<div class="reaction-summary">${counts}</div>`:''}${p.user_id!==user.id?`<button class="action follow-action" data-follow-user="${p.user_id}" type="button">+ Seguir</button>`:''}<button class="action" data-likers>👥 Quem curtiu</button><button class="action" data-focus>💬 ${cs.length}</button><button class="action continue-action" data-continue>🐝 Dar continuidade${children.length?' · '+children.length:''}</button>${continuationHtml}${p.parent_post_id?`<button class="action" data-origin>🌱 Ver origem</button>`:''}</div><div class="comments"><strong>Comentários</strong><div>${cs.map(c=>{const cp=profiles.get(c.user_id)||{};return `<div class="comment"><b>${esc(cp.display_name||'Usuário')}</b>${esc(c.content)}</div>`}).join('')||'<div class="file">Seja o primeiro a comentar.</div>'}</div><div class="commentbox"><input data-comment maxlength="500" placeholder="Escreva um comentário..."><button class="pill" data-send>Enviar</button></div></article>`}function bindFeed(){document.querySelectorAll('[data-post]').forEach(card=>{const id=card.dataset.post,like=card.querySelector('[data-like]');like.onclick=e=>{e.stopPropagation();const wrap=card.querySelector('.reaction-wrap');document.querySelectorAll('.reaction-picker.is-open').forEach(x=>x!==wrap.querySelector('.reaction-picker')&&x.classList.remove('is-open'));wrap.querySelector('.reaction-picker').classList.toggle('is-open')};card.querySelectorAll('[data-reaction]').forEach(b=>b.onclick=e=>{e.stopPropagation();toggleReaction(id,b.dataset.reaction)});card.querySelector('[data-likers]').onclick=()=>showLikers(id);card.querySelector('[data-focus]').onclick=()=>card.querySelector('[data-comment]').focus();card.querySelector('[data-send]').onclick=()=>addComment(id,card);card.querySelector('[data-continue]').onclick=()=>openContinue(id);card.querySelector('[data-delete]')?.addEventListener('click',()=>deletePost(id,card));const origin=card.querySelector('[data-origin]');if(origin)origin.onclick=()=>goToPost(card.dataset.parent)});document.querySelectorAll('[data-follow-user]').forEach(b=>{b.onclick=e=>{e.preventDefault();e.stopPropagation();toggleFollow(b.dataset.followUser,b)}});paintFollowButtons()}if(!window.__pulsoReactionCloseBound){window.__pulsoReactionCloseBound=true;document.addEventListener('click',closeReactionPickers)}
-function closeReactionPickers(e){if(!e.target.closest('.reaction-wrap'))document.querySelectorAll('.reaction-picker.is-open').forEach(x=>x.classList.remove('is-open'))}async function toggleReaction(postId,reaction){const{data,error}=await supabase.from('likes').select('post_id,reaction').eq('post_id',postId).eq('user_id',user.id).maybeSingle();if(error){alert(error.message);return}if(data?.reaction===reaction){const r=await supabase.from('likes').delete().eq('post_id',postId).eq('user_id',user.id);if(r.error)alert(r.error.message)}else if(data){const r=await supabase.from('likes').update({reaction}).eq('post_id',postId).eq('user_id',user.id);if(r.error)alert(r.error.message)}else{const r=await supabase.from('likes').insert({post_id:postId,user_id:user.id,reaction});if(r.error)alert(r.error.message)}await loadFeed()}async function deletePost(postId,card){if(!user||!postId)return;if(!confirm('Excluir esta publicação? Esta ação não pode ser desfeita.'))return;const b=card.querySelector('[data-delete]');if(b)b.disabled=true;try{const{data:p,error:e}=await supabase.from('posts').select('id,user_id,media_url').eq('id',postId).eq('user_id',user.id).maybeSingle();if(e)throw e;if(!p)throw new Error('Publicação não encontrada ou sem permissão.');const{error}=await supabase.from('posts').delete().eq('id',postId).eq('user_id',user.id);if(error)throw error;card.remove()}catch(e){if(b)b.disabled=false;alert('Não foi possível excluir: '+(e.message||'erro desconhecido'))}}async function showLikers(postId){const{data,error}=await supabase.from('likes').select('user_id,reaction,created_at').eq('post_id',postId).order('created_at',{ascending:false});if(error)return alert(error.message);const ids=[...new Set((data||[]).map(x=>x.user_id))];if(!ids.length)return openModal('Quem reagiu','Ainda ninguém reagiu a este momento.');const{data:ps}=await supabase.from('profiles').select('id,display_name,username,avatar_url').in('id',ids),map=new Map((ps||[]).map(p=>[p.id,p]));openModal('Quem reagiu',(data||[]).map(x=>{const p=map.get(x.user_id)||{};return `<button class="person-row" data-open-profile="${x.user_id}" type="button"><div class="avatar mini">${avatarHtml(p)}<span style="display:none">${esc((p.display_name||'?').charAt(0).toUpperCase())}</span></div><div><strong>${esc(p.display_name||'Usuário')}</strong><span>${REACTIONS[x.reaction||'like']} ${p.username?'@'+esc(p.username):'membro PULSO'}</span></div><span class="profile-arrow">›</span></button>`}).join(''))}async function showPeople(kind){const col=kind==='followers'?'follower_id':'following_id',{data,error}=await supabase.from('follows').select(col+',created_at').eq(kind==='followers'?'following_id':'follower_id',user.id).order('created_at',{ascending:false});if(error)return alert(error.message);const ids=(data||[]).map(x=>x[col]);if(!ids.length)return openModal(kind==='followers'?'Quem te seguiu':'Quem você segue','Ainda não há ninguém nesta lista.');const{data:ps}=await supabase.from('profiles').select('id,display_name,username,avatar_url').in('id',ids),map=new Map((ps||[]).map(p=>[p.id,p]));openModal(kind==='followers'?'Quem te seguiu':'Quem você segue',(data||[]).map(x=>{const p=map.get(x[col])||{};return `<button class="person-row" data-open-profile="${x[col]}" type="button"><div class="avatar mini">${avatarHtml(p)}<span style="display:none">${esc((p.display_name||'?').charAt(0).toUpperCase())}</span></div><div><strong>${esc(p.display_name||'Usuário')}</strong><span>${p.username?'@'+esc(p.username):'membro PULSO'}</span></div><span class="profile-arrow">›</span></button>`}).join(''))}function openModal(title,body){const m=$('#socialModal');$('#modalTitle').textContent=title;$('#modalBody').innerHTML=body;m.hidden=false}function closeModal(){$('#socialModal').hidden=true}async function loadSocialStats(){const[{count:followers},{count:following}]=await Promise.all([supabase.from('follows').select('*',{count:'exact',head:true}).eq('following_id',user.id),supabase.from('follows').select('*',{count:'exact',head:true}).eq('follower_id',user.id)]);$('#followersCount').textContent=followers||0;$('#followingCount').textContent=following||0}async function addComment(postId,card){const input=card?.querySelector('[data-comment]');if(!input||!user)return;const content=input.value.trim();if(!content)return;const btn=card.querySelector('[data-send]');if(btn?.dataset.busy==='1')return;if(btn)btn.dataset.busy='1';try{const{error}=await supabase.from('comments').insert({post_id:postId,user_id:user.id,content});if(error)throw error;input.value='';await loadFeed()}catch(error){alert('Não foi possível enviar o comentário: '+(error?.message||'erro desconhecido'))}finally{if(btn)delete btn.dataset.busy}}function openContinue(postId){const card=document.querySelector(`[data-post="${postId}"]`),m=$('#continueModal');if(!card||!m)return;$('#continueOrigin').innerHTML=`<strong>🌱 Você está continuando este PULSO</strong><span>${esc(card.querySelector('.caption')?.textContent||'')}</span>`;m.dataset.parent=postId;m.hidden=false;$('#continueCaption').value='';$('#continueVideo').value='';$('#continueMsg').textContent=''}function closeContinue(){$('#continueModal').hidden=true}async function compressContinuationVideo(file){const MAX=50*1024*1024,TARGET=47*1024*1024;if(file.size<=MAX)return file;if(!window.MediaRecorder)throw new Error('Seu navegador não suporta a compressão automática. Tente Chrome ou Edge atualizado.');const msg=$('#continueMsg');msg.textContent='⏳ Vídeo acima de 50 MB. O PULSO está reduzindo o tamanho automaticamente...';const src=URL.createObjectURL(file),video=document.createElement('video');video.src=src;video.playsInline=true;video.muted=true;video.preload='auto';video.style.position='fixed';video.style.left='-10000px';video.style.width='1px';video.style.height='1px';document.body.appendChild(video);try{await new Promise((resolve,reject)=>{video.onloadedmetadata=resolve;video.onerror=()=>reject(new Error('Não foi possível ler este vídeo.'))});const duration=Number.isFinite(video.duration)&&video.duration>0?video.duration:60,maxW=1280,maxH=720,scale=Math.min(1,maxW/(video.videoWidth||1280),maxH/(video.videoHeight||720)),w=Math.max(2,Math.round((video.videoWidth||1280)*scale/2)*2),h=Math.max(2,Math.round((video.videoHeight||720)*scale/2)*2),canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d',{alpha:false}),stream=canvas.captureStream(30),source=video.captureStream?video.captureStream():null;if(source?.getAudioTracks?.().length)source.getAudioTracks().forEach(t=>stream.addTrack(t));const mime=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(x=>window.MediaRecorder.isTypeSupported?.(x))||'';if(!mime)throw new Error('Este navegador não oferece compressão de vídeo compatível.');const audioBps=96000,videoBps=Math.max(500000,Math.min(6500000,Math.floor(TARGET*8/duration-audioBps))),chunks=[];let raf=0,stopped=false;const recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:videoBps,audioBitsPerSecond:audioBps});const done=new Promise((resolve,reject)=>{recorder.ondataavailable=e=>e.data?.size&&chunks.push(e.data);recorder.onerror=e=>reject(e.error||new Error('Falha na compressão.'));recorder.onstop=()=>resolve(new Blob(chunks,{type:'video/webm'}))});const draw=()=>{if(stopped)return;ctx.drawImage(video,0,0,w,h);raf=requestAnimationFrame(draw)};video.onended=()=>{stopped=true;cancelAnimationFrame(raf);if(recorder.state!=='inactive')recorder.stop();stream.getTracks().forEach(t=>t.stop());source?.getTracks?.().forEach(t=>t.stop())};await video.play();draw();recorder.start(1000);const out=await done;if(out.size>MAX)throw new Error('Não foi possível reduzir este vídeo para menos de 50 MB. Tente um vídeo mais curto.');msg.textContent='✅ Vídeo reduzido. Continuando publicação...';return new File([out],(file.name||'pulso-continuidade').replace(/\.[^.]+$/,'')+'.webm',{type:'video/webm',lastModified:Date.now()})}finally{URL.revokeObjectURL(src);video.remove()}}
-async function publishContinuation(){const parent=$('#continueModal').dataset.parent;let file=$('#continueVideo').files[0];const caption=$('#continueCaption').value.trim(),msg=$('#continueMsg'),btn=$('#continuePublish');if(!parent||!file){msg.textContent='Escolha um vídeo para continuar este PULSO.';return}if(!file.type.startsWith('video/')){msg.textContent='Escolha um arquivo de vídeo.';return}btn.disabled=true;btn.textContent='Preparando...';try{file=await compressContinuationVideo(file);if(file.size>50*1024*1024)throw new Error('A compressão não conseguiu deixar o vídeo abaixo de 50 MB. Tente um vídeo mais curto.');btn.textContent='Publicando...';const ext=(file.name.split('.').pop()||'webm').toLowerCase(),path=`${user.id}/${crypto.randomUUID()}.${ext}`,up=await supabase.storage.from('pulso-videos').upload(path,file,{contentType:file.type,upsert:false});if(up.error)throw up.error;const{data:url}=supabase.storage.from('pulso-videos').getPublicUrl(path),ins=await supabase.from('posts').insert({user_id:user.id,video_url:url.publicUrl,media_url:url.publicUrl,media_type:'video',caption,parent_post_id:parent});if(ins.error)throw ins.error;msg.textContent='🐝 Continuidade publicada na Colmeia!';setTimeout(async()=>{closeContinue();await loadFeed()},700)}catch(e){msg.textContent='❌ '+(e.message||'Não foi possível publicar')}finally{btn.disabled=false;btn.textContent='Publicar continuidade'}}function goToPost(id){if(!id)return;const card=document.querySelector(`[data-post="${id}"]`);if(card){card.scrollIntoView({behavior:'smooth',block:'center'});card.classList.add('post-highlight');setTimeout(()=>card.classList.remove('post-highlight'),1800)}}/* A publicação é controlada exclusivamente por pulso-publish-final.js. */
-document.addEventListener('pulso-published',()=>{try{loadFeed()}catch(_){ }try{loadSocialStats()}catch(_){ }});
-window.addEventListener('error',e=>console.error('[PULSO] erro de interface',e.error||e.message));
-window.addEventListener('unhandledrejection',e=>console.error('[PULSO] promessa rejeitada',e.reason));
+async function refreshFollowing(){
+ const r=await supabase.from('follows').select('following_id').eq('follower_id',user.id);
+ following=new Set((r.data||[]).map(x=>x.following_id));
+ window._following=following;
+}
 
-function safeClick(id,fn){
-  const el=document.getElementById(id);
-  if(!el||el.dataset.safeBound==='1')return;
-  el.dataset.safeBound='1';
-  el.addEventListener('click',e=>{try{fn(e)}catch(err){console.error('[PULSO] ação '+id,err);alert('O PULSO encontrou um erro nesta ação: '+(err?.message||err))}});
+async function loadSocialStats(){
+ const a=await supabase.from('follows').select('*',{count:'exact',head:true}).eq('following_id',user.id);
+ const b=await supabase.from('follows').select('*',{count:'exact',head:true}).eq('follower_id',user.id);
+ if($('#followersCount'))$('#followersCount').textContent=a.count||0;
+ if($('#followingCount'))$('#followingCount').textContent=b.count||0;
 }
-safeClick('continuePublish',()=>publishContinuation());
-safeClick('continueClose',()=>closeContinue());
-safeClick('modalClose',()=>closeModal());
-safeClick('followersBtn',()=>showPeople('followers'));
-safeClick('followingBtn',()=>showPeople('following'));
-const continueModal=document.getElementById('continueModal');
-if(continueModal&&!continueModal.dataset.safeBound){
-  continueModal.dataset.safeBound='1';
-  continueModal.addEventListener('click',e=>{if(e.target===continueModal)closeContinue()});
+
+async function loadFeed(){
+ const feed=$('#feed');if(!feed)return;
+ try{
+  const r=await supabase.from('posts').select('id,user_id,video_url,media_url,media_type,caption,created_at,parent_post_id').order('created_at',{ascending:false}).limit(100);
+  if(r.error)throw r.error;
+  let posts=r.data||[];
+  if(feedMode==='following')posts=posts.filter(p=>following.has(p.user_id)||p.user_id===user.id);
+  if(!posts.length){
+   feed.innerHTML=feedMode==='following'?'<div class="card empty">Você ainda não segue ninguém. Explore o PULSO e siga criadores.</div>':'<div class="card empty">Ainda não há publicações.<br>Seja o primeiro a dar o primeiro PULSO.</div>';
+   return;
+  }
+  profiles=new Map();
+  const ids=[...new Set(posts.map(p=>p.user_id))];
+  const ps=await supabase.from('profiles').select('id,username,display_name,avatar_url').in('id',ids);
+  (ps.data||[]).forEach(p=>profiles.set(p.id,p));
+  const postIds=posts.map(p=>p.id);
+  const [lr,cr]=await Promise.all([
+   supabase.from('likes').select('post_id,user_id,reaction').in('post_id',postIds),
+   supabase.from('comments').select('id,post_id,user_id,content,created_at').in('post_id',postIds).order('created_at',{ascending:true})
+  ]);
+  const likes=lr.data||[],comments=cr.data||[];
+  feed.innerHTML=posts.map(p=>renderPost(p,likes,comments,posts)).join('');
+  bindFeed();
+  document.dispatchEvent(new CustomEvent('pulso-feed-rendered'));
+ }catch(e){
+  console.error('[PULSO] feed',e);
+  if(!feed.querySelector('[data-post]'))feed.innerHTML='<div class="card empty">Não foi possível carregar as publicações agora. Tente novamente.</div>';
+ }
 }
-const socialModal=document.getElementById('socialModal');
-if(socialModal&&!socialModal.dataset.safeBound){
-  socialModal.dataset.safeBound='1';
-  socialModal.addEventListener('click',e=>{if(e.target===socialModal)closeModal()});
+window.loadFeed=loadFeed;
+
+function renderPost(p,likes,comments,posts){
+ const prof=profiles.get(p.user_id)||{};
+ const mine=likes.find(x=>x.post_id===p.id&&x.user_id===user.id);
+ const pl=likes.filter(x=>x.post_id===p.id);
+ const cs=comments.filter(x=>x.post_id===p.id);
+ const src=p.media_url||p.video_url||'';
+ let media='';
+ if(p.media_type==='image')media='<img class="video" src="'+esc(src)+'" alt="Publicação PULSO" loading="lazy">';
+ else if(p.media_type==='audio')media='<audio class="video" src="'+esc(src)+'" controls preload="metadata"></audio>';
+ else media='<video class="video" src="'+esc(src)+'" controls playsinline preload="metadata"></video>';
+ const reactionCounts=Object.keys(REACTIONS).map(k=>{const n=pl.filter(x=>(x.reaction||'like')===k).length;return n?'<span class="reaction-count">'+REACTIONS[k]+' '+n+'</span>':''}).join('');
+ const children=posts.filter(x=>x.parent_post_id===p.id);
+ return '<article class="card post" data-post="'+esc(p.id)+'">'+
+  '<div class="posthead" data-open-profile="'+esc(p.user_id)+'" role="button" tabindex="0"><div class="avatar">'+avatarHtml(prof)+'</div><div class="meta"><strong>'+esc(prof.display_name||'Usuário')+'</strong><span>'+(prof.username?'@'+esc(prof.username):'membro PULSO')+'</span></div>'+
+  (p.user_id===user.id?'<button class="post-menu" data-delete type="button" title="Excluir">🗑️ Excluir</button>':'')+'</div>'+
+  media+'<div class="caption">'+esc(p.caption)+'</div><div class="actions">'+
+  '<div class="reaction-wrap"><button class="action '+(mine?'active':'')+'" data-like type="button">'+(mine?REACTIONS[mine.reaction||'like']:'♡')+' '+(mine?'Reagir':'Curtir')+' · '+pl.length+'</button><div class="reaction-picker" data-reaction-picker role="menu">'+Object.entries(REACTIONS).map(([k,v])=>'<button type="button" data-reaction="'+k+'">'+v+'</button>').join('')+'</div></div>'+
+  (reactionCounts?'<div class="reaction-summary">'+reactionCounts+'</div>':'')+
+  (p.user_id!==user.id?'<button class="action follow-action" data-follow-user="'+esc(p.user_id)+'" type="button">'+(following.has(p.user_id)?'✓ Seguindo':'+ Seguir')+'</button>':'')+
+  '<button class="action" data-likers type="button">👥 Quem curtiu</button><button class="action" data-focus type="button">💬 '+cs.length+'</button><button class="action continue-action" data-continue type="button">🐝 Dar continuidade'+(children.length?' · '+children.length:'')+'</button>'+
+  '</div><div class="comments"><strong>Comentários</strong><div>'+(cs.map(c=>{const cp=profiles.get(c.user_id)||{};return '<div class="comment"><b>'+esc(cp.display_name||'Usuário')+'</b> '+esc(c.content)+'</div>'}).join('')||'<div class="file">Seja o primeiro a comentar.</div>')+'</div></div>'+
+  '<div class="commentbox"><input data-comment maxlength="500" placeholder="Escreva um comentário..."><button class="pill" data-send type="button">Enviar</button></div>'+
+  '</article>';
 }
-safeClick('logoutBtn',async()=>{await supabase.auth.signOut();location.href='./'});
-function setFeedMode(mode){
-  feedMode=mode;
-  document.querySelectorAll('.feed-switch-btn').forEach(b=>{
-    const active=(mode==='forYou'&&b.id==='feedForYou')||(mode==='following'&&b.id==='feedFollowing');
-    b.classList.toggle('active',active);b.setAttribute('aria-selected',active?'true':'false');
-  });
-  try{loadFeed()}catch(_){}
+
+function bindFeed(){
+ document.querySelectorAll('[data-post]').forEach(card=>{
+  const id=card.dataset.post;
+  const like=card.querySelector('[data-like]');
+  like?.addEventListener('click',e=>{e.stopPropagation();card.querySelector('[data-reaction-picker]')?.classList.toggle('is-open')});
+  card.querySelectorAll('[data-reaction]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();toggleReaction(id,b.dataset.reaction)}));
+  card.querySelector('[data-follow-user]')?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();toggleFollow(e.currentTarget.dataset.followUser,e.currentTarget)});
+  card.querySelector('[data-likers]')?.addEventListener('click',()=>showLikers(id));
+  card.querySelector('[data-focus]')?.addEventListener('click',()=>card.querySelector('[data-comment]')?.focus());
+  card.querySelector('[data-send]')?.addEventListener('click',()=>addComment(id,card));
+  card.querySelector('[data-delete]')?.addEventListener('click',()=>deletePost(id,card));
+ });
 }
-safeClick('feedForYou',()=>setFeedMode('forYou'));
-safeClick('feedFollowing',()=>setFeedMode('following'));
-window.addEventListener('pulso-follow-changed',()=>{if(feedMode==='following')loadFeed()});
-if(!window.__pulsoCommentCapture){
-  window.__pulsoCommentCapture=true;
-  document.addEventListener('click',e=>{
-    const b=e.target.closest?.('[data-send]');if(!b)return;
-    const card=b.closest('[data-post]');if(!card)return;
-    e.preventDefault();e.stopImmediatePropagation();addComment(card.dataset.post,card);
-  },true);
-  document.addEventListener('keydown',e=>{
-    if(e.key!=='Enter'||e.shiftKey)return;
-    const input=e.target.closest?.('[data-comment]');if(!input)return;
-    const card=input.closest('[data-post]');if(!card)return;
-    e.preventDefault();e.stopImmediatePropagation();addComment(card.dataset.post,card);
-  },true);
+async function toggleReaction(id,reaction){
+ const q=await supabase.from('likes').select('post_id,reaction').eq('post_id',id).eq('user_id',user.id).maybeSingle();
+ if(q.error){alert(q.error.message);return}
+ let r;
+ if(q.data?.reaction===reaction)r=await supabase.from('likes').delete().eq('post_id',id).eq('user_id',user.id);
+ else if(q.data)r=await supabase.from('likes').update({reaction}).eq('post_id',id).eq('user_id',user.id);
+ else r=await supabase.from('likes').insert({post_id:id,user_id:user.id,reaction});
+ if(r.error)alert(r.error.message);else await loadFeed();
 }
+async function toggleFollow(id,b){
+ b.disabled=true;
+ const exists=following.has(id);
+ const r=exists?await supabase.from('follows').delete().eq('follower_id',user.id).eq('following_id',id):await supabase.from('follows').insert({follower_id:user.id,following_id:id});
+ if(r.error){alert(r.error.message);b.disabled=false;return}
+ exists?following.delete(id):following.add(id);window._following=following;
+ await loadSocialStats();await loadFeed();document.dispatchEvent(new CustomEvent('pulso-follow-changed'));
+}
+async function addComment(id,card){
+ const input=card.querySelector('[data-comment]'),text=input?.value.trim();if(!text)return;
+ const r=await supabase.from('comments').insert({post_id:id,user_id:user.id,content:text});
+ if(r.error)alert(r.error.message);else{input.value='';await loadFeed();}
+}
+async function deletePost(id,card){
+ if(!confirm('Excluir esta publicação? Esta ação não pode ser desfeita.'))return;
+ const r=await supabase.from('posts').delete().eq('id',id).eq('user_id',user.id);
+ if(r.error)alert('Não foi possível excluir: '+r.error.message);else card.remove();
+}
+async function showLikers(id){
+ const r=await supabase.from('likes').select('user_id,reaction').eq('post_id',id);
+ if(r.error){alert(r.error.message);return}
+ const ids=[...new Set((r.data||[]).map(x=>x.user_id))];
+ const ps=ids.length?await supabase.from('profiles').select('id,display_name,username,avatar_url').in('id',ids):{data:[]};
+ const map=new Map((ps.data||[]).map(p=>[p.id,p]));
+ openModal('Quem reagiu',(r.data||[]).map(x=>{const p=map.get(x.user_id)||{};return '<div class="person-row"><div class="avatar mini">'+avatarHtml(p)+'</div><div><strong>'+esc(p.display_name||'Usuário')+'</strong><span>'+REACTIONS[x.reaction||'like']+' '+(p.username?'@'+esc(p.username):'')+'</span></div></div>'}).join('')||'Ainda ninguém reagiu.');
+}
+function openModal(title,body){const m=$('#socialModal');if(!m)return;$('#modalTitle').textContent=title;$('#modalBody').innerHTML=body;m.hidden=false}
+function closeModal(){const m=$('#socialModal');if(m)m.hidden=true}
+function setFeedMode(mode){feedMode=mode;document.querySelectorAll('.feed-switch-btn').forEach(b=>{const a=b.id===(mode==='forYou'?'feedForYou':'feedFollowing');b.classList.toggle('active',a);b.setAttribute('aria-selected',a?'true':'false')});loadFeed()}
+window.pulsoSetFeedMode=setFeedMode;
+
+document.addEventListener('click',e=>{
+ const b=e.target.closest?.('#feedForYou,#feedFollowing,#followersBtn,#followingBtn,#modalClose,#logoutBtn');
+ if(!b)return;
+ if(b.id==='feedForYou'){e.preventDefault();setFeedMode('forYou')}
+ if(b.id==='feedFollowing'){e.preventDefault();setFeedMode('following')}
+ if(b.id==='modalClose'){e.preventDefault();closeModal()}
+ if(b.id==='followersBtn'){e.preventDefault();showPeople('followers')}
+ if(b.id==='followingBtn'){e.preventDefault();showPeople('following')}
+ if(b.id==='logoutBtn'){e.preventDefault();supabase.auth.signOut().finally(()=>location.href='entrar.html')}
+},true);
+
+async function showPeople(kind){
+ const col=kind==='followers'?'follower_id':'following_id';
+ const r=await supabase.from('follows').select(col).eq(kind==='followers'?'following_id':'follower_id',user.id);
+ if(r.error){alert(r.error.message);return}
+ const ids=(r.data||[]).map(x=>x[col]);
+ if(!ids.length){openModal(kind==='followers'?'Quem te seguiu':'Quem você segue','Ainda não há ninguém nesta lista.');return}
+ const ps=await supabase.from('profiles').select('id,display_name,username,avatar_url').in('id',ids);
+ const map=new Map((ps.data||[]).map(p=>[p.id,p]));
+ openModal(kind==='followers'?'Quem te seguiu':'Quem você segue',ids.map(id=>{const p=map.get(id)||{};return '<div class="person-row"><div class="avatar mini">'+avatarHtml(p)+'</div><div><strong>'+esc(p.display_name||'Usuário')+'</strong><span>'+(p.username?'@'+esc(p.username):'membro PULSO')+'</span></div></div>'}).join(''));
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&e.target.closest?.('[data-comment]')){e.preventDefault();e.target.closest('[data-post]')?.querySelector('[data-send]')?.click()}});
+document.addEventListener('pulso-published',()=>loadFeed());
+window.addEventListener('error',e=>console.error('[PULSO]',e.error||e.message));
+window.addEventListener('unhandledrejection',e=>console.error('[PULSO]',e.reason));
 init();
