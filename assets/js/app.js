@@ -20,6 +20,8 @@ async function init(){
   if(!session){await new Promise(r=>setTimeout(r,800));session=(await supabase.auth.getSession()).data?.session;}
   if(!session){location.href='entrar.html?next=app';return;}
   user=session.user;
+  const adminBtn=$('#adminBtn');
+  if(adminBtn && (user.email||'').toLowerCase()==='ayslan.tal@gmail.com') adminBtn.hidden=false;
   const p=await supabase.from('profiles').select('id,display_name,username,avatar_url,account_status').eq('id',user.id).maybeSingle();
   if(p.data){
    if(p.data.account_status==='suspended'){await supabase.auth.signOut();location.href='entrar.html?blocked=1';return;}
