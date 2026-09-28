@@ -41,7 +41,9 @@ async function refreshFollowing(){const{data,error}=await supabase.from('follows
     document.dispatchEvent(new CustomEvent('pulso-feed-rendered'));
   }catch(e){
     console.error('[PULSO] FALHA REAL NO FEED',e);
-    feedEl.innerHTML='<div class="card empty">Não foi possível carregar o feed agora. Tente atualizar a página.</div>';
+    if(!feedEl.querySelector('[data-post]')){
+      feedEl.innerHTML='<div class="card empty">Não foi possível carregar o feed agora. Tente atualizar a página.</div>';
+    }
   }
 }
 
