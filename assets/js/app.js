@@ -99,7 +99,7 @@ function renderPost(p,likes,comments,posts){
   '<div class="posthead" data-open-profile="'+esc(p.user_id)+'" role="button" tabindex="0"><div class="avatar">'+avatarHtml(prof)+'</div><div class="meta"><strong>'+esc(prof.display_name||'Usuário')+'</strong><span>'+(prof.username?'@'+esc(prof.username):'membro PULSO')+'</span></div>'+
   (p.user_id===user.id?'<button class="post-menu" data-delete type="button" title="Excluir">🗑️ Excluir</button>':'')+'</div>'+
   media+'<div class="caption">'+esc(p.caption)+'</div><div class="actions">'+
-  '<div class="reaction-wrap"><button class="action '+(mine?'active':'')+'" data-like type="button">'+(mine?'❤️ Curtido':'♡ Curtir')+' · '+pl.length+'</button><div class="reaction-picker '+(mine?'is-open':'')+'" data-reaction-picker role="menu">'+Object.entries(REACTIONS).map(([k,v])=>'<button type="button" data-reaction="'+k+'" title="'+k+'">'+v+'</button>').join('')+'</div></div>'+
+  '<div class="reaction-wrap"><button class="action '+(mine?'active':'')+'" data-like type="button">'+(mine?'❤️ Descurtir':'♡ Curtir')+' · '+pl.length+'</button><div class="reaction-picker is-open" data-reaction-picker role="menu">'+Object.entries(REACTIONS).map(([k,v])=>'<button type="button" data-reaction="'+k+'" title="'+k+'">'+v+'</button>').join('')+'</div></div>'+
   (reactionCounts?'<div class="reaction-summary">'+reactionCounts+'</div>':'')+
   (p.user_id!==user.id?'<button class="action follow-action" data-follow-user="'+esc(p.user_id)+'" type="button">'+(following.has(p.user_id)?'✓ Seguindo':'+ Seguir')+'</button>':'')+
   '<button class="action" data-likers type="button">👥 Quem curtiu</button><button class="action" data-focus type="button">💬 '+cs.length+'</button><button class="action continue-action" data-continue type="button">🐝 Dar continuidade'+(children.length?' · '+children.length:'')+'</button>'+
@@ -112,7 +112,7 @@ function bindFeed(){
  document.querySelectorAll('[data-post]').forEach(card=>{
   const id=card.dataset.post;
   const like=card.querySelector('[data-like]');
-  like?.addEventListener('click',e=>{e.stopPropagation();card.querySelector('[data-reaction-picker]')?.classList.toggle('is-open')});
+  like?.addEventListener('click',async e=>{e.stopPropagation();await toggleReaction(id,'like')});
   card.querySelectorAll('[data-reaction]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();toggleReaction(id,b.dataset.reaction)}));
   card.querySelector('[data-follow-user]')?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();toggleFollow(e.currentTarget.dataset.followUser,e.currentTarget)});
   card.querySelector('[data-likers]')?.addEventListener('click',()=>showLikers(id));
