@@ -112,7 +112,7 @@ function bindFeed(){
  document.querySelectorAll('[data-post]').forEach(card=>{
   const id=card.dataset.post;
   const like=card.querySelector('[data-like]');
-  like?.addEventListener('click',async e=>{e.stopPropagation();await toggleReaction(id,'like')});
+  like?.addEventListener('click',e=>{e.stopPropagation();card.querySelector('[data-reaction-picker]')?.classList.toggle('is-open')});
   card.querySelectorAll('[data-reaction]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();toggleReaction(id,b.dataset.reaction)}));
   card.querySelector('[data-follow-user]')?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();toggleFollow(e.currentTarget.dataset.followUser,e.currentTarget)});
   card.querySelector('[data-likers]')?.addEventListener('click',()=>showLikers(id));
