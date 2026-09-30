@@ -1,4 +1,4 @@
-const CACHE = 'pulso-pwa-v4';
+const CACHE = 'pulso-pwa-v5';
 const APP_SHELL = [
   '/pulso/',
   '/pulso/index.html',
@@ -6,7 +6,6 @@ const APP_SHELL = [
   '/pulso/assets/css/styles.css',
   '/pulso/assets/js/main.js',
   '/pulso/assets/js/follow.js',
-  '/pulso/assets/js/seguidos.js',
   '/pulso/assets/img/logo.svg',
   '/pulso/assets/img/favicon.svg'
 ];

@@ -1,5 +1,0 @@
-/* PULSO — estilos de compatibilidade para a rede compacta.
-   O arquivo existe para manter o app sem 404; os componentes principais
-   continuam usando os estilos existentes do PULSO. */
-.pulso-mini-network{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.pulso-mini-network[hidden]{display:none!important}
