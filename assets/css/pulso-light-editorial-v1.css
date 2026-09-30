@@ -1,0 +1,106 @@
+/* PULSO — Light Editorial UI v1 | 2026-09-30
+   Visual-only layer: preserves existing JS/DOM behavior. */
+:root{
+  --p-bg:#f7f7fa;
+  --p-surface:#ffffff;
+  --p-surface-2:#f1f2f6;
+  --p-text:#15151a;
+  --p-muted:#656873;
+  --p-border:#e3e4ea;
+  --p-pink:#e91e63;
+  --p-blue:#2563eb;
+  --p-green:#16a34a;
+  --p-purple:#7c3aed;
+  --p-orange:#ea580c;
+  --p-shadow:0 8px 28px rgba(20,20,30,.08);
+}
+html,body{background:var(--p-bg)!important;color:var(--p-text)!important}
+body{background-image:none!important}
+.top{background:rgba(255,255,255,.96)!important;border-bottom:1px solid var(--p-border)!important;box-shadow:0 3px 18px rgba(20,20,30,.07)!important}
+.topin{background:transparent!important}
+.top .brand span{color:var(--p-text)!important}
+.top .brand-logo{filter:none!important}
+.pulso-search input{background:#f2f3f7!important;color:var(--p-text)!important;border:1px solid var(--p-border)!important}
+.pulso-search button{background:#fff!important;color:var(--p-text)!important;border:1px solid var(--p-border)!important}
+.nav{background:#fff!important;border:1px solid var(--p-border)!important;box-shadow:var(--p-shadow)!important}
+.nav .pill{color:var(--p-text)!important;background:#fff!important;border:1px solid transparent!important}
+.nav .pill:hover{background:#f5f5f8!important}
+#profileBtn{color:var(--p-pink)!important}
+#opportunitiesBtn{color:var(--p-green)!important}
+#walletBtn{color:var(--p-purple)!important}
+#messagesBtn{color:var(--p-blue)!important}
+#notificationBtn{color:var(--p-orange)!important}
+.wrap{background:transparent!important}
+.notice,.composer,.card,.post-card,.side,.feed-switch,.modal-card,.search-card{
+  background:var(--p-surface)!important;color:var(--p-text)!important;
+  border-color:var(--p-border)!important;box-shadow:var(--p-shadow)!important;
+}
+.notice{color:var(--p-muted)!important}
+.composer textarea{background:#fafafd!important;color:var(--p-text)!important;border-color:var(--p-border)!important}
+.composer textarea::placeholder{color:#9295a0!important}
+.feed-switch{background:#fff!important}
+.feed-switch-btn{color:var(--p-muted)!important}
+.feed-switch-btn.active{background:var(--p-text)!important;color:#fff!important}
+.feed-switch-note{color:var(--p-muted)!important}
+.upload-icon,.action,.actions .action,.pill.primary{
+  border-radius:12px!important;
+}
+.upload-icon{background:#f6f6f9!important;color:var(--p-text)!important;border:1px solid var(--p-border)!important}
+#publishBtn,.composer-actions .primary{background:var(--p-pink)!important;color:#fff!important;border:0!important;box-shadow:0 6px 16px rgba(233,30,99,.22)!important}
+#myHivesBtn{background:#fff!important;color:var(--p-purple)!important;border:1px solid #ddd4ff!important}
+.userline{background:#fafafd!important;border:1px solid var(--p-border)!important;border-radius:16px!important;padding:12px!important}
+.avatar{background:linear-gradient(135deg,#fce7f3,#f3e8ff)!important;color:#7c2450!important;border:2px solid #fff!important;box-shadow:0 0 0 1px var(--p-border)!important}
+.side h3,.side strong{color:var(--p-text)!important}
+.side .file,.side p{color:var(--p-muted)!important}
+.social-stats button{background:#fff!important;color:var(--p-text)!important;border:1px solid var(--p-border)!important;border-radius:12px!important}
+.social-stats button:first-child strong{color:var(--p-pink)!important}
+.social-stats button:nth-child(2) strong{color:var(--p-blue)!important}
+
+/* Publicação: autor sempre legível e visualmente separado */
+#feed .post-card,.feed .post-card,.post{
+  background:#fff!important;color:var(--p-text)!important;border:1px solid var(--p-border)!important;
+  box-shadow:var(--p-shadow)!important;
+}
+#feed .post-card .avatar,.post-card .avatar{
+  width:48px!important;height:48px!important;min-width:48px!important;
+  border-radius:50%!important;object-fit:cover!important;
+}
+.post-card .author,.post-card .author-name,.post-card .username,.post-card .user-name,
+.post .author,.post .author-name,.post .username,.post .user-name{
+  color:var(--p-text)!important;font-weight:800!important;
+}
+.post-card .handle,.post-card .meta,.post-card .timestamp,.post .handle,.post .meta{
+  color:var(--p-muted)!important;
+}
+.post-card .author-row,.post-card .post-author,.post .author-row,.post .post-author{
+  display:flex!important;align-items:center!important;gap:10px!important;
+  background:#fff!important;border-bottom:1px solid #eeeef2!important;
+  padding:10px 2px 12px!important;margin-bottom:10px!important;
+}
+.post-card .follow,.post-card .follow-btn,.post .follow,.post .follow-btn{
+  color:var(--p-pink)!important;border:1px solid #f4b6cc!important;background:#fff!important;
+}
+.post-card .action-like,.post-card [data-action="like"],.post [data-action="like"]{color:var(--p-pink)!important}
+.post-card .action-comment,.post-card [data-action="comment"],.post [data-action="comment"]{color:var(--p-blue)!important}
+.post-card .action-share,.post-card [data-action="share"],.post [data-action="share"]{color:var(--p-purple)!important}
+
+/* Modais e busca */
+.modal-card input,.modal-card textarea,.search-card input{background:#fafafd!important;color:var(--p-text)!important;border-color:var(--p-border)!important}
+.modal-head h2,.search-head{color:var(--p-text)!important}
+.modal-close{background:#f3f4f7!important;color:var(--p-text)!important;border-color:var(--p-border)!important}
+
+/* Mobile: barra inferior branca e botões coloridos */
+@media(max-width:900px){
+ html,body{background:var(--p-bg)!important;color:var(--p-text)!important}
+ .top{background:#fff!important}
+ .nav{background:#fff!important;border:1px solid var(--p-border)!important;box-shadow:0 8px 28px rgba(20,20,30,.12)!important}
+ .nav .pill{background:#fff!important;color:var(--p-muted)!important}
+ #profileBtn{color:var(--p-pink)!important}
+ #opportunitiesBtn{color:var(--p-green)!important}
+ #walletBtn{color:var(--p-purple)!important}
+ #messagesBtn{color:var(--p-blue)!important}
+ #notificationBtn{color:var(--p-orange)!important}
+ .nav .pill:after{color:currentColor!important}
+ .composer,.card,.post-card,.notice,.feed-switch,.side{background:#fff!important}
+ .post-card .author-row,.post .author-row{background:#fff!important}
+}
