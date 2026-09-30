@@ -1,0 +1,8 @@
+/* PULSO — painel de emoções/reactions */
+.reaction-wrap{position:relative;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.reaction-picker{position:absolute;z-index:1000;left:0;bottom:calc(100% + 6px);display:none;gap:4px;padding:7px 8px;background:#fff;border:1px solid rgba(0,0,0,.12);border-radius:999px;box-shadow:0 6px 24px rgba(0,0,0,.18);white-space:nowrap}
+.reaction-picker button{border:0;background:transparent;width:34px;height:34px;padding:0;border-radius:50%;font-size:22px;line-height:34px;cursor:pointer}
+.reaction-picker button:hover{background:rgba(0,0,0,.07);transform:scale(1.12)}
+.reaction-more{cursor:pointer}
+.reaction-summary{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;font-size:13px}
+.reaction-count{white-space:nowrap}
