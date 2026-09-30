@@ -1,0 +1,6 @@
+/* PULSO — busca compacta e funcional */
+.pulso-search{display:flex!important;align-items:center!important;gap:6px!important;width:42px!important;max-width:42px!important;margin:0 8px!important;flex:0 0 42px!important}
+.pulso-search button#searchOpen{width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important;padding:0!important;margin:0!important;border:1px solid rgba(255,255,255,.12)!important;border-radius:50%!important;background:#191c24!important;color:#fff!important;font-size:16px!important;line-height:38px!important;display:grid!important;place-items:center!important;cursor:pointer!important;box-shadow:none!important}
+.pulso-search button#searchOpen:hover{background:#232733!important;border-color:rgba(255,255,255,.22)!important;transform:translateY(-1px)}
+.pulso-search input#searchQuick{display:none!important}
+@media(max-width:900px){.pulso-search{width:38px!important;max-width:38px!important;flex-basis:38px!important;margin:0 2px!important}.pulso-search button#searchOpen{width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important;font-size:15px!important;line-height:36px!important}}
