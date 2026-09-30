@@ -6,3 +6,6 @@
 .reaction-more{cursor:pointer}
 .reaction-summary{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;font-size:13px}
 .reaction-count{white-space:nowrap}
+
+/* Fallback visual: tapping/focusing Reagir also opens the picker even if an older JS bundle is cached. */
+.reaction-wrap:focus-within .reaction-picker{display:flex !important}
