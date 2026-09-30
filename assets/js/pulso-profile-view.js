@@ -6,6 +6,7 @@ async function openProfile(targetId=null){
  if(!user){location.href='entrar.html?next=app';return}
  const id=targetId||user.id;
  let m=document.getElementById('pulsoProfileView');
+ if(m&&!m.querySelector('#ppBody')){m.remove();m=null;}
  if(!m){
   m=document.createElement('div');m.id='pulsoProfileView';
   m.style.cssText='position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.86);overflow:auto;padding:18px;box-sizing:border-box';
