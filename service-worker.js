@@ -1,4 +1,4 @@
-const CACHE = 'pulso-pwa-v5';
+const CACHE = 'pulso-pwa-v6';
 const APP_SHELL = [
   '/pulso/',
   '/pulso/index.html',
