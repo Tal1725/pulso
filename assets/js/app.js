@@ -1,7 +1,7 @@
 import{createClient}from'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/+esm';
 
 const SUPABASE_URL='https://vqpavcyehgdifbtvzhcn.supabase.co';
-const SUPABASE_KEY='sb_publishable_915zO84'+'7fk0ZAjE4vdsFQ_yRWDA6Cm';
+const SUPABASE_KEY='sb_publishable_915zO84U7fk0ZAjE4vdsFQ_yRWDA6Cm';
 const supabase=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 window.supabase=supabase;
 const $=s=>document.querySelector(s);
