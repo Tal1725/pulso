@@ -74,3 +74,15 @@ body{background:linear-gradient(180deg,#fafbfe 0,#f3f5f9 100%)!important}
  .composer{margin-top:2px!important}
  .post .video{max-height:68vh!important}
 }
+
+/* STAGE 2 — navigation actions */
+#opportunitiesModal,#messagesModal,#notificationModal,#socialModal,#searchModal{z-index:2147483000!important}
+#opportunitiesModal[hidden],#messagesModal[hidden],#notificationModal[hidden],#socialModal[hidden],#searchModal[hidden]{display:none!important}
+body.pulso-admin-user #adminBtn{display:flex!important}
+@media(max-width:900px){
+  body.pulso-admin-user .nav{grid-template-columns:repeat(6,1fr)!important}
+  body.pulso-admin-user .nav .pill{font-size:0!important}
+  body.pulso-admin-user #adminBtn:before{content:"📊"!important;font-size:18px!important;line-height:20px!important}
+  body.pulso-admin-user #adminBtn:after{content:"Painel"!important;font-size:8px!important;line-height:10px!important;color:#7447e8!important}
+  body.pulso-admin-user #logoutBtn{display:none!important}
+}
