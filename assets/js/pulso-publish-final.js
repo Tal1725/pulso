@@ -90,6 +90,7 @@
     const captionEl = $('#caption');
     const videoEl = $('#video');
     const photoEl = $('#photoInput');
+    const cameraVideoEl = $('#cameraVideoInput');
     const audioEl = $('#audioInput');
 
     const caption = captionEl && captionEl.value ? captionEl.value.trim() : '';
@@ -97,6 +98,7 @@
     let file = (approved && approved.file) ||
       (videoEl && videoEl.files && videoEl.files[0]) ||
       (photoEl && photoEl.files && photoEl.files[0]) ||
+      (cameraVideoEl && cameraVideoEl.files && cameraVideoEl.files[0]) ||
       (audioEl && audioEl.files && audioEl.files[0]);
 
     if (!file && !caption) {
@@ -204,7 +206,7 @@
 
       window.pulsoApprovedMedia = null;
 
-      ['caption', 'video', 'photoInput', 'audioInput'].forEach((id) => {
+      ['caption', 'video', 'photoInput', 'cameraVideoInput', 'audioInput'].forEach((id) => {
         const el = $('#' + id);
         if (el) el.value = '';
       });
@@ -228,6 +230,18 @@
 
   function bind() {
     const button = ensureComposer();
+    const photo = $('#photoInput');
+    const cameraVideo = $('#cameraVideoInput');
+    const photoBtn = document.querySelector('[data-camera-photo]');
+    const videoBtn = document.querySelector('[data-camera-video]');
+    if (photoBtn && photo && !photoBtn.dataset.pulsoCameraBound) {
+      photoBtn.dataset.pulsoCameraBound = '1';
+      photoBtn.addEventListener('click', () => photo.click());
+    }
+    if (videoBtn && cameraVideo && !videoBtn.dataset.pulsoCameraBound) {
+      videoBtn.dataset.pulsoCameraBound = '1';
+      videoBtn.addEventListener('click', () => cameraVideo.click());
+    }
     if (!button || button.dataset.pulsoV14) return;
     button.dataset.pulsoV14 = '1';
     button.addEventListener('click', (event) => {
