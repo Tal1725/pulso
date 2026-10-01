@@ -163,3 +163,92 @@ body{background-attachment:fixed!important}
  .nav #messagesBtn:after{color:#45cddd!important}.nav #notificationBtn:after{color:#ff70a9!important}
  .nav #adminBtn:after{color:#ffb52e!important}
 }
+
+
+/* STAGE 20 — PULSO FUTURE / identidade visual */
+:root{
+ --pf-bg:#070914;--pf-bg2:#0c1020;--pf-panel:rgba(18,22,40,.72);
+ --pf-line:rgba(151,122,255,.20);--pf-text:#f8f9ff;--pf-muted:#929ab2;
+ --pf-pink:#ff3d9a;--pf-violet:#7c5cff;--pf-cyan:#26d9e8;--pf-blue:#4b8cff;--pf-orange:#ffad32;
+}
+html,body{
+ background:
+ radial-gradient(900px 520px at 8% -5%,rgba(124,92,255,.24),transparent 60%),
+ radial-gradient(760px 500px at 92% 8%,rgba(255,61,154,.16),transparent 58%),
+ radial-gradient(700px 500px at 50% 100%,rgba(38,217,232,.08),transparent 60%),
+ linear-gradient(135deg,#050711 0%,#0a0d1a 48%,#090b15 100%)!important;
+ color:var(--pf-text)!important;
+}
+body:before{
+ content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;
+ background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
+ background-size:42px 42px;mask-image:linear-gradient(to bottom,rgba(0,0,0,.65),transparent 75%);
+}
+.top{
+ background:rgba(7,9,20,.72)!important;border-bottom:1px solid rgba(124,92,255,.20)!important;
+ box-shadow:0 8px 45px rgba(0,0,0,.38)!important;backdrop-filter:blur(22px)!important;
+}
+.brand{filter:drop-shadow(0 0 14px rgba(255,61,154,.25))}.brand span{color:#fff!important}
+.pulso-search{filter:drop-shadow(0 8px 25px rgba(0,0,0,.20))}
+.pulso-search input{
+ background:rgba(255,255,255,.045)!important;border:1px solid rgba(124,92,255,.22)!important;
+ color:#fff!important;box-shadow:inset 0 0 20px rgba(124,92,255,.035)!important;
+}
+.pulso-search button{background:rgba(22,26,48,.85)!important;color:#fff!important;border:1px solid rgba(124,92,255,.24)!important}
+.nav .pill{
+ background:rgba(22,26,48,.76)!important;color:#eef1ff!important;
+ border:1px solid rgba(124,92,255,.17)!important;box-shadow:inset 0 1px rgba(255,255,255,.05),0 5px 18px rgba(0,0,0,.16)!important;
+}
+.nav .pill:hover{transform:translateY(-1px);border-color:rgba(124,92,255,.45)!important;box-shadow:0 0 24px rgba(124,92,255,.12)!important}
+#profileBtn{background:rgba(28,33,56,.88)!important}
+#opportunitiesBtn{background:linear-gradient(135deg,#ff2d88,#ff6a68)!important;box-shadow:0 0 22px rgba(255,45,136,.18)!important}
+#walletBtn{background:linear-gradient(135deg,#6b4dff,#3d9cff)!important;box-shadow:0 0 22px rgba(75,140,255,.18)!important}
+#messagesBtn{background:linear-gradient(135deg,#087f9c,#24dbe6)!important;box-shadow:0 0 22px rgba(38,217,232,.15)!important}
+#notificationBtn{background:linear-gradient(135deg,#9b35ff,#ff3d9a)!important;box-shadow:0 0 22px rgba(255,61,154,.18)!important}
+#adminBtn{background:linear-gradient(135deg,#ffb32e,#ff6b35)!important;box-shadow:0 0 24px rgba(255,143,45,.18)!important}
+.wrap{max-width:1240px!important}
+.notice,.composer,.feed-switch,.post,.side{
+ background:var(--pf-panel)!important;color:var(--pf-text)!important;
+ border:1px solid rgba(124,92,255,.17)!important;box-shadow:0 20px 65px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.035)!important;
+ backdrop-filter:blur(18px)!important;
+}
+.notice{border-left:3px solid var(--pf-cyan)!important}
+.composer textarea{
+ background:rgba(5,8,18,.72)!important;color:#fff!important;border:1px solid rgba(124,92,255,.20)!important;
+ box-shadow:inset 0 0 35px rgba(124,92,255,.035)!important;
+}
+.upload-icon{background:rgba(28,33,56,.75)!important;color:#eaf0ff!important;border-color:rgba(124,92,255,.18)!important}
+.upload-icon:hover{border-color:rgba(38,217,232,.45)!important;box-shadow:0 0 20px rgba(38,217,232,.10)!important}
+.feed-switch{background:rgba(14,18,34,.76)!important}
+.feed-switch-btn{color:#9fa8c0!important}
+.feed-switch-btn.active{background:linear-gradient(135deg,#ff3d9a,#7c5cff)!important;box-shadow:0 0 25px rgba(124,92,255,.22)!important}
+.feed-switch-note,.side p,.posthead .meta span{color:var(--pf-muted)!important}
+.post{overflow:hidden!important}
+.posthead{background:transparent!important}
+.posthead strong,.side h3,.post .caption{color:#f8f9ff!important}
+.posthead .avatar{background:linear-gradient(135deg,#ff3d9a,#7c5cff)!important;box-shadow:0 0 20px rgba(124,92,255,.22)!important}
+.post .video{background:#03050c!important}
+.actions .action{
+ background:rgba(27,32,53,.78)!important;color:#edf1ff!important;border-color:rgba(124,92,255,.16)!important;
+}
+.actions .action:hover{border-color:rgba(38,217,232,.40)!important;box-shadow:0 0 18px rgba(38,217,232,.08)!important}
+.actions .action.active{background:linear-gradient(135deg,rgba(255,61,154,.18),rgba(124,92,255,.20))!important;color:#ff72b5!important;border-color:rgba(255,61,154,.34)!important}
+.follow-action{background:linear-gradient(135deg,#ff3d9a,#7c5cff)!important;color:#fff!important;border:0!important}
+.comments{background:rgba(8,11,21,.62)!important;border-color:rgba(124,92,255,.12)!important}
+.commentbox input{background:rgba(20,25,43,.86)!important;color:#fff!important;border-color:rgba(124,92,255,.18)!important}
+.modal{background:rgba(2,4,10,.70)!important;backdrop-filter:blur(16px)!important}
+.modal-card,.search-card{
+ background:linear-gradient(145deg,rgba(20,24,43,.97),rgba(10,13,25,.97))!important;color:#fff!important;
+ border:1px solid rgba(124,92,255,.25)!important;box-shadow:0 30px 100px rgba(0,0,0,.55),0 0 45px rgba(124,92,255,.08)!important;
+}
+.modal-card input,.modal-card textarea,.search-card input{background:#0b0f1c!important;color:#fff!important;border-color:rgba(124,92,255,.20)!important}
+#pulsoProfileView{background:rgba(2,4,10,.72)!important;backdrop-filter:blur(16px)!important}
+#pulsoProfileView>div{background:linear-gradient(145deg,#151a2d,#0b0f1c)!important;color:#fff!important;border-color:rgba(124,92,255,.24)!important}
+@media(max-width:900px){
+ .nav{background:rgba(8,11,22,.94)!important;border-color:rgba(124,92,255,.25)!important;box-shadow:0 12px 45px rgba(0,0,0,.50),0 0 25px rgba(124,92,255,.08)!important;backdrop-filter:blur(22px)!important}
+ .nav .pill{background:transparent!important}
+ .nav #opportunitiesBtn:after{color:#ff67ac!important}.nav #walletBtn:after{color:#917cff!important}
+ .nav #messagesBtn:after{color:#42dce7!important}.nav #notificationBtn:after{color:#ff70b0!important}.nav #adminBtn:after{color:#ffc05a!important}
+ .wrap{padding-top:78px!important}
+ .post{border-radius:22px!important}
+}
