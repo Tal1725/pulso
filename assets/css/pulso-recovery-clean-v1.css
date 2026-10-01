@@ -123,3 +123,43 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
   #adminBtn:after{content:"Painel"!important;font-size:8px!important;line-height:11px!important;color:#d97800!important}
   #logoutBtn{display:none!important}
 }
+
+
+/* STAGE 19 — PULSO cinematic visual */
+:root{
+ --pulso-bg:#0b0d16;--pulso-surface:#141827;--pulso-surface-2:#1b2030;
+ --pulso-text:#f7f8ff;--pulso-muted:#a5adc0;--pulso-line:rgba(255,255,255,.10);
+}
+html,body{background:radial-gradient(circle at 50% -10%,#25203b 0,#101320 42%,#080a10 100%)!important;color:#f7f8ff!important}
+body{background-attachment:fixed!important}
+.top{background:rgba(11,13,22,.82)!important;border-bottom:1px solid rgba(255,255,255,.09)!important;box-shadow:0 8px 30px rgba(0,0,0,.28)!important}
+.brand span{color:#fff!important}.pulso-search input{background:rgba(255,255,255,.07)!important;border-color:rgba(255,255,255,.12)!important;color:#fff!important}
+.pulso-search button{background:#171b29!important;border-color:rgba(255,255,255,.12)!important;color:#fff!important}
+.nav .pill{background:#171b29!important;color:#eef1f8!important;border-color:rgba(255,255,255,.10)!important}
+#profileBtn{background:#202536!important;color:#f2f4fa!important}
+#opportunitiesBtn{background:linear-gradient(135deg,#ff3f8e,#ff6b5b)!important}
+#walletBtn{background:linear-gradient(135deg,#7657ff,#438bff)!important}
+#messagesBtn{background:linear-gradient(135deg,#0d8fa8,#18b7c7)!important;color:#fff!important}
+#notificationBtn{background:linear-gradient(135deg,#d92b72,#f05a9b)!important;color:#fff!important}
+#adminBtn{background:linear-gradient(135deg,#ffb52e,#ff7a00)!important;color:#fff!important}
+.wrap{max-width:1180px!important}
+.notice,.composer,.feed-switch,.post,.side{background:rgba(20,24,39,.94)!important;color:#f7f8ff!important;border-color:rgba(255,255,255,.10)!important;box-shadow:0 18px 50px rgba(0,0,0,.28)!important}
+.composer textarea{background:#0f1320!important;color:#fff!important;border-color:rgba(255,255,255,.10)!important}
+.upload-icon{background:#1b2030!important;color:#e9edf7!important;border-color:rgba(255,255,255,.10)!important}
+.feed-switch-btn{color:#aab2c4!important}.feed-switch-btn.active{background:linear-gradient(135deg,#ee3f91,#7457e8)!important}
+.feed-switch-note,.side p,.posthead .meta span{color:#9da6ba!important}
+.posthead strong,.side h3,.post .caption{color:#f7f8ff!important}
+.post .video{background:#080b12!important}
+.actions .action{background:#1d2332!important;color:#edf0f7!important;border-color:rgba(255,255,255,.10)!important}
+.actions .action.active{background:linear-gradient(135deg,rgba(238,63,145,.22),rgba(116,87,232,.24))!important;color:#ff72ad!important;border-color:rgba(238,63,145,.35)!important}
+.comments{background:#101521!important;border-color:rgba(255,255,255,.08)!important}
+.commentbox input{background:#171c2a!important;color:#fff!important;border-color:rgba(255,255,255,.10)!important}
+.modal-card,.search-card{background:#141827!important;color:#fff!important;border-color:rgba(255,255,255,.12)!important}
+.modal-card input,.modal-card textarea,.search-card input{background:#0f1320!important;color:#fff!important;border-color:rgba(255,255,255,.10)!important}
+@media(max-width:900px){
+ .nav{background:rgba(17,20,31,.97)!important;border-color:rgba(255,255,255,.10)!important}
+ .nav .pill{background:transparent!important;color:#aab2c4!important}
+ .nav #opportunitiesBtn:after{color:#ff6fa9!important}.nav #walletBtn:after{color:#8e79ff!important}
+ .nav #messagesBtn:after{color:#45cddd!important}.nav #notificationBtn:after{color:#ff70a9!important}
+ .nav #adminBtn:after{color:#ffb52e!important}
+}
