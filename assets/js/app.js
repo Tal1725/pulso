@@ -66,6 +66,32 @@ async function ensureOwnProfile(firebaseUser){
   return profile;
 }
 
+async function ensureLegacyPosts(firebaseUser){
+  const legacy=window.PULSO_LEGACY_POSTS||[];
+  if(!legacy.length)return;
+  let imported=0;
+  for(const row of legacy){
+    const [legacyId,legacyUserId,src,caption,createdAt,mediaType,parentLegacyId]=row;
+    const ref=doc(db,"posts",legacyId);
+    const existing=await getDoc(ref);
+    if(existing.exists())continue;
+    await setDoc(ref,{
+      user_id:firebaseUser.uid,
+      legacy_user_id:legacyUserId,
+      legacy_post_id:legacyId,
+      legacy_parent_post_id:parentLegacyId||null,
+      caption:caption||"",
+      media_type:mediaType||"text",
+      media_url:src||null,
+      video_url:mediaType==="video"?(src||null):null,
+      media_provider:src?"legacy_supabase":"legacy_text",
+      created_at:createdAt
+    });
+    imported++;
+  }
+  if(imported)console.info("[PULSO] publicações históricas registradas:",imported);
+}
+
 async function initForUser(firebaseUser){
   user=firebaseUser;
   const adminBtn=$("#adminBtn");
@@ -78,6 +104,7 @@ async function initForUser(firebaseUser){
   }
   const notice=$("#notice");if(notice)notice.textContent="Você está dentro do PULSO. Carregando publicações...";
   await refreshFollowing();
+  await ensureLegacyPosts(user);
   await loadFeed();
   await loadSocialStats();
 }
