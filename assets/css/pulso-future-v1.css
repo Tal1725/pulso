@@ -1,0 +1,26 @@
+/* PULSO FUTURE — standalone visual layer */
+*{box-sizing:border-box}
+html,body{margin:0!important;min-height:100%;background:#050711!important;color:#f7f9ff!important;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{background:radial-gradient(900px 500px at 15% -5%,rgba(124,92,255,.28),transparent 60%),radial-gradient(800px 500px at 95% 5%,rgba(255,45,136,.20),transparent 58%),linear-gradient(145deg,#04050b,#0a0e1d 55%,#070912)!important}
+.top{position:sticky!important;top:0;z-index:1000!important;background:rgba(5,7,17,.78)!important;border-bottom:1px solid rgba(125,100,255,.24)!important;backdrop-filter:blur(24px)!important;box-shadow:0 10px 40px rgba(0,0,0,.38)!important}
+.topin{max-width:1240px!important}
+.brand span{color:#fff!important;text-shadow:0 0 20px rgba(255,61,154,.28)}
+.nav .pill{border:1px solid rgba(255,255,255,.09)!important;background:rgba(22,27,48,.82)!important;color:#f4f6ff!important;box-shadow:0 6px 24px rgba(0,0,0,.22)!important}
+#opportunitiesBtn{background:linear-gradient(135deg,#ff277f,#ff695f)!important}
+#walletBtn{background:linear-gradient(135deg,#694bff,#398eff)!important}
+#messagesBtn{background:linear-gradient(135deg,#087f9f,#22d7e4)!important}
+#notificationBtn{background:linear-gradient(135deg,#873cff,#f23d9c)!important}
+#adminBtn{background:linear-gradient(135deg,#ffb32c,#ff7137)!important}
+.wrap{max-width:1240px!important}
+.notice,.composer,.feed-switch,.post,.side{background:rgba(15,20,37,.78)!important;border:1px solid rgba(126,100,255,.18)!important;color:#f7f9ff!important;box-shadow:0 22px 70px rgba(0,0,0,.30)!important;backdrop-filter:blur(18px)!important}
+.composer textarea,.commentbox input,.pulso-search input{background:rgba(5,8,18,.82)!important;color:#fff!important;border:1px solid rgba(126,100,255,.22)!important}
+.feed-switch-btn{color:#9da7bf!important}.feed-switch-btn.active{background:linear-gradient(135deg,#ff3d9a,#765cff)!important;color:#fff!important;box-shadow:0 0 28px rgba(118,92,255,.22)!important}
+.posthead strong,.post .caption,.side h3{color:#fff!important}.posthead .meta span,.side p,.feed-switch-note{color:#929bb2!important}
+.post .video{background:#02040a!important}
+.actions .action{background:rgba(25,31,51,.86)!important;color:#edf1ff!important;border:1px solid rgba(255,255,255,.08)!important}
+.actions .action.active{background:linear-gradient(135deg,rgba(255,61,154,.22),rgba(118,92,255,.25))!important;color:#ff72b5!important}
+.follow-action{background:linear-gradient(135deg,#ff3d9a,#745cff)!important;color:#fff!important;border:0!important}
+.modal{background:rgba(0,2,8,.72)!important;backdrop-filter:blur(18px)!important}
+.modal-card,.search-card{background:linear-gradient(145deg,#151a30,#090d19)!important;color:#fff!important;border:1px solid rgba(126,100,255,.25)!important;box-shadow:0 30px 100px rgba(0,0,0,.58)!important}
+.modal-card input,.modal-card textarea,.search-card input{background:#090d19!important;color:#fff!important;border-color:rgba(126,100,255,.20)!important}
+@media(max-width:900px){.nav{background:rgba(6,9,19,.96)!important;border:1px solid rgba(126,100,255,.25)!important;backdrop-filter:blur(22px)!important}.nav .pill{background:transparent!important}.wrap{padding-top:74px!important}}
