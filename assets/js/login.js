@@ -1,15 +1,114 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/+esm';
-const supabase=createClient('https://vqpavcyehgdifbtvzhcn.supabase.co','sb_publishable_915zO84U7fk0ZAjE4vdsFQ_yRWDA6Cm',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-const form=document.getElementById('loginForm'),msg=document.getElementById('message'),btn=document.getElementById('submitBtn');
-const forgotLink=document.getElementById('forgotLink'),socialLogin=document.getElementById('socialLogin'),loginDivider=document.getElementById('loginDivider'),authTitle=document.getElementById('authTitle'),authSubtitle=document.getElementById('authSubtitle');
-const emailTab=document.getElementById('emailTab'),phoneTab=document.getElementById('phoneTab'),label=document.getElementById('identifierLabel'),identifier=document.getElementById('identifier');
-let method='email';
-function show(t,c='error'){msg.textContent=t;msg.className=`message show ${c}`}
-function normalizePhone(v){const d=v.replace(/\D/g,'');return d.startsWith('55')?`+${d}`:`+55${d}`}
-function getRecoveryRedirect(){const production='https://tal1725.github.io/pulso/entrar.html';return window.location.hostname==='tal1725.github.io'?production:`${window.location.origin}${window.location.pathname}`}
-function setMethod(next){method=next;const phone=next==='phone';emailTab.classList.toggle('active',!phone);phoneTab.classList.toggle('active',phone);label.textContent=phone?'Celular':'E-mail';identifier.type=phone?'tel':'email';identifier.inputMode=phone?'tel':'email';identifier.autocomplete=phone?'tel':'username';identifier.placeholder=phone?'(12) 99999-9999':'voce@email.com';identifier.value='';forgotLink.textContent=phone?'Esqueci minha senha por celular':'Esqueci minha senha';identifier.focus()}
-emailTab.addEventListener('click',()=>setMethod('email'));phoneTab.addEventListener('click',()=>setMethod('phone'));
-form.addEventListener('submit',async e=>{e.preventDefault();btn.disabled=true;btn.textContent='Entrando...';try{const value=identifier.value.trim();const password=document.getElementById('password').value;if(!value)throw new Error(method==='phone'?'Digite seu celular.':'Digite seu e-mail.');const payload=method==='phone'?{phone:normalizePhone(value),password}:{email:value.toLowerCase(),password};const {error}=await supabase.auth.signInWithPassword(payload);if(error)throw error;location.href='app.html'}catch(err){show(err.message==='Invalid login credentials'?'E-mail/celular ou senha incorretos.':(err.message||'Não foi possível entrar agora.'));btn.disabled=false;btn.textContent='Entrar'}});
-forgotLink.addEventListener('click',async e=>{e.preventDefault();if(method==='phone'){show('A recuperação por celular exige código SMS. O cadastro por celular também precisa do provedor SMS do PULSO configurado no Supabase.');return}const email=identifier.value.trim().toLowerCase();if(!email){show('Digite seu e-mail acima para receber o link de recuperação.');identifier.focus();return}forgotLink.textContent='Enviando...';try{const redirectTo=getRecoveryRedirect();const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo});if(error)throw error;show('Se este e-mail estiver cadastrado, enviaremos um link para redefinir sua senha. Verifique sua caixa de entrada e o spam.','success')}catch(err){show(err.message||'Não foi possível enviar o link de recuperação.')}finally{forgotLink.textContent='Esqueci minha senha'}});
-function showRecoveryForm(){authTitle.textContent='Criar nova senha';authSubtitle.textContent='Digite uma nova senha para recuperar seu acesso ao PULSO.';socialLogin.classList.add('hidden');loginDivider.classList.add('hidden');forgotLink.classList.add('hidden');document.getElementById('authTabs').classList.add('hidden');form.innerHTML=`<div class="field"><label for="newPassword">Nova senha</label><input id="newPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="Mínimo de 8 caracteres"></div><div class="field"><label for="confirmPassword">Confirmar nova senha</label><input id="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="Digite novamente a senha"></div><button class="btn" id="recoveryBtn">Salvar nova senha</button><div class="message" id="message" role="status"></div>`;const recoveryBtn=document.getElementById('recoveryBtn'),recoveryMsg=document.getElementById('message');form.addEventListener('submit',async e=>{e.preventDefault();const p=document.getElementById('newPassword').value,c=document.getElementById('confirmPassword').value;if(p.length<8){recoveryMsg.textContent='A senha deve ter pelo menos 8 caracteres.';recoveryMsg.className='message show error';return}if(p!==c){recoveryMsg.textContent='As senhas não coincidem.';recoveryMsg.className='message show error';return}recoveryBtn.disabled=true;recoveryBtn.textContent='Salvando...';const {error}=await supabase.auth.updateUser({password:p});if(error){recoveryMsg.textContent=error.message||'Não foi possível alterar a senha.';recoveryMsg.className='message show error';recoveryBtn.disabled=false;recoveryBtn.textContent='Salvar nova senha';return}recoveryMsg.textContent='Senha alterada com sucesso! Redirecionando...';recoveryMsg.className='message show success';setTimeout(()=>{location.href='app.html'},1200)},{once:true})}
-supabase.auth.onAuthStateChange(event=>{if(event==='PASSWORD_RECOVERY')showRecoveryForm()});
+import {
+  auth,
+  authErrorMessage,
+  sendPasswordResetEmail,
+  signInEmail,
+  signOut,
+  verifyPasswordResetCode,
+  confirmPasswordReset
+} from "./firebase-auth.js";
+
+const form=document.getElementById("loginForm");
+const msg=document.getElementById("message");
+const btn=document.getElementById("submitBtn");
+const forgotLink=document.getElementById("forgotLink");
+const socialLogin=document.getElementById("socialLogin");
+const loginDivider=document.getElementById("loginDivider");
+const authTitle=document.getElementById("authTitle");
+const authSubtitle=document.getElementById("authSubtitle");
+const emailTab=document.getElementById("emailTab");
+const phoneTab=document.getElementById("phoneTab");
+const label=document.getElementById("identifierLabel");
+const identifier=document.getElementById("identifier");
+
+let method="email";
+let resetCode=null;
+
+function show(t,c="error"){msg.textContent=t;msg.className=`message show ${c}`;}
+
+function setMethod(next){
+  method=next;
+  const phone=next==="phone";
+  emailTab.classList.toggle("active",!phone);
+  phoneTab.classList.toggle("active",phone);
+  label.textContent=phone?"Celular":"E-mail";
+  identifier.type=phone?"tel":"email";
+  identifier.inputMode=phone?"tel":"email";
+  identifier.autocomplete=phone?"tel":"username";
+  identifier.placeholder=phone?"(12) 99999-9999":"voce@email.com";
+  identifier.value="";
+  forgotLink.textContent=phone?"Recuperação por celular ainda não está habilitada":"Esqueci minha senha";
+  identifier.focus();
+}
+
+emailTab?.addEventListener("click",()=>setMethod("email"));
+phoneTab?.addEventListener("click",()=>show("O login por celular será ativado quando configurarmos o provedor SMS do Firebase."));
+
+form?.addEventListener("submit",async e=>{
+  e.preventDefault();
+  if(method==="phone"){show("O login por celular ainda não está habilitado no Firebase.");return;}
+  btn.disabled=true;btn.textContent="Entrando...";
+  try{
+    const value=identifier.value.trim();
+    const password=document.getElementById("password").value;
+    if(!value)throw new Error("Digite seu e-mail.");
+    if(!password)throw new Error("Digite sua senha.");
+    const result=await signInEmail(value,password);
+    if(!result.user.emailVerified){
+      await signOut(auth);
+      show("Seu e-mail ainda não foi confirmado. Verifique sua caixa de entrada e o spam.");
+      return;
+    }
+    location.href="app.html";
+  }catch(err){
+    show(authErrorMessage(err));
+  }finally{
+    btn.disabled=false;btn.textContent="Entrar";
+  }
+});
+
+forgotLink?.addEventListener("click",async e=>{
+  e.preventDefault();
+  if(method==="phone"){show("A recuperação por celular será adicionada quando configurarmos o SMS do Firebase.");return;}
+  const email=identifier.value.trim().toLowerCase();
+  if(!email){show("Digite seu e-mail acima para receber o link de recuperação.");identifier.focus();return;}
+  forgotLink.textContent="Enviando...";
+  try{
+    await sendPasswordResetEmail(auth,email,{url:"https://tal1725.github.io/pulso/entrar.html"});
+    show("Se este e-mail estiver cadastrado, enviaremos um link para redefinir sua senha. Verifique também o spam.","success");
+  }catch(err){show(authErrorMessage(err));}
+  finally{forgotLink.textContent="Esqueci minha senha";}
+});
+
+function showRecoveryForm(){
+  authTitle.textContent="Criar nova senha";
+  authSubtitle.textContent="Digite uma nova senha para recuperar seu acesso ao PULSO.";
+  socialLogin?.classList.add("hidden");loginDivider?.classList.add("hidden");forgotLink?.classList.add("hidden");document.getElementById("authTabs")?.classList.add("hidden");
+  form.innerHTML=`<div class="field"><label for="newPassword">Nova senha</label><input id="newPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="Mínimo de 8 caracteres"></div><div class="field"><label for="confirmPassword">Confirmar nova senha</label><input id="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="Digite novamente a senha"></div><button class="btn" id="recoveryBtn">Salvar nova senha</button><div class="message" id="message" role="status"></div>`;
+  const recoveryBtn=document.getElementById("recoveryBtn"),recoveryMsg=document.getElementById("message");
+  form.addEventListener("submit",async e=>{
+    e.preventDefault();
+    const p=document.getElementById("newPassword").value,c=document.getElementById("confirmPassword").value;
+    if(p.length<8){recoveryMsg.textContent="A senha deve ter pelo menos 8 caracteres.";recoveryMsg.className="message show error";return;}
+    if(p!==c){recoveryMsg.textContent="As senhas não coincidem.";recoveryMsg.className="message show error";return;}
+    recoveryBtn.disabled=true;recoveryBtn.textContent="Salvando...";
+    try{
+      if(resetCode)await confirmPasswordReset(auth,resetCode,p);
+      else throw new Error("Link de recuperação inválido ou expirado.");
+      recoveryMsg.textContent="Senha alterada com sucesso! Redirecionando...";
+      recoveryMsg.className="message show success";
+      history.replaceState({},document.title,location.pathname);
+      setTimeout(()=>location.href="entrar.html",1200);
+    }catch(err){recoveryMsg.textContent=authErrorMessage(err);recoveryMsg.className="message show error";recoveryBtn.disabled=false;recoveryBtn.textContent="Salvar nova senha";}
+  },{once:true});
+}
+
+async function handleRecovery(){
+  const params=new URLSearchParams(location.search);
+  if(params.get("mode")!=="resetPassword")return;
+  resetCode=params.get("oobCode");
+  if(!resetCode){show("Link de recuperação inválido.");return;}
+  try{await verifyPasswordResetCode(auth,resetCode);showRecoveryForm();}
+  catch(err){show(authErrorMessage(err));}
+}
+handleRecovery();
