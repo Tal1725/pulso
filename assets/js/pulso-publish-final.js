@@ -1,4 +1,4 @@
-/* PULSO — PUBLICADOR V14 — publicação sem recarregar a página */
+/* PULSO — PUBLICADOR V16 — publicação sem recarregar a página */
 (() => {
   'use strict';
 
@@ -18,38 +18,13 @@
     el.style.color = error ? '#ff6b6b' : '';
   }
 
-  function ensureComposer() {
-    let composer = document.querySelector('.composer');
-    const section = document.querySelector('main .grid section');
-
-    if (!composer && section) {
-      composer = document.createElement('div');
-      composer.className = 'composer';
-      composer.innerHTML =
-        '<textarea id="caption" maxlength="500" placeholder="O que está acontecendo agora?"></textarea>' +
-        '<div class="row">' +
-        '<label class="upload-icon">🎥<span>Vídeo</span><input id="video" type="file" accept="video/*"></label>' +
-        '<label class="upload-icon">📸<span>Foto</span><input id="photoInput" type="file" accept="image/*"></label>' +
-        '<label class="upload-icon">🎧<span>Áudio</span><input id="audioInput" type="file" accept="audio/*"></label>' +
-        '<button class="pill primary" id="publishBtn" type="button">Publicar</button>' +
-        '</div><div id="publishMsg" class="file"></div>';
-      section.prepend(composer);
-    }
-
-    if (composer) {
-      composer.hidden = false;
-      composer.style.display = 'block';
-      composer.style.visibility = 'visible';
-      composer.style.opacity = '1';
-    }
-
+  function getComposerButton() {
+    const composer = document.querySelector('.composer');
+    if (!composer) return null;
     const button = $('#publishBtn');
-    if (button) {
-      button.hidden = false;
-      button.style.display = 'inline-flex';
-      button.style.visibility = 'visible';
-      button.style.opacity = '1';
-    }
+    if (!button) return null;
+    button.hidden = false;
+    button.disabled = false;
     return button;
   }
 
@@ -84,7 +59,7 @@
   async function publish() {
     if (publishing) return;
 
-    const button = ensureComposer();
+    const button = getComposerButton();
     if (!button) return;
 
     const captionEl = $('#caption');
@@ -226,10 +201,10 @@
   }
 
   window.pulsoPublish = publish;
-  window.pulsoPublisherVersion = 'v15';
+  window.pulsoPublisherVersion = 'v16';
 
   function bind() {
-    const button = ensureComposer();
+    const button = getComposerButton();
     const photo = $('#photoInput');
     const cameraVideo = $('#cameraVideoInput');
     const photoBtn = document.querySelector('[data-camera-photo]');
@@ -242,8 +217,8 @@
       videoBtn.dataset.pulsoCameraBound = '1';
       videoBtn.addEventListener('click', () => cameraVideo.click());
     }
-    if (!button || button.dataset.pulsoV14) return;
-    button.dataset.pulsoV14 = '1';
+    if (!button || button.dataset.pulsoV16) return;
+    button.dataset.pulsoV16 = '1';
     button.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
@@ -257,20 +232,6 @@
     bind();
   }
 
-  if (!window.__pulsoPublishCapture) {
-    window.__pulsoPublishCapture = true;
-    document.addEventListener('click', (event) => {
-      const target = event.target;
-      const button = target && target.closest ? target.closest('#publishBtn') : null;
-      if (!button) return;
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      publish();
-    }, true);
-  }
-
-  new MutationObserver(bind).observe(document.documentElement, {
-    childList: true,
-    subtree: true
-  });
+  // O compositor é parte fixa do app.html; não recriamos a interface nem capturamos cliques globalmente.
+  document.addEventListener('pulso-composer-ready', bind);
 })();
