@@ -95,7 +95,7 @@ async function ensureLegacyPosts(firebaseUser){
 async function initForUser(firebaseUser){
   user=firebaseUser;
   const adminBtn=$("#adminBtn");
-  if(adminBtn&&(user.email||"").toLowerCase()==="ayslan.tal@gmail.com")adminBtn.hidden=false;
+  if(adminBtn&&(user.email||"").toLowerCase()==="ayslan.tal@gmail.com"){adminBtn.hidden=false;localStorage.setItem("pulso_admin_migration","1");document.getElementById("legacyMediaBox")?.removeAttribute("hidden");}
   const p=await ensureOwnProfile(user);
   if(p){
     $("#name")?.replaceChildren(document.createTextNode(p.display_name||user.email||"Membro PULSO"));
