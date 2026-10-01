@@ -104,7 +104,6 @@ async function initForUser(firebaseUser){
   }
   const notice=$("#notice");if(notice)notice.textContent="Você está dentro do PULSO. Carregando publicações...";
   await refreshFollowing();
-  await ensureLegacyPosts(user);
   await loadFeed();
   await loadSocialStats();
 }
@@ -150,7 +149,13 @@ async function loadFeed(){
       postSnap=await getDocs(query(collection(db,"posts"),limit(100)));
     }
     let posts=postSnap.docs.map(d=>({id:d.id,...d.data()}))
-    .filter(p=>!p.legacy_post_id && p.media_provider!=="legacy_supabase");
+    .filter(p=>{
+      const provider=String(p.media_provider||"").toLowerCase();
+      const hasLegacyMarker=Boolean(p.legacy_post_id||p.legacy_user_id||provider.startsWith("legacy_"));
+      const createdMs=p.created_at?.seconds ? p.created_at.seconds*1000 : (Date.parse(p.created_at||"")||0);
+      const migrationCutoff=Date.parse("2026-09-30T00:00:00-03:00");
+      return !hasLegacyMarker && (provider==="cloudinary" || createdMs>=migrationCutoff);
+    });
     posts.sort((a,b)=>{
       const ta=a.created_at?.seconds?a.created_at.seconds*1000:(Date.parse(a.created_at||"")||0);
       const tb=b.created_at?.seconds?b.created_at.seconds*1000:(Date.parse(b.created_at||"")||0);
@@ -197,9 +202,9 @@ function renderPost(p,likes,comments){
   if(src&&p.media_type==="image")media='<img class="video" src="'+esc(src)+'" alt="Publicação PULSO" loading="lazy">';
   else if(src&&p.media_type==="audio")media='<audio class="video" src="'+esc(src)+'" controls preload="none"></audio>';
   else if(src)media='<video class="video" data-src="'+esc(src)+'" controls playsinline preload="none" muted></video>';
-  else media='<div class="video" style="display:grid;place-items:center;min-height:240px">📝 PULSO em texto</div>';
+  else media='<div class="video text-media">📝<span>PULSO em texto</span></div>';
   const reactionCounts=Object.keys(REACTIONS).map(k=>{const n=pl.filter(x=>(x.reaction||"like")===k).length;return n?'<span class="reaction-count">'+REACTIONS[k]+" "+n+"</span>":""}).join("");
-  return '<article class="card post" data-post="'+esc(p.id)+'"><div class="posthead" data-open-profile="'+esc(p.user_id)+'" role="button" tabindex="0"><div class="avatar">'+avatarHtml(prof)+'</div><div class="meta"><strong>'+esc(prof.display_name||"Usuário")+'</strong><span>'+(prof.username?"@"+esc(prof.username):"membro PULSO")+"</span></div></div>"+media+'<div class="caption">'+esc(p.caption||"")+'</div><div class="actions"><div class="reaction-wrap"><button class="action '+(mine?"active":"")+'" data-like type="button" aria-pressed="'+(mine?"true":"false")+'">'+(mine?"❤️ Descurtir":"♡ Curtir")+" · "+pl.length+'</button><button class="action reaction-more" data-reaction-menu type="button" aria-expanded="false">🙂 Reagir</button><div class="reaction-picker" data-reaction-picker role="menu" style="display:none">'+Object.entries(REACTIONS).map(([k,v])=>'<button type="button" data-reaction="'+k+'" title="'+k+'">'+v+"</button>").join("")+'</div></div>'+(reactionCounts?'<div class="reaction-summary">'+reactionCounts+"</div>":"")+(p.user_id!==user.uid?'<button class="action follow-action" data-follow-user="'+esc(p.user_id)+'" type="button">'+(following.has(p.user_id)?"✓ Seguindo":"+ Seguir")+"</button>":"")+'<button class="action" data-likers type="button">👥 Quem curtiu</button><button class="action" data-focus type="button">💬 '+cs.length+"</button>"+(p.user_id===user.uid?'<button class="action delete-action" data-delete type="button">🗑️ Excluir</button>':"")+'</div><div class="comments"><strong>Comentários</strong><div>'+(cs.map(c=>{const cp=profiles.get(c.user_id)||{};return '<div class="comment"><b>'+esc(cp.display_name||"Usuário")+"</b> "+esc(c.content||"")+"</div>"}).join("")||'<div class="file">Seja o primeiro a comentar.</div>')+'</div></div><div class="commentbox"><input data-comment maxlength="500" placeholder="Escreva um comentário..."><button class="pill" data-send type="button">Enviar</button></div></article>';
+  return '<article class="card post" data-post="'+esc(p.id)+'"><div class="posthead" data-open-profile="'+esc(p.user_id)+'" role="button" tabindex="0"><div class="avatar">'+avatarHtml(prof)+'</div><div class="meta"><strong>'+esc(prof.display_name||"Usuário")+'</strong><span>'+(prof.username?"@"+esc(prof.username):"membro PULSO")+"</span></div></div>"+media+'<div class="caption">'+esc(p.caption||"")+'</div><div class="actions"><div class="reaction-wrap"><button class="action '+(mine?"active":"")+'" data-like type="button" aria-pressed="'+(mine?"true":"false")+'"><span class="action-icon">'+(mine?"❤️":"♡")+'</span><span class="action-count">'+pl.length+'</span></button><button class="action reaction-more" data-reaction-menu type="button" aria-expanded="false"><span class="action-icon">🙂</span><span class="action-label">Reagir</span></button><div class="reaction-picker" data-reaction-picker role="menu" style="display:none">'+Object.entries(REACTIONS).map(([k,v])=>'<button type="button" data-reaction="'+k+'" title="'+k+'">'+v+"</button>").join("")+'</div></div>'+(reactionCounts?'<div class="reaction-summary">'+reactionCounts+"</div>":"")+(p.user_id!==user.uid?'<button class="action follow-action" data-follow-user="'+esc(p.user_id)+'" type="button"><span class="action-icon">＋</span><span class="action-label">'+(following.has(p.user_id)?"Seguindo":"Seguir")+"</span></button>":"")+'<button class="action" data-likers type="button"><span class="action-icon">👥</span><span class="action-label">Curtidas</span></button><button class="action" data-focus type="button"><span class="action-icon">💬</span><span class="action-count">'+cs.length+"</span></button>"+(p.user_id===user.uid?'<button class="action delete-action" data-delete type="button"><span class="action-icon">🗑️</span><span class="action-label">Excluir</span></button>':"")+'</div><div class="comments"><strong>Comentários</strong><div>'+(cs.map(c=>{const cp=profiles.get(c.user_id)||{};return '<div class="comment"><b>'+esc(cp.display_name||"Usuário")+"</b> "+esc(c.content||"")+"</div>"}).join("")||'<div class="file">Seja o primeiro a comentar.</div>')+'</div></div><div class="commentbox"><input data-comment maxlength="500" placeholder="Escreva um comentário..."><button class="pill" data-send type="button">Enviar</button></div></article>';
 }
 
 function bindFeed(){
