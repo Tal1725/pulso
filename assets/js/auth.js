@@ -50,7 +50,6 @@ form.addEventListener("submit",async event=>{
   try{
     const result=await signUpEmail(email,password);
     await createProfile(result.user.uid,{displayName,username,birthDate});
-    await sendEmailVerification(result.user,{url:"https://tal1725.github.io/pulso/entrar.html"});
     showConfirmation(`Conta criada para <strong>@${username}</strong>.<br><br>Enviamos a confirmação para <strong>${email}</strong>. Verifique também o spam.${age<18?"<br><br><strong>Conta protegida:</strong> usuários de 13 a 17 anos precisam de aprovação de um responsável adulto antes de publicar.":""}`);
   }catch(error){
     showMessage(authErrorMessage(error),"error");
