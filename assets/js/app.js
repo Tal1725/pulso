@@ -149,7 +149,8 @@ async function loadFeed(){
       console.warn("[PULSO] feed orderBy indisponível; usando leitura sem índice.",orderError);
       postSnap=await getDocs(query(collection(db,"posts"),limit(100)));
     }
-    let posts=postSnap.docs.map(d=>({id:d.id,...d.data()}));
+    let posts=postSnap.docs.map(d=>({id:d.id,...d.data()}))
+    .filter(p=>!p.legacy_post_id && p.media_provider!=="legacy_supabase");
     posts.sort((a,b)=>{
       const ta=a.created_at?.seconds?a.created_at.seconds*1000:(Date.parse(a.created_at||"")||0);
       const tb=b.created_at?.seconds?b.created_at.seconds*1000:(Date.parse(b.created_at||"")||0);
