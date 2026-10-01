@@ -46,11 +46,31 @@ async function getProfile(uid){
   return s.exists()?{id:s.id,...s.data()}:null;
 }
 
+async function ensureOwnProfile(firebaseUser){
+  const existing=await getProfile(firebaseUser.uid);
+  if(existing)return existing;
+  const fallbackName=firebaseUser.displayName || (firebaseUser.email ? firebaseUser.email.split("@")[0] : "Membro PULSO");
+  const profile={
+    id:firebaseUser.uid,
+    username:(fallbackName||"membro").toLowerCase().replace(/[^a-z0-9_.]/g,"").slice(0,24) || ("membro"+String(firebaseUser.uid).slice(0,6)),
+    display_name:fallbackName,
+    bio:"",
+    avatar_url:null,
+    birth_date:"",
+    status:"",
+    member_number:null,
+    created_at:serverTimestamp(),
+    updated_at:serverTimestamp()
+  };
+  await setDoc(doc(db,"profiles",firebaseUser.uid),profile,{merge:true});
+  return profile;
+}
+
 async function initForUser(firebaseUser){
   user=firebaseUser;
   const adminBtn=$("#adminBtn");
   if(adminBtn&&(user.email||"").toLowerCase()==="ayslan.tal@gmail.com")adminBtn.hidden=false;
-  const p=await getProfile(user.uid);
+  const p=await ensureOwnProfile(user);
   if(p){
     $("#name")?.replaceChildren(document.createTextNode(p.display_name||user.email||"Membro PULSO"));
     if($("#handle"))$("#handle").textContent=p.username?"@"+p.username:"";
@@ -95,8 +115,20 @@ async function loadSocialStats(){
 async function loadFeed(){
   const feed=$("#feed");if(!feed)return;
   try{
-    const postSnap=await getDocs(query(collection(db,"posts"),orderBy("created_at","desc"),limit(50)));
+    let postSnap;
+    try{
+      postSnap=await getDocs(query(collection(db,"posts"),orderBy("created_at","desc"),limit(50)));
+    }catch(orderError){
+      console.warn("[PULSO] feed orderBy indisponível; usando leitura sem índice.",orderError);
+      postSnap=await getDocs(query(collection(db,"posts"),limit(100)));
+    }
     let posts=postSnap.docs.map(d=>({id:d.id,...d.data()}));
+    posts.sort((a,b)=>{
+      const ta=a.created_at?.seconds?a.created_at.seconds*1000:(Date.parse(a.created_at||"")||0);
+      const tb=b.created_at?.seconds?b.created_at.seconds*1000:(Date.parse(b.created_at||"")||0);
+      return tb-ta;
+    });
+    posts=posts.slice(0,50);
     if(feedMode==="following")posts=posts.filter(p=>following.has(p.user_id)||p.user_id===user.uid);
     if(!posts.length){
       feed.innerHTML=feedMode==="following"
