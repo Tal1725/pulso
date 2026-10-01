@@ -26,7 +26,7 @@ let feedMode="forYou";
 let following=new Set();
 let profiles=new Map();
 const REACTIONS={like:"👍",love:"❤️",haha:"😂",wow:"😮",sad:"😢",angry:"😡"};
-const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",""":"&quot;","'":"&#39;"}[m]));
+const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
 const avatarHtml=p=>p?.avatar_url?'<img class="avatar-photo" src="'+esc(p.avatar_url)+'" alt="Foto de perfil" loading="lazy">':'<span>'+esc((p?.display_name||"?").charAt(0).toUpperCase())+"</span>";
 
 function chunk(arr,size=30){const out=[];for(let i=0;i<arr.length;i+=size)out.push(arr.slice(i,i+size));return out;}
@@ -112,11 +112,12 @@ async function loadFeed(){
     for(const part of chunk(postIds)){
       const [ls,cs]=await Promise.all([
         getDocs(query(collection(db,"likes"),where("post_id","in",part))),
-        getDocs(query(collection(db,"comments"),where("post_id","in",part),orderBy("created_at","asc")))
+        getDocs(query(collection(db,"comments"),where("post_id","in",part)))
       ]);
       ls.forEach(d=>likes.push({id:d.id,...d.data()}));
       cs.forEach(d=>comments.push({id:d.id,...d.data()}));
     }
+    comments.sort((a,b)=>{const ta=a.created_at?.seconds?a.created_at.seconds*1000:(Date.parse(a.created_at||"")||0);const tb=b.created_at?.seconds?b.created_at.seconds*1000:(Date.parse(b.created_at||"")||0);return ta-tb;});
     feed.innerHTML=posts.map(p=>renderPost(p,likes,comments)).join("");
     bindFeed();activateLazyMedia(feed);
     document.dispatchEvent(new CustomEvent("pulso-feed-rendered"));
