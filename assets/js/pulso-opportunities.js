@@ -48,3 +48,4 @@ async function openWallet(){
  body.innerHTML='<div class="wallet-hero"><span>Saldo disponível</span><strong>'+fmt(available)+'</strong><small>Pendente: '+fmt(pending)+'</small></div><div class="opportunity-hero"><strong>Como funciona</strong><span>Ganhos só entram aqui quando uma oportunidade, campanha ou outra fonte de receita gerar um lançamento confirmado. Nenhum saldo fictício é criado.</span></div>'+((rows||[]).map(x=>'<div class="wallet-row"><strong>'+esc(x.description||x.status)+'</strong><span>'+new Intl.NumberFormat('pt-BR',{style:'currency',currency:x.currency||'BRL'}).format(Number(x.amount))+'</span></div>').join('')||'<div class="opportunity-empty"><strong>Ainda não há lançamentos.</strong><span>Participe das oportunidades para começar sua trajetória.</span></div>');
 }
 window.pulsoOpenWallet=openWallet;
+window.pulsoOpenOpportunities=openOpportunities;
