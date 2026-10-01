@@ -10,7 +10,8 @@ import {
   signOut,
   updatePassword,
   verifyPasswordResetCode,
-  confirmPasswordReset
+  confirmPasswordReset,
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
 import { auth } from "./firebase.js";
@@ -28,7 +29,8 @@ export {
   signOut,
   updatePassword,
   verifyPasswordResetCode,
-  confirmPasswordReset
+  confirmPasswordReset,
+  onAuthStateChanged
 };
 
 export function authErrorMessage(error) {
