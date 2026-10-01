@@ -1,8 +1,6 @@
 /* PULSO — configuração pública de mídia
-   Não coloque API Secret aqui.
-   Cloudinary: apenas Cloud Name + Upload Preset unsigned. */
-
+   Somente valores públicos. Nunca coloque API Secret aqui. */
 window.PULSO_MEDIA_CONFIG = {
-  cloudName: '',
-  uploadPreset: ''
+  cloudName: 'zzllchy7',
+  uploadPreset: 'pulso_publico'
 };
