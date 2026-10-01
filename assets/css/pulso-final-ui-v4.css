@@ -292,3 +292,54 @@ body:before{
   .composer .row::-webkit-scrollbar{display:none}
   .upload-icon{white-space:nowrap!important}
 }
+
+
+/* V4.1 — feed actions compactas e acabamento editorial */
+#feed{display:flex;flex-direction:column;gap:18px}
+.post{isolation:isolate}
+.post>.actions{
+  right:14px!important;bottom:92px!important;gap:8px!important;
+  width:58px!important;align-items:center!important;
+}
+.post>.actions .action,.post>.actions .follow-small{
+  width:52px!important;min-width:52px!important;height:52px!important;min-height:52px!important;
+  padding:6px 3px!important;border-radius:17px!important;
+  flex-direction:column!important;gap:2px!important;
+  font-size:9px!important;line-height:1.05!important;font-weight:800!important;
+}
+.post>.actions .action-icon{font-size:21px!important;line-height:22px!important}
+.post>.actions .action-count{font-size:10px!important;font-weight:900!important}
+.post>.actions .action-label{font-size:8px!important;white-space:nowrap!important}
+.post>.actions .action.active{background:rgba(228,0,103,.9)!important}
+.post>.actions .reaction-wrap{display:flex!important;flex-direction:column!important;align-items:center!important;gap:6px!important}
+.post>.actions .reaction-picker{
+  position:absolute!important;right:59px!important;bottom:0!important;
+  display:none;flex-direction:row!important;gap:4px!important;padding:7px!important;
+  background:rgba(20,20,24,.92)!important;border:1px solid rgba(255,255,255,.2)!important;
+  border-radius:16px!important;backdrop-filter:blur(16px)!important;
+}
+.post>.actions .reaction-picker button{
+  width:34px!important;height:34px!important;border:0!important;border-radius:10px!important;
+  background:rgba(255,255,255,.1)!important;font-size:19px!important;cursor:pointer!important;
+}
+.post>.actions .reaction-summary{
+  display:flex!important;flex-direction:column!important;gap:2px!important;
+  align-items:center!important;font-size:9px!important;
+}
+.post>.actions .reaction-summary .reaction-count{background:rgba(0,0,0,.45)!important;padding:3px 6px!important;border-radius:9px!important}
+.post>.caption{bottom:48px!important;max-width:calc(100% - 95px)!important}
+.post>.comments{border-radius:0 0 24px 24px!important}
+.text-media{display:flex!important;flex-direction:column!important;gap:8px!important;color:#fff!important;font-size:34px!important;background:linear-gradient(135deg,#1d1625,#111318)!important}
+.text-media span{font-size:15px!important;opacity:.8!important}
+.posthead{padding:17px 18px!important}
+.posthead .avatar{flex:0 0 45px!important}
+.posthead .meta{min-width:0!important}
+.posthead .meta strong,.posthead .meta span{overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+.composer-actions{margin-left:auto!important}
+@media(max-width:900px){
+  #feed{gap:12px}
+  .post>.actions{right:7px!important;bottom:82px!important}
+  .post>.actions .action,.post>.actions .follow-small{width:47px!important;min-width:47px!important;height:47px!important;min-height:47px!important}
+  .post>.actions .action-icon{font-size:19px!important}
+  .post>.caption{bottom:45px!important}
+}
