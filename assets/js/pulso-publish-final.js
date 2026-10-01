@@ -213,7 +213,7 @@
 
       msg('✅ Publicado com sucesso!');
       document.dispatchEvent(new CustomEvent('pulso-published', {
-        detail: { postId: insertResult.data.id }
+        detail: { postId: insertResult.data.id, mediaType: type, mediaUrl: publicUrl }
       }));
     } catch (error) {
       console.error('[PULSO V14]', error);
@@ -226,7 +226,7 @@
   }
 
   window.pulsoPublish = publish;
-  window.pulsoPublisherVersion = 'v14';
+  window.pulsoPublisherVersion = 'v15';
 
   function bind() {
     const button = ensureComposer();
