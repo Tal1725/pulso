@@ -201,7 +201,90 @@
   }
 
   window.pulsoPublish = publish;
-  window.pulsoPublisherVersion = 'v16';
+  window.pulsoPublisherVersion = 'v17';
+
+  function makeMediaFile(blob, type) {
+    const mime = blob.type || (type === 'audio' ? 'audio/webm' : type === 'image' ? 'image/jpeg' : 'video/webm');
+    const ext = type === 'audio' ? 'webm' : type === 'image' ? 'jpg' : 'webm';
+    return new File([blob], 'pulso-' + Date.now() + '.' + ext, { type: mime });
+  }
+
+  function closeCapture(stream, overlay) {
+    if (stream) stream.getTracks().forEach((track) => track.stop());
+    if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+  }
+
+  async function captureMedia(mode) {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
+      msg('Seu navegador não liberou câmera/microfone. Verifique as permissões do navegador.', true);
+      return;
+    }
+    const isAudio = mode === 'audio';
+    const isPhoto = mode === 'photo';
+    let stream = null;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia(isAudio ? { audio: true } : { video: { facingMode: 'environment' }, audio: !isPhoto });
+    } catch (error) {
+      console.error('[PULSO MEDIA]', error);
+      msg('Não foi possível acessar ' + (isAudio ? 'o microfone' : 'a câmera') + '. Autorize o acesso nas permissões do navegador.', true);
+      return;
+    }
+    const overlay = document.createElement('div');
+    overlay.className = 'pulso-capture-overlay';
+    overlay.innerHTML = isAudio
+      ? '<div class="pulso-capture-card"><div class="pulso-capture-title">🎤 Gravar áudio</div><div class="pulso-capture-status">Pronto para gravar</div><div class="pulso-capture-actions"><button type="button" data-capture-start>● Começar</button><button type="button" data-capture-stop disabled>■ Parar</button><button type="button" data-capture-cancel>Cancelar</button></div></div>'
+      : '<div class="pulso-capture-card"><video autoplay playsinline muted></video><div class="pulso-capture-title">' + (isPhoto ? '📸 Tirar foto' : '📹 Gravar vídeo') + '</div><div class="pulso-capture-status">Câmera pronta</div><div class="pulso-capture-actions"><button type="button" data-capture-main>' + (isPhoto ? '📸 Tirar foto' : '● Gravar') + '</button><button type="button" data-capture-stop disabled>■ Parar</button><button type="button" data-capture-cancel>Cancelar</button></div></div>';
+    document.body.appendChild(overlay);
+    const video = overlay.querySelector('video');
+    if (video) video.srcObject = stream;
+    const status = overlay.querySelector('.pulso-capture-status');
+    const main = overlay.querySelector('[data-capture-main], [data-capture-start]');
+    const stop = overlay.querySelector('[data-capture-stop]');
+    const cancel = overlay.querySelector('[data-capture-cancel]');
+    let recorder = null;
+    let chunks = [];
+    const finishRecording = () => {
+      if (!recorder || recorder.state === 'inactive') return;
+      recorder.stop();
+      stop.disabled = true;
+      if (main) main.disabled = true;
+      if (status) status.textContent = 'Processando mídia...';
+    };
+    if (isPhoto) {
+      main.onclick = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth || 720;
+        canvas.height = video.videoHeight || 1280;
+        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob((blob) => {
+          if (!blob) return;
+          window.pulsoApprovedMedia = { file: makeMediaFile(blob, 'image') };
+          closeCapture(stream, overlay);
+          msg('📸 Foto pronta. Agora toque em Publicar.');
+        }, 'image/jpeg', 0.92);
+      };
+    } else {
+      main.onclick = () => {
+        chunks = [];
+        let mime = isAudio ? 'audio/webm' : 'video/webm';
+        if (!MediaRecorder.isTypeSupported(mime)) mime = '';
+        recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+        recorder.ondataavailable = (event) => { if (event.data && event.data.size) chunks.push(event.data); };
+        recorder.onstop = () => {
+          const blob = new Blob(chunks, { type: recorder.mimeType || mime || (isAudio ? 'audio/webm' : 'video/webm') });
+          window.pulsoApprovedMedia = { file: makeMediaFile(blob, isAudio ? 'audio' : 'video') };
+          closeCapture(stream, overlay);
+          msg((isAudio ? '🎤 Áudio' : '📹 Vídeo') + ' pronto. Agora toque em Publicar.');
+        };
+        recorder.start(250);
+        main.disabled = true;
+        stop.disabled = false;
+        if (status) status.textContent = 'Gravando... toque em Parar quando terminar.';
+      };
+      stop.onclick = finishRecording;
+    }
+    cancel.onclick = () => closeCapture(stream, overlay);
+  }
 
   function bind() {
     const button = getComposerButton();
@@ -209,13 +292,18 @@
     const cameraVideo = $('#cameraVideoInput');
     const photoBtn = document.querySelector('[data-camera-photo]');
     const videoBtn = document.querySelector('[data-camera-video]');
+    const audioBtn = document.querySelector('[data-audio-record]');
     if (photoBtn && photo && !photoBtn.dataset.pulsoCameraBound) {
       photoBtn.dataset.pulsoCameraBound = '1';
-      photoBtn.addEventListener('click', () => photo.click());
+      photoBtn.addEventListener('click', () => captureMedia('photo'));
     }
     if (videoBtn && cameraVideo && !videoBtn.dataset.pulsoCameraBound) {
       videoBtn.dataset.pulsoCameraBound = '1';
-      videoBtn.addEventListener('click', () => cameraVideo.click());
+      videoBtn.addEventListener('click', () => captureMedia('video'));
+    }
+    if (audioBtn && !audioBtn.dataset.pulsoAudioBound) {
+      audioBtn.dataset.pulsoAudioBound = '1';
+      audioBtn.addEventListener('click', () => captureMedia('audio'));
     }
     if (!button || button.dataset.pulsoV16) return;
     button.dataset.pulsoV16 = '1';
