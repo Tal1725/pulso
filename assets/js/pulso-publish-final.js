@@ -201,7 +201,7 @@
   }
 
   window.pulsoPublish = publish;
-  window.pulsoPublisherVersion = 'v18';
+  window.pulsoPublisherVersion = 'v19';
 
   function makeMediaFile(blob, type) {
     const mime = blob.type || (type === 'audio' ? 'audio/webm' : type === 'image' ? 'image/jpeg' : 'video/webm');
@@ -215,6 +215,8 @@
   }
 
   async function captureMedia(mode) {
+    const isAudio = mode === 'audio';
+    const isPhoto = mode === 'photo';
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || (!isPhoto && !window.MediaRecorder)) {
       msg('Seu navegador não liberou câmera/microfone. Verifique as permissões do navegador.', true);
       return;
