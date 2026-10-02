@@ -201,7 +201,7 @@
   }
 
   window.pulsoPublish = publish;
-  window.pulsoPublisherVersion = 'v17';
+  window.pulsoPublisherVersion = 'v18';
 
   function makeMediaFile(blob, type) {
     const mime = blob.type || (type === 'audio' ? 'audio/webm' : type === 'image' ? 'image/jpeg' : 'video/webm');
@@ -215,7 +215,7 @@
   }
 
   async function captureMedia(mode) {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || (!isPhoto && !window.MediaRecorder)) {
       msg('Seu navegador não liberou câmera/microfone. Verifique as permissões do navegador.', true);
       return;
     }
@@ -228,6 +228,12 @@
       console.error('[PULSO MEDIA]', error);
       msg('Não foi possível acessar ' + (isAudio ? 'o microfone' : 'a câmera') + '. Autorize o acesso nas permissões do navegador.', true);
       return;
+    }
+    if (!document.getElementById('pulsoCaptureStyles')) {
+      const style = document.createElement('style');
+      style.id = 'pulsoCaptureStyles';
+      style.textContent = '.pulso-capture-overlay{position:fixed;inset:0;z-index:99999;background:rgba(2,4,12,.88);backdrop-filter:blur(14px);display:grid;place-items:center;padding:20px}.pulso-capture-card{width:min(94vw,520px);background:linear-gradient(145deg,rgba(20,25,48,.98),rgba(8,12,25,.98));border:1px solid rgba(124,92,255,.4);border-radius:24px;padding:18px;box-shadow:0 25px 80px rgba(0,0,0,.6);color:#fff}.pulso-capture-card video{width:100%;max-height:65vh;object-fit:cover;border-radius:18px;background:#000}.pulso-capture-title{font-size:20px;font-weight:800;margin:8px 0}.pulso-capture-status{opacity:.75;margin:8px 0 14px}.pulso-capture-actions{display:flex;gap:8px;flex-wrap:wrap}.pulso-capture-actions button{border:0;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,#ff3d9a,#7c5cff);color:#fff}.pulso-capture-actions button:disabled{opacity:.45;cursor:not-allowed}.pulso-capture-actions button[data-capture-cancel]{background:rgba(255,255,255,.1)}';
+      document.head.appendChild(style);
     }
     const overlay = document.createElement('div');
     overlay.className = 'pulso-capture-overlay';
