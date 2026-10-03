@@ -23,7 +23,7 @@ window.pulsoOpenProfile=async function(targetId=null){
  const id=targetId||user?.id;
  if(!id){location.href='entrar.html?next=app';return;}
  if(typeof window.__pulsoProfileModuleLoaded==='undefined'){
-   try{await import('./pulso-profile-view.js?v=20261001d');}catch(e){console.error('[PULSO] profile module',e);}
+   try{await import('./pulso-profile-view.js?v=20261003a');}catch(e){console.error('[PULSO] profile module',e);}
  }
  if(typeof window.__pulsoProfileModuleLoaded!=='undefined' && typeof window.__pulsoOpenProfileReal==='function') return window.__pulsoOpenProfileReal(id);
  if(typeof window.pulsoOpenProfileReal==='function') return window.pulsoOpenProfileReal(id);
