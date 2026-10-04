@@ -1,7 +1,9 @@
 import { firebaseAuth, firebaseDb } from './firebase-config.js';
 import {
   createUserWithEmailAndPassword,
-  sendEmailVerification
+  sendEmailVerification,
+  RecaptchaVerifier,
+  signInWithPhoneNumber
 } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js';
 import {
   collection,
@@ -16,6 +18,9 @@ const form=document.getElementById('signupForm'),message=document.getElementById
 const successTitle=document.getElementById('successTitle'),successText=document.getElementById('successText'),formTitle=document.getElementById('formTitle'),formSubtitle=document.getElementById('formSubtitle');
 const emailTab=document.getElementById('emailTab'),phoneTab=document.getElementById('phoneTab'),emailField=document.getElementById('emailField'),phoneField=document.getElementById('phoneField');
 let method='email';
+let phoneConfirmationResult=null;
+let phoneSignupData=null;
+let recaptchaVerifier=null;
 
 function showMessage(text,type){message.textContent=text;message.className=`message show ${type}`}
 function cleanUsername(v){return v.trim().toLowerCase().replace(/^@+/,'')}
@@ -31,8 +36,13 @@ function setMethod(next){
   phoneField.classList.toggle('hidden',!phone);
   document.getElementById('email').required=!phone;
   document.getElementById('phone').required=phone;
-  if(phone) showMessage('O cadastro por celular está em migração para o Firebase. Por enquanto, crie sua conta por e-mail.','error');
-  else message.className='message';
+  if(phone){
+    message.className='message';
+    submit.textContent='Enviar código por SMS';
+  }else{
+    message.className='message';
+    submit.textContent='Criar minha conta';
+  }
 }
 emailTab.addEventListener('click',()=>setMethod('email'));
 phoneTab.addEventListener('click',()=>setMethod('phone'));
@@ -55,6 +65,30 @@ async function usernameExists(username){
 
 form.addEventListener('submit',async event=>{
   event.preventDefault();
+  if(method==='phone' && phoneConfirmationResult){
+    const code=(document.getElementById('phoneCode')?.value||'').replace(/\\D/g,'');
+    if(code.length!==6)return showMessage('Digite o código de 6 dígitos recebido por SMS.','error');
+    submit.disabled=true;
+    submit.textContent='Confirmando...';
+    try{
+      const {user}=await phoneConfirmationResult.confirm(code);
+      await setDoc(doc(firebaseDb,'Perfis',user.uid),{
+        id:user.uid,user_id:user.uid,display_name:phoneSignupData.displayName,username:phoneSignupData.username,
+        birth_date:phoneSignupData.birthDate,bio:'',status:'',avatar_url:null,protected_account:phoneSignupData.age<18,
+        phone:phoneSignupData.phone,created_at:new Date().toISOString(),updated_at:new Date().toISOString()
+      },{merge:true});
+      showConfirmation(`Conta criada para <strong>@${phoneSignupData.username}</strong>.<br><br>Seu celular foi confirmado com sucesso.`);
+      phoneConfirmationResult=null;
+      phoneSignupData=null;
+    }catch(error){
+      const friendly={'auth/invalid-verification-code':'Código incorreto. Confira o SMS e tente novamente.','auth/code-expired':'Esse código expirou. Solicite um novo código.','auth/credential-already-in-use':'Esse celular já está cadastrado. Tente entrar na sua conta.'};
+      showMessage(friendly[error?.code]||error?.message||'Não foi possível confirmar o celular.','error');
+    }finally{
+      submit.disabled=false;
+      submit.textContent='Confirmar código';
+    }
+    return;
+  }
   message.className='message';
   const displayName=document.getElementById('displayName').value.trim();
   const username=cleanUsername(document.getElementById('username').value);
@@ -65,7 +99,7 @@ form.addEventListener('submit',async event=>{
   const passwordConfirm=document.getElementById('passwordConfirm').value;
   const terms=document.getElementById('terms').checked;
 
-  if(method!=='email')return showMessage('Por enquanto, finalize o cadastro usando E-mail. O cadastro por celular será migrado para o Firebase em seguida.','error');
+
   if(displayName.length<2)return showMessage('Digite seu nome.','error');
   if(!/^[a-z0-9_.]{3,24}$/.test(username))return showMessage('O usuário deve ter 3–24 caracteres: letras, números, _ ou .','error');
   if(!birthDate||age===null||age<0)return showMessage('Digite uma data de nascimento válida.','error');
@@ -76,8 +110,41 @@ form.addEventListener('submit',async event=>{
   if(!terms)return showMessage('Aceite os termos e as regras de segurança para continuar.','error');
 
   submit.disabled=true;
-  submit.textContent='Criando sua conta...';
+  submit.textContent=method==='phone'?'Enviando código...':'Criando sua conta...';
   try{
+    if(method==='phone'){
+      const phone=normalizePhone(document.getElementById('phone').value);
+      if(displayName.length<2)throw new Error('Digite seu nome.');
+      if(!/^[a-z0-9_.]{3,24}$/.test(username))throw new Error('O usuário deve ter 3–24 caracteres: letras, números, _ ou .');
+      if(!birthDate||age===null||age<0)throw new Error('Digite uma data de nascimento válida.');
+      if(age<13)throw new Error('O PULSO não permite cadastro de menores de 13 anos.');
+      if(phone.replace(/\\D/g,'').length<12)throw new Error('Digite um celular válido com DDD.');
+      if(password.length<8)throw new Error('A senha precisa ter pelo menos 8 caracteres.');
+      if(password!==passwordConfirm)throw new Error('As senhas não são iguais.');
+      if(!terms)throw new Error('Aceite os termos e as regras de segurança para continuar.');
+      if(await usernameExists(username))throw Object.assign(new Error('Esse nome de usuário já está em uso. Escolha outro.'),{code:'username-already-exists'});
+      if(!recaptchaVerifier){
+        const container=document.createElement('div');
+        container.id='firebase-recaptcha';
+        form.appendChild(container);
+        recaptchaVerifier=new RecaptchaVerifier(firebaseAuth,'firebase-recaptcha',{size:'invisible'});
+      }
+      phoneSignupData={displayName,username,birthDate,age,password,terms,phone};
+      phoneConfirmationResult=await signInWithPhoneNumber(firebaseAuth,phone,recaptchaVerifier);
+      let codeField=document.getElementById('phoneCodeField');
+      if(!codeField){
+        codeField=document.createElement('div');
+        codeField.id='phoneCodeField';
+        codeField.className='field';
+        codeField.innerHTML='<label for="phoneCode">Código recebido por SMS</label><input id="phoneCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="Digite os 6 números">';
+        form.insertBefore(codeField,submit);
+      }
+      document.getElementById('phoneCode').focus();
+      submit.textContent='Confirmar código';
+      showMessage('Enviamos um código por SMS para seu celular. Digite o código acima.','success');
+      submit.disabled=false;
+      return;
+    }
     if(await usernameExists(username))throw Object.assign(new Error('Esse nome de usuário já está em uso. Escolha outro.'),{code:'username-already-exists'});
 
     const {user}=await createUserWithEmailAndPassword(firebaseAuth,email,password);
@@ -106,11 +173,17 @@ form.addEventListener('submit',async event=>{
       'auth/invalid-email':'Digite um e-mail válido.',
       'auth/weak-password':'A senha precisa ter pelo menos 8 caracteres.',
       'auth/network-request-failed':'Não foi possível conectar ao Firebase. Verifique sua internet.',
+      'auth/invalid-phone-number':'Digite um celular válido com DDD.',
+      'auth/too-many-requests':'Muitas tentativas de SMS. Aguarde um pouco e tente novamente.',
+      'auth/quota-exceeded':'O limite de SMS do Firebase foi atingido. Tente novamente mais tarde.',
+      'auth/captcha-check-failed':'Não foi possível validar a segurança do SMS. Recarregue a página e tente novamente.',
       'username-already-exists':error.message
     };
     showMessage(friendly[code]||error?.message||'Não foi possível criar sua conta agora.','error');
   }finally{
     submit.disabled=false;
-    submit.textContent='Criar minha conta';
+    if(method==='email')submit.textContent='Criar minha conta';
+    else if(phoneConfirmationResult)submit.textContent='Confirmar código';
+    else submit.textContent='Enviar código por SMS';
   }
 });
