@@ -251,7 +251,7 @@ function setFeedMode(mode){feedMode=mode;document.querySelectorAll('.feed-switch
 window.pulsoSetFeedMode=setFeedMode;
 
 document.addEventListener('click',e=>{
-  const b=e.target.closest?.('#feedForYou,#feedFollowing,#followersBtn,#followingBtn,#modalClose,#logoutBtn');if(!b)return;
+  const b=e.target.closest?.('#profileBtn,#feedForYou,#feedFollowing,#followersBtn,#followingBtn,#modalClose,#logoutBtn');if(!b)return;
   if(b.id==='profileBtn'){e.preventDefault();window.pulsoOpenProfile?.(user?.uid);}\n  if(b.id==='feedForYou'){e.preventDefault();setFeedMode('forYou');}
   if(b.id==='feedFollowing'){e.preventDefault();setFeedMode('following');}
   if(b.id==='modalClose'){e.preventDefault();closeModal();}
