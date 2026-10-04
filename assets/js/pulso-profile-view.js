@@ -22,7 +22,7 @@ async function openProfile(targetId=null){
     m=document.createElement('div');m.id='pulsoProfileView';
     m.style.cssText='position:fixed;inset:0;z-index:2147483647;background:rgba(10,12,20,.78);backdrop-filter:blur(12px);overflow:auto;padding:18px;box-sizing:border-box';
     m.innerHTML='<div id="ppCard" style="max-width:760px;margin:20px auto;background:#171923;color:#fff;border:1px solid rgba(255,255,255,.1);border-radius:22px;padding:20px;box-sizing:border-box;box-shadow:0 25px 80px rgba(0,0,0,.45)"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h2 id="ppTitle" style="margin:0">Perfil</h2><div style="display:flex;gap:8px"><button id="ppEdit" type="button" style="display:none;background:#7457e8;color:#fff;border:0;border-radius:10px;padding:10px 14px">✏️ Editar</button><button id="ppClose" type="button" style="background:#ff4b86;color:#fff;border:0;border-radius:10px;padding:10px 14px">Fechar</button></div></div><div id="ppBody" style="margin-top:18px">Carregando...</div></div>';
-    document.body.appendChild(m);m.querySelector('#ppClose').onclick=()=>m.remove();m.querySelector('#ppEdit').onclick=()=>{m.remove();window.pulsoOpenEditorFallback?.()};
+    document.body.appendChild(m);m.querySelector('#ppClose').onclick=e=>{e.preventDefault();e.stopPropagation();m.remove()};m.addEventListener('click',e=>{if(e.target===m){e.preventDefault();e.stopPropagation();m.remove()}},{capture:true});m.querySelector('#ppEdit').onclick=e=>{e.preventDefault();e.stopPropagation();m.remove();window.pulsoOpenEditorFallback?.()};
   }
   const body=m.querySelector('#ppBody');body.innerHTML='<div style="padding:20px 0">Carregando perfil e publicações...</div>';
   try{
