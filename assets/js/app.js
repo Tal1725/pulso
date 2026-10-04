@@ -19,6 +19,38 @@ async function getAll(name){
   return snap.docs.map(d=>({id:d.id,...(d.data()||{})}));
 }
 
+function normalizeProfile(x={},docId=''){
+  return {
+    id:x.user_id||x.uid||docId,
+    username:x.username||x['Nome de usuário']||'',
+    display_name:x.display_name||x['Nome']||x['Nome de usuário']||x.username||'Usuário',
+    avatar_url:x.avatar_url||null,
+    bio:x.bio||x.Bio||'',
+    status:x.status||''
+  };
+}
+
+function indexProfiles(rows){
+  profiles=new Map();
+  rows.forEach(x=>{
+    const p=normalizeProfile(x,x.id);
+    if(x.id)profiles.set(x.id,p);
+    if(x.user_id)profiles.set(x.user_id,p);
+    if(x.uid)profiles.set(x.uid,p);
+  });
+  return profiles;
+}
+
+async function getCurrentProfile(){
+  const uid=user?.uid;
+  if(!uid)return{};
+  const direct=await getDoc(doc(firebaseDb,'Perfis',uid));
+  if(direct.exists())return normalizeProfile(direct.data(),uid);
+  const rows=await getAll('Perfis');
+  const found=rows.find(x=>x.user_id===uid||x.uid===uid||x.auth_uid===uid||x.id===uid);
+  return found?normalizeProfile(found,found.id):{};
+}
+
 async function init(){
   try{
     const notice=$('#notice');
@@ -26,9 +58,8 @@ async function init(){
     user=firebaseAuth.currentUser;
     const adminBtn=$('#adminBtn');
     if(adminBtn){adminBtn.hidden=false;document.body.classList.add('pulso-admin-user');}
-    const pSnap=await getDoc(doc(firebaseDb,'Perfis',user.uid));
-    const p=pSnap.exists()?pSnap.data():{};
-    $('#name')?.replaceChildren(document.createTextNode(p.display_name||p['Nome']||user.email||'Membro PULSO'));
+    const p=await getCurrentProfile();
+    $('#name')?.replaceChildren(document.createTextNode(p.display_name||user.email||'Membro PULSO'));
     if($('#handle'))$('#handle').textContent=p.username?'@'+p.username:'';
     if($('#avatar'))$('#avatar').innerHTML=avatarHtml(p);
     if(notice)notice.textContent='Você está dentro do PULSO. Carregando publicações...';
@@ -75,13 +106,9 @@ async function loadFeed(){
         :'<div class="card empty">Ainda não há publicações.<br>Seja o primeiro a dar o primeiro PULSO.</div>';
       return;
     }
-    profiles=new Map();
     try{
-      (await getAll('Perfis')).forEach(x=>{
-        const id=x.id;
-        profiles.set(id,{id,username:x.username||x['Nome de usuário']||'',display_name:x.display_name||x['Nome de usuário']||x['Nome']||'Usuário',avatar_url:x.avatar_url||null});
-      });
-    }catch(e){console.warn('[PULSO] perfis Firebase não carregaram',e);}
+      indexProfiles(await getAll('Perfis'));
+    }catch(e){console.warn('[PULSO] perfis Firebase não carregaram',e);profiles=new Map();}
     currentLikes=await getAll('Gostos');
     currentComments=await getAll('comments');
     feed.innerHTML=posts.map(p=>renderPost(p)).join('');
@@ -100,7 +127,8 @@ async function ensureProfile(targetId){
   try{
     const s=await getDoc(doc(firebaseDb,'Perfis',targetId));
     const x=s.exists()?s.data():{};
-    const p={id:targetId,username:x.username||x['Nome de usuário']||'',display_name:x.display_name||x['Nome de usuário']||x['Nome']||'Usuário',avatar_url:x.avatar_url||null,bio:x.bio||x.Bio||'',status:x.status||''};
+    const p=normalizeProfile(x,targetId);
+    if(p.id)profiles.set(p.id,p);
     profiles.set(targetId,p);return p;
   }catch(e){return{};}
 }
