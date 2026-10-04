@@ -1,5 +1,6 @@
 import{createClient}from'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/+esm';
-import{firebaseAuth}from'./firebase-config.js';
+import{firebaseAuth,firebaseDb}from'./firebase-config.js';
+import{collection,getDocs,limit,orderBy,query}from'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
 import{onAuthStateChanged,signOut}from'https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js';
 
 const SUPABASE_URL='https://vqpavcyehgdifbtvzhcn.supabase.co';
@@ -20,7 +21,56 @@ async function init(){try{const notice=$('#notice');if(!firebaseAuth.currentUser
 async function refreshFollowing(){try{const r=await supabase.from('follows').select('following_id').eq('follower_id',user.id);if(r.error)throw r.error;following=new Set((r.data||[]).map(x=>x.following_id));}catch(e){console.warn('[PULSO] follows não carregou',e);following=new Set();}window._following=following;}
 async function loadSocialStats(){try{const a=await supabase.from('follows').select('*',{count:'exact',head:true}).eq('following_id',user.id);const b=await supabase.from('follows').select('*',{count:'exact',head:true}).eq('follower_id',user.id);if($('#followersCount'))$('#followersCount').textContent=a.count||0;if($('#followingCount'))$('#followingCount').textContent=b.count||0;}catch(e){console.warn('[PULSO] stats não carregou',e);}}
 
-async function loadFeed(){const feed=$('#feed');if(!feed)return;try{const r=await supabase.from('posts').select('id,user_id,video_url,media_url,media_type,caption,created_at').order('created_at',{ascending:false}).limit(50);if(r.error){feed.innerHTML='<div class="card empty"><strong>Erro no feed</strong><br>'+esc(r.error.message||'Não foi possível consultar publicações.')+'</div>';console.error('[PULSO] posts',r.error);return;}let posts=r.data||[];if(feedMode==='following')posts=posts.filter(p=>following.has(p.user_id)||p.user_id===user.id);if(!posts.length){feed.innerHTML=feedMode==='following'?'<div class="card empty">Você ainda não segue ninguém. Explore o PULSO e siga criadores.</div>':'<div class="card empty">Ainda não há publicações.<br>Seja o primeiro a dar o primeiro PULSO.</div>';return;}profiles=new Map();const ids=[...new Set(posts.map(p=>p.user_id))];const ps=await supabase.from('profiles').select('id,username,display_name,avatar_url').in('id',ids);if(!ps.error)(ps.data||[]).forEach(p=>profiles.set(p.id,p));const postIds=posts.map(p=>p.id);let likes=[],comments=[];const lr=await supabase.from('likes').select('post_id,user_id,reaction').in('post_id',postIds);if(!lr.error)likes=lr.data||[];else console.warn('[PULSO] likes não carregou',lr.error);const cr=await supabase.from('comments').select('id,post_id,user_id,content,created_at').in('post_id',postIds).order('created_at',{ascending:true});if(!cr.error)comments=cr.data||[];else console.warn('[PULSO] comments não carregou',cr.error);feed.innerHTML=posts.map(p=>renderPost(p,likes,comments,posts)).join('');bindFeed();activateLazyMedia(feed);document.dispatchEvent(new CustomEvent('pulso-feed-rendered'));}catch(e){console.error('[PULSO] feed',e);feed.innerHTML='<div class="card empty">O feed está temporariamente indisponível. Tente recarregar.</div>';}}
+async function loadFeed(){
+ const feed=$('#feed');
+ if(!feed)return;
+ try{
+  const postsSnap=await getDocs(query(collection(firebaseDb,'Posts'),orderBy('created_at','desc'),limit(50)));
+  let posts=postsSnap.docs.map(d=>{
+   const x=d.data()||{};
+   return {
+    id:d.id,
+    user_id:x.user_id||x.legacy_user_id||'',
+    video_url:x.video_url||x.media_url||'',
+    media_url:x.media_url||x.video_url||'',
+    media_type:x.media_type||'vídeo',
+    caption:x.caption||x.legenda||'',
+    created_at:x.created_at||''
+   };
+  });
+  if(feedMode==='following')posts=posts.filter(p=>following.has(p.user_id)||p.user_id===user.id);
+  if(!posts.length){
+   feed.innerHTML=feedMode==='following'
+    ? '<div class="card empty">Você ainda não segue ninguém. Explore o PULSO e siga criadores.</div>'
+    : '<div class="card empty">Ainda não há publicações.<br>Seja o primeiro a dar o primeiro PULSO.</div>';
+   return;
+  }
+  profiles=new Map();
+  try{
+   const profilesSnap=await getDocs(collection(firebaseDb,'Perfis'));
+   profilesSnap.docs.forEach(d=>{
+    const x=d.data()||{};
+    const id=x.id||d.id;
+    profiles.set(id,{
+     id,
+     username:x.username||x['Nome de usuário']||'',
+     display_name:x.display_name||x['Nome de usuário']||x['Nome']||'Usuário',
+     avatar_url:x.avatar_url||null
+    });
+   });
+  }catch(profileError){
+   console.warn('[PULSO] perfis Firebase não carregaram',profileError);
+  }
+  const likes=[],comments=[];
+  feed.innerHTML=posts.map(p=>renderPost(p,likes,comments,posts)).join('');
+  bindFeed();
+  activateLazyMedia(feed);
+  document.dispatchEvent(new CustomEvent('pulso-feed-rendered'));
+ }catch(e){
+  console.error('[PULSO] feed Firebase',e);
+  feed.innerHTML='<div class="card empty"><strong>Erro no feed</strong><br>Não foi possível carregar as publicações agora.</div>';
+ }
+}
 window.pulsoOpenProfile=async function(targetId=null){
  const id=targetId||user?.id;
  if(!id){location.href='entrar.html?next=app';return;}
