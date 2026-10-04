@@ -1,10 +1,11 @@
-import { firebaseAuth } from './firebase-config.js';
+import { firebaseAuth, firebaseDb } from './firebase-config.js';
 import {
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
   onAuthStateChanged,
   updatePassword
 } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js';
+import { collection, getDocs, query, where, limit } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
 
 const form=document.getElementById('loginForm'),
   msg=document.getElementById('message'),
@@ -19,6 +20,18 @@ const emailTab=document.getElementById('emailTab'),
   label=document.getElementById('identifierLabel'),
   identifier=document.getElementById('identifier');
 let method='email';
+
+function normalizePhone(value){
+  return String(value||'').replace(/\\D/g,'');
+}
+
+async function phoneToSyntheticEmail(phone){
+  const normalized=normalizePhone(phone);
+  if(normalized.length<12) throw new Error('Digite um celular válido com DDD.');
+  const snap=await getDocs(query(collection(firebaseDb,'Perfis'),where('phone','==',phone),limit(1)));
+  if(snap.empty) throw new Error('Celular não encontrado. Verifique o número ou entre com seu e-mail.');
+  return normalized+'@phone.pulso.local';
+}
 
 function show(t,c='error'){
   msg.textContent=t;
@@ -46,10 +59,8 @@ form.addEventListener('submit',async e=>{
   btn.disabled=true;
   btn.textContent='Entrando...';
   try{
-    if(method==='phone'){
-      throw new Error('O login por celular ainda não está habilitado nesta etapa. Entre com seu e-mail.');
-    }
-    const email=identifier.value.trim().toLowerCase();
+    let email=identifier.value.trim().toLowerCase();
+    if(method==='phone') email=await phoneToSyntheticEmail(identifier.value.trim());
     const password=document.getElementById('password').value;
     if(!email) throw new Error('Digite seu e-mail.');
     if(!password) throw new Error('Digite sua senha.');
