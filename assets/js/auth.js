@@ -1,9 +1,7 @@
 import { firebaseAuth, firebaseDb } from './firebase-config.js';
 import {
   createUserWithEmailAndPassword,
-  sendEmailVerification,
-  RecaptchaVerifier,
-  signInWithPhoneNumber
+  sendEmailVerification
 } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js';
 import {
   collection,
@@ -18,9 +16,6 @@ const form=document.getElementById('signupForm'),message=document.getElementById
 const successTitle=document.getElementById('successTitle'),successText=document.getElementById('successText'),formTitle=document.getElementById('formTitle'),formSubtitle=document.getElementById('formSubtitle');
 const emailTab=document.getElementById('emailTab'),phoneTab=document.getElementById('phoneTab'),emailField=document.getElementById('emailField'),phoneField=document.getElementById('phoneField');
 let method='email';
-let phoneConfirmationResult=null;
-let phoneSignupData=null;
-let recaptchaVerifier=null;
 
 function showMessage(text,type){message.textContent=text;message.className=`message show ${type}`}
 function cleanUsername(v){return v.trim().toLowerCase().replace(/^@+/,'')}
@@ -38,7 +33,7 @@ function setMethod(next){
   document.getElementById('phone').required=phone;
   if(phone){
     message.className='message';
-    submit.textContent='Enviar código por SMS';
+    submit.textContent='Continuar cadastro';
   }else{
     message.className='message';
     submit.textContent='Criar minha conta';
@@ -65,30 +60,6 @@ async function usernameExists(username){
 
 form.addEventListener('submit',async event=>{
   event.preventDefault();
-  if(method==='phone' && phoneConfirmationResult){
-    const code=(document.getElementById('phoneCode')?.value||'').replace(/\D/g,'');
-    if(code.length!==6)return showMessage('Digite o código de 6 dígitos recebido por SMS.','error');
-    submit.disabled=true;
-    submit.textContent='Confirmando...';
-    try{
-      const {user}=await phoneConfirmationResult.confirm(code);
-      await setDoc(doc(firebaseDb,'Perfis',user.uid),{
-        id:user.uid,user_id:user.uid,display_name:phoneSignupData.displayName,username:phoneSignupData.username,
-        birth_date:phoneSignupData.birthDate,bio:'',status:'',avatar_url:null,protected_account:phoneSignupData.age<18,
-        phone:phoneSignupData.phone,created_at:new Date().toISOString(),updated_at:new Date().toISOString()
-      },{merge:true});
-      showConfirmation(`Conta criada para <strong>@${phoneSignupData.username}</strong>.<br><br>Seu celular foi confirmado com sucesso.`,'Cadastro realizado. Celular confirmado com sucesso.');
-      phoneConfirmationResult=null;
-      phoneSignupData=null;
-    }catch(error){
-      const friendly={'auth/invalid-verification-code':'Código incorreto. Confira o SMS e tente novamente.','auth/code-expired':'Esse código expirou. Solicite um novo código.','auth/credential-already-in-use':'Esse celular já está cadastrado. Tente entrar na sua conta.'};
-      showMessage(friendly[error?.code]||error?.message||'Não foi possível confirmar o celular.','error');
-    }finally{
-      submit.disabled=false;
-      submit.textContent='Confirmar código';
-    }
-    return;
-  }
   message.className='message';
   const displayName=document.getElementById('displayName').value.trim();
   const username=cleanUsername(document.getElementById('username').value);
@@ -110,19 +81,23 @@ form.addEventListener('submit',async event=>{
   if(!terms)return showMessage('Aceite os termos e as regras de segurança para continuar.','error');
 
   submit.disabled=true;
-  submit.textContent=method==='phone'?'Enviando código...':'Criando sua conta...';
+  submit.textContent=method==='phone'?'Criando cadastro...':'Criando sua conta...';
   try{
     if(method==='phone'){
       const phone=normalizePhone(document.getElementById('phone').value);
-      if(displayName.length<2)throw new Error('Digite seu nome.');
-      if(!/^[a-z0-9_.]{3,24}$/.test(username))throw new Error('O usuário deve ter 3–24 caracteres: letras, números, _ ou .');
-      if(!birthDate||age===null||age<0)throw new Error('Digite uma data de nascimento válida.');
-      if(age<13)throw new Error('O PULSO não permite cadastro de menores de 13 anos.');
       if(phone.replace(/\D/g,'').length<12)throw new Error('Digite um celular válido com DDD.');
-      if(password.length<8)throw new Error('A senha precisa ter pelo menos 8 caracteres.');
-      if(password!==passwordConfirm)throw new Error('As senhas não são iguais.');
-      if(!terms)throw new Error('Aceite os termos e as regras de segurança para continuar.');
       if(await usernameExists(username))throw Object.assign(new Error('Esse nome de usuário já está em uso. Escolha outro.'),{code:'username-already-exists'});
+      const syntheticEmail=phone.replace(/\D/g,'')+'@phone.pulso.local';
+      const {user}=await createUserWithEmailAndPassword(firebaseAuth,syntheticEmail,password);
+      await setDoc(doc(firebaseDb,'Perfis',user.uid),{
+        id:user.uid,user_id:user.uid,display_name:displayName,username,
+        birth_date:birthDate,bio:'',status:'',avatar_url:null,protected_account:age<18,
+        phone,created_at:new Date().toISOString(),updated_at:new Date().toISOString()
+      },{merge:true});
+      showConfirmation('Conta criada para <strong>@'+username+'</strong>.<br><br>Celular cadastrado: <strong>'+phone+'</strong>.','Cadastro realizado com sucesso.');
+      return;
+    }
+    if(await usernameExists(username))throw Object.assign(new Error('Esse nome de usuário já está em uso. Escolha outro.'),{code:'username-already-exists'});
       if(!recaptchaVerifier){
         const container=document.createElement('div');
         container.id='firebase-recaptcha';
