@@ -14,7 +14,7 @@ async function publish(){
   window.pulsoApprovedMedia=null;['caption','video','photoInput','cameraVideoInput','audioInput'].forEach(id=>{const x=$('#'+id);if(x)x.value=''});msg('✅ Publicado com sucesso!');document.dispatchEvent(new CustomEvent('pulso-published',{detail:{postId:ref.id,mediaType:type,mediaUrl:url}}));
  }catch(e){console.error('[PULSO publish]',e);msg('❌ '+(e.message||'Não foi possível publicar.'),true)}finally{publishing=false;b.disabled=false;b.textContent='Publicar'}
 }
-window.pulsoPublish=publish;window.pulsoPublisherVersion='firebase-v3';
+window.pulsoPublish=publish;window.pulsoPublisherVersion='firebase-v4';
 let audioRecorder=null,audioChunks=[];
 async function recordAudio(){
  try{
@@ -48,7 +48,7 @@ async function openCamera(){
 }
 window.pulsoOpenCamera=openCamera;
 function bind(){
- const b=$('#publishBtn'),p=$('#photoInput'),v=$('#cameraVideoInput'),pb=document.querySelector('[data-camera-photo]'),vb=document.querySelector('[data-camera-video]'),ab=document.querySelector('[data-audio-record]');
+ const b=$('#publishBtn'),p=$('#photoInput'),v=$('#cameraVideoInput'),pb=document.querySelector('[data-camera-photo]'),vb=document.querySelector('#pulsoCameraButton'),ab=document.querySelector('[data-audio-record]');
  if(pb&&p&&!pb.dataset.bound){pb.dataset.bound=1;pb.onclick=()=>p.click()}
  if(vb&&!vb.dataset.bound){vb.dataset.bound=1;vb.onclick=e=>{e.preventDefault();e.stopPropagation();openCamera()}}
  if(ab&&!ab.dataset.bound){ab.dataset.bound=1;ab.onclick=e=>{e.preventDefault();e.stopPropagation();recordAudio()}}
