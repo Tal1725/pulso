@@ -26,7 +26,7 @@ async function init(){
     user=firebaseAuth.currentUser;
     const adminBtn=$('#adminBtn');
     if(adminBtn){adminBtn.hidden=false;document.body.classList.add('pulso-admin-user');}
-    const pSnap=await getDoc(doc(firebaseDb,'Perfis',user.id));
+    const pSnap=await getDoc(doc(firebaseDb,'Perfis',user.uid));
     const p=pSnap.exists()?pSnap.data():{};
     $('#name')?.replaceChildren(document.createTextNode(p.display_name||p['Nome']||user.email||'Membro PULSO'));
     if($('#handle'))$('#handle').textContent=p.username?'@'+p.username:'';
@@ -45,7 +45,7 @@ async function init(){
 async function refreshFollowing(){
   try{
     const rows=await getAll('follows');
-    following=new Set(rows.filter(x=>x.follower_id===user.id).map(x=>x.following_id).filter(Boolean));
+    following=new Set(rows.filter(x=>x.follower_id===user.uid).map(x=>x.following_id).filter(Boolean));
   }catch(e){console.warn('[PULSO] follows não carregou',e);following=new Set();}
   window._following=following;
 }
@@ -53,8 +53,8 @@ async function refreshFollowing(){
 async function loadSocialStats(){
   try{
     const rows=await getAll('follows');
-    const followers=rows.filter(x=>x.following_id===user.id).length;
-    const followingCount=rows.filter(x=>x.follower_id===user.id).length;
+    const followers=rows.filter(x=>x.following_id===user.uid).length;
+    const followingCount=rows.filter(x=>x.follower_id===user.uid).length;
     if($('#followersCount'))$('#followersCount').textContent=followers;
     if($('#followingCount'))$('#followingCount').textContent=followingCount;
   }catch(e){console.warn('[PULSO] stats não carregou',e);}
@@ -68,7 +68,7 @@ async function loadFeed(){
       video_url:x.video_url||x.media_url||'',media_url:x.media_url||x.video_url||'',
       media_type:x.media_type||'vídeo',caption:x.caption||x.legenda||'',created_at:x.created_at||''
     })).sort((a,b)=>timeValue(b.created_at)-timeValue(a.created_at));
-    if(feedMode==='following')posts=posts.filter(p=>following.has(p.user_id)||p.user_id===user.id);
+    if(feedMode==='following')posts=posts.filter(p=>following.has(p.user_id)||p.user_id===user.uid);
     if(!posts.length){
       feed.innerHTML=feedMode==='following'
         ?'<div class="card empty">Você ainda não segue ninguém. Explore o PULSO e siga criadores.</div>'
@@ -124,7 +124,7 @@ window.loadFeed=loadFeed;
 function renderPost(p){
   const prof=profiles.get(p.user_id)||{};
   const pl=currentLikes.filter(x=>x.post_id===p.id);
-  const mine=pl.find(x=>x.user_id===user.id);
+  const mine=pl.find(x=>x.user_id===user.uid);
   const cs=currentComments.filter(x=>x.post_id===p.id);
   const src=p.media_url||p.video_url||'';
   let media='';
@@ -133,7 +133,7 @@ function renderPost(p){
   else media='<video class="video" data-src="'+esc(src)+'" controls playsinline preload="none" muted></video>';
   const reactionCounts=Object.keys(REACTIONS).map(k=>{const n=pl.filter(x=>(x.reaction||'like')===k).length;return n?'<span class="reaction-count">'+REACTIONS[k]+' '+n+'</span>':''}).join('');
   const comments=cs.map(c=>{const cp=profiles.get(c.user_id)||{};return '<div class="comment"><b>'+esc(cp.display_name||'Usuário')+'</b> '+esc(c.content)+'</div>';}).join('')||'<div class="file">Seja o primeiro a comentar.</div>';
-  return '<article class="card post" data-post="'+esc(p.id)+'"><div class="posthead" data-open-profile="'+esc(p.user_id)+'" role="button" tabindex="0"><div class="avatar">'+avatarHtml(prof)+'</div><div class="meta"><strong>'+esc(prof.display_name||'Usuário')+'</strong><span>'+(prof.username?'@'+esc(prof.username):'membro PULSO')+'</span></div></div>'+media+'<div class="caption">'+esc(p.caption)+'</div><div class="actions"><div class="reaction-wrap"><button class="action '+(mine?'active':'')+'" data-like type="button" aria-pressed="'+(mine?'true':'false')+'">'+(mine?'❤️ Descurtir':'♡ Curtir')+' · '+pl.length+'</button><button class="action reaction-more" data-reaction-menu type="button" aria-expanded="false">🙂 Reagir</button><div class="reaction-picker" data-reaction-picker role="menu" style="display:none">'+Object.entries(REACTIONS).map(([k,v])=>'<button type="button" data-reaction="'+k+'" title="'+k+'">'+v+'</button>').join('')+'</div></div>'+(reactionCounts?'<div class="reaction-summary">'+reactionCounts+'</div>':'')+(p.user_id!==user.id?'<button class="action follow-action" data-follow-user="'+esc(p.user_id)+'" type="button">'+(following.has(p.user_id)?'✓ Seguindo':'+ Seguir')+'</button>':'')+'<button class="action" data-likers type="button">👥 Quem curtiu</button><button class="action" data-focus type="button">💬 '+cs.length+'</button>'+(p.user_id===user.id?'<button class="action delete-action" data-delete type="button" title="Excluir publicação">🗑️ Excluir</button>':'')+'</div><div class="comments"><strong>Comentários</strong><div>'+comments+'</div></div><div class="commentbox"><input data-comment maxlength="500" placeholder="Escreva um comentário..."><button class="pill" data-send type="button">Enviar</button></div></article>';
+  return '<article class="card post" data-post="'+esc(p.id)+'"><div class="posthead" data-open-profile="'+esc(p.user_id)+'" role="button" tabindex="0"><div class="avatar">'+avatarHtml(prof)+'</div><div class="meta"><strong>'+esc(prof.display_name||'Usuário')+'</strong><span>'+(prof.username?'@'+esc(prof.username):'membro PULSO')+'</span></div></div>'+media+'<div class="caption">'+esc(p.caption)+'</div><div class="actions"><div class="reaction-wrap"><button class="action '+(mine?'active':'')+'" data-like type="button" aria-pressed="'+(mine?'true':'false')+'">'+(mine?'❤️ Descurtir':'♡ Curtir')+' · '+pl.length+'</button><button class="action reaction-more" data-reaction-menu type="button" aria-expanded="false">🙂 Reagir</button><div class="reaction-picker" data-reaction-picker role="menu" style="display:none">'+Object.entries(REACTIONS).map(([k,v])=>'<button type="button" data-reaction="'+k+'" title="'+k+'">'+v+'</button>').join('')+'</div></div>'+(reactionCounts?'<div class="reaction-summary">'+reactionCounts+'</div>':'')+(p.user_id!==user.uid?'<button class="action follow-action" data-follow-user="'+esc(p.user_id)+'" type="button">'+(following.has(p.user_id)?'✓ Seguindo':'+ Seguir')+'</button>':'')+'<button class="action" data-likers type="button">👥 Quem curtiu</button><button class="action" data-focus type="button">💬 '+cs.length+'</button>'+(p.user_id===user.uid?'<button class="action delete-action" data-delete type="button" title="Excluir publicação">🗑️ Excluir</button>':'')+'</div><div class="comments"><strong>Comentários</strong><div>'+comments+'</div></div><div class="commentbox"><input data-comment maxlength="500" placeholder="Escreva um comentário..."><button class="pill" data-send type="button">Enviar</button></div></article>';
 }
 
 function bindFeed(){
@@ -158,13 +158,13 @@ async function toggleReaction(id,reaction){
   const card=document.querySelector('[data-post="'+CSS.escape(id)+'"]'),button=card?.querySelector('[data-like]');
   if(button)button.disabled=true;
   try{
-    const existing=currentLikes.find(x=>x.post_id===id&&x.user_id===user.id);
-    const likeId=existing?.id||id+'_'+user.id;
+    const existing=currentLikes.find(x=>x.post_id===id&&x.user_id===user.uid);
+    const likeId=existing?.id||id+'_'+user.uid;
     if(existing?.reaction===reaction){await deleteDoc(doc(firebaseDb,'Gostos',likeId));currentLikes=currentLikes.filter(x=>x.id!==likeId);}
     else{
-      const data={post_id:id,user_id:user.id,reaction,created_at:new Date().toISOString()};
+      const data={post_id:id,user_id:user.uid,reaction,created_at:new Date().toISOString()};
       await setDoc(doc(firebaseDb,'Gostos',likeId),data);
-      currentLikes=currentLikes.filter(x=>!(x.post_id===id&&x.user_id===user.id));currentLikes.push({id:likeId,...data});
+      currentLikes=currentLikes.filter(x=>!(x.post_id===id&&x.user_id===user.uid));currentLikes.push({id:likeId,...data});
     }
     updateReactionCard(id);
   }catch(e){console.error('[PULSO] reação',e);if(button)button.title='Não foi possível registrar a reação. Toque novamente.';}
@@ -173,7 +173,7 @@ async function toggleReaction(id,reaction){
 
 function updateReactionCard(id){
   const card=document.querySelector('[data-post="'+CSS.escape(id)+'"]');if(!card)return;
-  const pl=currentLikes.filter(x=>x.post_id===id),mine=pl.find(x=>x.user_id===user.id),button=card.querySelector('[data-like]');
+  const pl=currentLikes.filter(x=>x.post_id===id),mine=pl.find(x=>x.user_id===user.uid),button=card.querySelector('[data-like]');
   if(button){button.classList.toggle('active',!!mine);button.setAttribute('aria-pressed',mine?'true':'false');button.textContent=(mine?'❤️ Descurtir':'♡ Curtir')+' · '+pl.length;}
   let summary=card.querySelector('.reaction-summary');
   const html=Object.keys(REACTIONS).map(k=>{const n=pl.filter(x=>(x.reaction||'like')===k).length;return n?'<span class="reaction-count">'+REACTIONS[k]+' '+n+'</span>':''}).join('');
@@ -181,10 +181,10 @@ function updateReactionCard(id){
 }
 
 async function toggleFollow(id,b){
-  b.disabled=true;const exists=following.has(id),followId=user.id+'_'+id;
+  b.disabled=true;const exists=following.has(id),followId=user.uid+'_'+id;
   try{
     if(exists){await deleteDoc(doc(firebaseDb,'follows',followId));following.delete(id);}
-    else{await setDoc(doc(firebaseDb,'follows',followId),{follower_id:user.id,following_id:id,created_at:new Date().toISOString()});following.add(id);}
+    else{await setDoc(doc(firebaseDb,'follows',followId),{follower_id:user.uid,following_id:id,created_at:new Date().toISOString()});following.add(id);}
     window._following=following;b.textContent=exists?'+ Seguir':'✓ Seguindo';
     const fc=$('#followingCount');if(fc){const n=Number(fc.textContent||0);fc.textContent=Math.max(0,n+(exists?-1:1));}
     document.dispatchEvent(new CustomEvent('pulso-follow-changed'));
@@ -195,8 +195,8 @@ async function toggleFollow(id,b){
 async function addComment(id,card){
   const input=card.querySelector('[data-comment]'),text=input?.value.trim();if(!text)return;
   try{
-    const ref=await addDoc(collection(firebaseDb,'comments'),{post_id:id,user_id:user.id,content:text,created_at:new Date().toISOString()});
-    currentComments.push({id:ref.id,post_id:id,user_id:user.id,content:text,created_at:new Date().toISOString()});
+    const ref=await addDoc(collection(firebaseDb,'comments'),{post_id:id,user_id:user.uid,content:text,created_at:new Date().toISOString()});
+    currentComments.push({id:ref.id,post_id:id,user_id:user.uid,content:text,created_at:new Date().toISOString()});
     input.value='';
     const box=card.querySelector('.comments>div');if(box){if(box.querySelector('.file'))box.innerHTML='';const row=document.createElement('div');row.className='comment';row.innerHTML='<b>'+esc($('#name')?.textContent||'Você')+'</b> '+esc(text);box.appendChild(row);}
     const focus=card.querySelector('[data-focus]');if(focus){const m=focus.textContent.match(/\d+/);focus.textContent='💬 '+String(Number(m?.[0]||0)+1);}
@@ -235,7 +235,7 @@ document.addEventListener('click',e=>{
 async function showPeople(kind){
   try{
     const rows=await getAll('follows');
-    const ids=rows.filter(x=>kind==='followers'?x.following_id===user.id:x.follower_id===user.id).map(x=>kind==='followers'?x.follower_id:x.following_id);
+    const ids=rows.filter(x=>kind==='followers'?x.following_id===user.uid:x.follower_id===user.uid).map(x=>kind==='followers'?x.follower_id:x.following_id);
     if(!ids.length){openModal(kind==='followers'?'Quem te seguiu':'Quem você segue','Ainda não há ninguém nesta lista.');return;}
     await Promise.all([...new Set(ids)].map(ensureProfile));
     openModal(kind==='followers'?'Quem te seguiu':'Quem você segue',[...new Set(ids)].map(id=>{const p=profiles.get(id)||{};return '<div class="person-row"><div class="avatar mini">'+avatarHtml(p)+'</div><div><strong>'+esc(p.display_name||'Usuário')+'</strong><span>'+(p.username?'@'+esc(p.username):'membro PULSO')+'</span></div></div>';}).join(''));
