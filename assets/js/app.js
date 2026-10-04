@@ -57,7 +57,8 @@ async function init(){
     if(!firebaseAuth.currentUser){location.href='entrar.html?next=app';return;}
     user=firebaseAuth.currentUser;
     const adminBtn=$('#adminBtn');
-    if(adminBtn){adminBtn.hidden=false;document.body.classList.add('pulso-admin-user');}
+    const isAdmin=(user.email||'').toLowerCase()==='ayslan.tal@gmail.com';
+    if(adminBtn){adminBtn.hidden=!isAdmin;if(isAdmin)document.body.classList.add('pulso-admin-user');}
     const p=await getCurrentProfile();
     $('#name')?.replaceChildren(document.createTextNode(p.display_name||user.email||'Membro PULSO'));
     if($('#handle'))$('#handle').textContent=p.username?'@'+p.username:'';
