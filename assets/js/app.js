@@ -180,7 +180,7 @@ function bindFeed(){
     author?.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();window.pulsoOpenProfile?.(author.dataset.openProfile);}});
     card.querySelector('[data-like]')?.addEventListener('click',async e=>{e.preventDefault();e.stopPropagation();await toggleReaction(id,'like');});
     const reactionMenu=card.querySelector('[data-reaction-menu]'),picker=card.querySelector('[data-reaction-picker]');
-    reactionMenu?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(!picker)return;const open=picker.style.display!=='none';picker.classList.toggle('is-open',!open);reactionMenu.setAttribute('aria-expanded',open?'false':'true');});
+    reactionMenu?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(!picker)return;const open=picker.style.display!=='none';picker.style.display=open?'none':'flex';picker.classList.toggle('is-open',!open);reactionMenu.setAttribute('aria-expanded',open?'false':'true');});
     card.querySelectorAll('[data-reaction]').forEach(b=>b.addEventListener('click',async e=>{e.preventDefault();e.stopPropagation();picker?.classList.remove('is-open');reactionMenu?.setAttribute('aria-expanded','false');await toggleReaction(id,b.dataset.reaction);}));
     card.querySelector('[data-follow-user]')?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();toggleFollow(e.currentTarget.dataset.followUser,e.currentTarget);});
     card.querySelector('[data-share]')?.addEventListener('click',()=>sharePost(id));
