@@ -8,20 +8,13 @@
   "background_color": "#111111",
   "theme_color": "#111111",
   "orientation": "portrait-primary",
-  "icons": [
-    {
-      "src": "/pulso/assets/img/pwa-icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/pulso/assets/img/pwa-icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
+ "icons": [
+  {
+    "src": "/pulso/assets/img/apple-touch-icon.png",
+    "sizes": "180x180",
+    "type": "image/png"
+  }
+],
   "screenshots": [
     {
       "src": "/pulso/assets/img/pwa-desktop.png",
