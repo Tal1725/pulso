@@ -121,3 +121,6 @@ body:before{
   .wrap{padding-top:18px}
   .post.card{box-shadow:0 16px 40px rgba(0,0,0,.28)!important}
 }
+
+/* Correção: seletor visual das reações */
+.reaction-picker.is-open{opacity:1!important;visibility:visible!important;transform:translateY(0) scale(1)!important}
