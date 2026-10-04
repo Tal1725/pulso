@@ -39,3 +39,85 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
 .empty.card{border:1px dashed rgba(255,255,255,.12);background:rgba(15,17,28,.65);border-radius:22px}
 @media(max-width:850px){.topin{height:64px;padding:0 12px}.brand span{display:none}.pulso-search{margin-left:0;max-width:none}.pulso-search input{display:none}.pulso-search button{margin-left:auto}.nav{gap:4px}.nav .pill{padding:8px 10px;font-size:12px}.wrap{padding:18px 10px 60px}.grid{display:block}.side{display:none}.post.card{border-radius:21px}.post>video.video,.post>img.video{width:calc(100% - 12px);margin:0 6px;border-radius:17px;aspect-ratio:9/14;max-height:74vh}.feed-switch-note{display:none}.feed-switch{justify-content:center}.feed-switch-btn{flex:1}.composer{padding:14px;border-radius:20px}.row{gap:6px}.upload-icon{width:50px;height:50px}.composer-actions .pill{padding:10px 13px}}
 @media(max-width:520px){.topin{gap:7px}.nav .pill:nth-child(2),.nav .pill:nth-child(3),.nav .pill:nth-child(4){display:none}.brand img{width:32px}.composer textarea{min-height:62px}.upload-icon{width:46px;height:46px;border-radius:13px}.upload-icon>span{font-size:8px}.composer-actions .primary{min-width:92px}.posthead{padding:12px 13px}.caption{font-size:14px}.actions{padding-left:12px;padding-right:12px}.action{padding:7px 10px;font-size:12px}}
+
+
+/* PULSO FEED — visual alinhado à nova identidade */
+body{
+  background:
+    radial-gradient(900px 500px at 8% 0%,rgba(255,61,142,.14),transparent 58%),
+    radial-gradient(800px 500px at 92% 8%,rgba(79,140,255,.13),transparent 55%),
+    radial-gradient(700px 500px at 50% 100%,rgba(168,85,247,.10),transparent 60%),
+    #090b14;
+}
+body:before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;
+  background:linear-gradient(120deg,rgba(255,61,142,.025),transparent 35%,rgba(56,189,248,.025));
+}
+.top{
+  background:rgba(9,11,20,.76);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  box-shadow:0 10px 40px rgba(0,0,0,.18);
+  backdrop-filter:blur(18px);
+}
+.brand{gap:9px}.brand img{filter:drop-shadow(0 0 12px rgba(255,61,142,.35))}
+.brand span{
+  background:linear-gradient(100deg,#ff5a9f,#a855f7 55%,#55a2ff);
+  -webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;
+}
+.wrap{padding-top:34px}
+.notice{
+  border-radius:18px!important;
+  background:linear-gradient(100deg,rgba(255,61,142,.12),rgba(168,85,247,.10),rgba(56,189,248,.08))!important;
+}
+.composer{
+  background:linear-gradient(145deg,rgba(27,30,49,.94),rgba(13,15,28,.92))!important;
+  border-color:rgba(255,255,255,.12)!important;
+}
+.composer textarea{
+  background:rgba(255,255,255,.025)!important;
+  border-radius:16px!important;
+  padding:13px!important;
+  border:1px solid rgba(255,255,255,.07)!important;
+}
+.upload-icon{
+  box-shadow:0 8px 20px rgba(0,0,0,.15);
+  transition:transform .18s,box-shadow .18s,border-color .18s!important;
+}
+.upload-icon:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(0,0,0,.24)}
+.post.card{
+  position:relative;
+  overflow:hidden;
+  background:linear-gradient(150deg,rgba(24,27,44,.97),rgba(9,11,19,.96))!important;
+}
+.post.card:before{
+  content:"";position:absolute;left:0;right:0;top:0;height:2px;
+  background:linear-gradient(90deg,#ff3d8e,#a855f7,#4f8cff,#38bdf8);
+  opacity:.8;z-index:2;
+}
+.post>video.video,.post>img.video{
+  box-shadow:0 18px 45px rgba(0,0,0,.40),0 0 35px rgba(139,92,246,.06)!important;
+}
+.action,.follow-small{
+  transition:transform .16s,background .16s,border-color .16s!important;
+}
+.action:hover,.follow-small:hover{transform:translateY(-1px)}
+.side{
+  background:linear-gradient(160deg,rgba(25,28,46,.94),rgba(10,12,22,.92))!important;
+}
+.side>.pill{
+  background:linear-gradient(100deg,rgba(255,61,142,.20),rgba(168,85,247,.18),rgba(79,140,255,.14))!important;
+}
+.avatar{
+  box-shadow:0 0 0 2px rgba(255,255,255,.06),0 0 26px rgba(168,85,247,.20)!important;
+}
+.feed-switch{
+  background:rgba(10,12,22,.76)!important;
+  border-color:rgba(255,255,255,.10)!important;
+}
+.feed-switch-btn.active{
+  background:linear-gradient(100deg,rgba(255,61,142,.28),rgba(168,85,247,.20),rgba(79,140,255,.14))!important;
+}
+@media(max-width:850px){
+  .wrap{padding-top:18px}
+  .post.card{box-shadow:0 16px 40px rgba(0,0,0,.28)!important}
+}
