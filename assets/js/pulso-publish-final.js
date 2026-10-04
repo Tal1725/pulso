@@ -4,7 +4,8 @@
 
   const SUPABASE_URL = 'https://vqpavcyehgdifbtvzhcn.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_915zO84U7fk0ZAjE4vdsFQ_yRWDA6Cm';
-  const BUCKET = 'pulso-videos';
+  const CLOUDINARY_CLOUD_NAME = 'zzllchy7';
+  const CLOUDINARY_UPLOAD_PRESET = 'pulso_publico';
   const MAX_UPLOAD = 50 * 1024 * 1024;
   let dbPromise = null;
   let publishing = false;
@@ -145,15 +146,29 @@
           throw new Error('Formato de mídia não aceito pelo PULSO.');
         }
 
-        const upload = await supabase.storage
-          .from(BUCKET)
-          .upload(path, file, { contentType: contentType, upsert: false });
+        const uploadEndpoint = 'https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD_NAME + '/' + (type === 'image' ? 'image' : type === 'audio' ? 'video' : 'video') + '/upload';
+        const form = new FormData();
+        form.append('file', file);
+        form.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+        form.append('folder', 'pulso/' + uid);
 
-        if (upload.error) {
-          throw new Error('Falha no envio: ' + upload.error.message);
+        const uploadResponse = await fetch(uploadEndpoint, {
+          method: 'POST',
+          body: form
+        });
+
+        if (!uploadResponse.ok) {
+          let detail = '';
+          try {
+            const data = await uploadResponse.json();
+            detail = data && data.error && data.error.message ? data.error.message : '';
+          } catch (_) {}
+          throw new Error('Falha no envio para o armazenamento: ' + (detail || 'Cloudinary recusou o arquivo.'));
         }
 
-        publicUrl = supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+        const cloudinaryData = await uploadResponse.json();
+        publicUrl = cloudinaryData && (cloudinaryData.secure_url || cloudinaryData.url);
+        if (!publicUrl) throw new Error('O armazenamento não retornou a URL da mídia.');
       }
 
       const insertResult = await supabase
