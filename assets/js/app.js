@@ -136,7 +136,7 @@ async function ensureProfile(targetId){
 window.pulsoOpenProfile=async function(targetId=null){
   const id=targetId||user?.uid;
   if(!id){location.href='entrar.html?next=app';return;}
-  try{await import('./pulso-profile-view.js?v=20261004a');window.pulsoOpenProfileReal?.(id);}catch(e){console.error('[PULSO] perfil',e);}
+  try{await import('./pulso-profile-view.js?v=20261004d');window.pulsoOpenProfileReal?.(id);}catch(e){console.error('[PULSO] perfil',e);}
 };
 
 function activateLazyMedia(root=document){
