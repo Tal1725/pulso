@@ -22,7 +22,7 @@ const emailTab=document.getElementById('emailTab'),
 let method='email';
 
 function normalizePhone(value){
-  return String(value||'').replace(/\\D/g,'');
+  return String(value||'').replace(/\D/g,'');
 }
 
 async function phoneToSyntheticEmail(phone){
