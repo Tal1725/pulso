@@ -34,10 +34,27 @@ async function render(){
    (mine.length?'<h3>Minhas Colmeias</h3>'+mine.map(h=>card(h,u.uid)).join(''):'<div style="padding:12px 0"><strong>Você ainda não participa de nenhuma Colmeia.</strong><p>Crie a sua ou entre em uma abaixo.</p></div>')+
    '<h3 style="margin-top:20px">Explorar Colmeias</h3>'+
    (hs.length?hs.map(h=>card(h,u.uid)).join(''):'<p>Nenhuma Colmeia criada ainda. Seja o primeiro.</p>');
-  body.querySelector('#newHive').onclick=create;body.querySelectorAll('.hive-category').forEach(b=>b.onclick=()=>{const q=encodeURIComponent(b.dataset.category);const target=[...body.querySelectorAll('article')].filter(x=>x.textContent.toLowerCase().includes(b.dataset.category.toLowerCase()));target.forEach(x=>x.style.display='');body.querySelectorAll('article').forEach(x=>{if(!x.textContent.toLowerCase().includes(b.dataset.category.toLowerCase()))x.style.display='none'});});body.querySelector('#exploreHive').onclick=()=>body.querySelector('h3[style]')?.scrollIntoView({behavior:'smooth'});body.querySelector('#mineHive').onclick=()=>body.querySelector('h3:not([style])')?.scrollIntoView({behavior:'smooth'});
+  body.querySelector('#newHive').onclick=create;
+  body.querySelectorAll('.hive-category').forEach(b=>b.onclick=()=>filterHives(b.dataset.category));
+  body.querySelector('#exploreHive').onclick=()=>filterHives('');
+  body.querySelector('#mineHive').onclick=()=>showMineOnly();
   body.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>toggle(b.dataset.hive,b.dataset.action));
  }catch(e){console.error(e);body.innerHTML='<p>Não foi possível carregar as Colmeias.</p>'}
 }
+function filterHives(category){
+ const articles=[...bodyArticles()];
+ articles.forEach(a=>{a.style.display=!category||a.textContent.toLowerCase().includes(category.toLowerCase())?'':'none';});
+ const title=modal?.querySelector('#hivesBody h3');
+ if(title&&category)title.textContent='Colmeias de '+category;
+}
+function showMineOnly(){
+ const articles=[...bodyArticles()];
+ const uid=firebaseAuth.currentUser?.uid||'';
+ articles.forEach(a=>{const b=a.querySelector('[data-action]');const action=b?.dataset.action;a.style.display=action==='leave'?'':'none';});
+ const title=modal?.querySelector('#hivesBody h3');if(title)title.textContent='Minhas Colmeias';
+}
+function bodyArticles(){return modal?[...modal.querySelectorAll('#hivesBody article')]:[];}
+
 async function create(){
  const u=firebaseAuth.currentUser;if(!u)return;
  const name=prompt('Nome da Colmeia:');if(!name?.trim())return;
