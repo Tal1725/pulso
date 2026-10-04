@@ -5,10 +5,10 @@
   "lang": "pt-BR",
   "dir": "ltr",
   "id": "/pulso/",
-  "start_url": "/pulso/",
+  "start_url": "/pulso/?source=pwa",
   "scope": "/pulso/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "orientation": "portrait-primary",
   "background_color": "#05060b",
   "theme_color": "#05060b",
@@ -17,7 +17,13 @@
   "icons": [
     {
       "src": "assets/img/logo.svg",
-      "sizes": "any",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/img/logo.svg",
+      "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }
