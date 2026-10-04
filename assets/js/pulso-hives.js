@@ -30,11 +30,11 @@ async function render(){
  try{
   const hs=await all('hives');
   const mine=hs.filter(h=>(Array.isArray(h.members)&&h.members.includes(u.uid))||h.creator_id===u.uid);
-  body.innerHTML='<div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button id="newHive" class="pill primary">+ Criar Colmeia</button></div>'+
+  body.innerHTML='<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:18px"><button id="newHive" class="pill primary" type="button">🐝 Criar Colmeia</button><button id="exploreHive" class="pill" type="button">🔎 Explorar</button><button id="mineHive" class="pill" type="button">⭐ Minhas</button></div>'+
    (mine.length?'<h3>Minhas Colmeias</h3>'+mine.map(h=>card(h,u.uid)).join(''):'<div style="padding:12px 0"><strong>Você ainda não participa de nenhuma Colmeia.</strong><p>Crie a sua ou entre em uma abaixo.</p></div>')+
    '<h3 style="margin-top:20px">Explorar Colmeias</h3>'+
    (hs.length?hs.map(h=>card(h,u.uid)).join(''):'<p>Nenhuma Colmeia criada ainda. Seja o primeiro.</p>');
-  body.querySelector('#newHive').onclick=create;
+  body.querySelector('#newHive').onclick=create;body.querySelector('#exploreHive').onclick=()=>body.querySelector('h3[style]')?.scrollIntoView({behavior:'smooth'});body.querySelector('#mineHive').onclick=()=>body.querySelector('h3:not([style])')?.scrollIntoView({behavior:'smooth'});
   body.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>toggle(b.dataset.hive,b.dataset.action));
  }catch(e){console.error(e);body.innerHTML='<p>Não foi possível carregar as Colmeias.</p>'}
 }
