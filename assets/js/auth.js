@@ -97,28 +97,6 @@ form.addEventListener('submit',async event=>{
       showConfirmation('Conta criada para <strong>@'+username+'</strong>.<br><br>Celular cadastrado: <strong>'+phone+'</strong>.','Cadastro realizado com sucesso.');
       return;
     }
-    if(await usernameExists(username))throw Object.assign(new Error('Esse nome de usuário já está em uso. Escolha outro.'),{code:'username-already-exists'});
-      if(!recaptchaVerifier){
-        const container=document.createElement('div');
-        container.id='firebase-recaptcha';
-        form.appendChild(container);
-        recaptchaVerifier=new RecaptchaVerifier(firebaseAuth,'firebase-recaptcha',{size:'invisible'});
-      }
-      phoneSignupData={displayName,username,birthDate,age,password,terms,phone};
-      phoneConfirmationResult=await signInWithPhoneNumber(firebaseAuth,phone,recaptchaVerifier);
-      let codeField=document.getElementById('phoneCodeField');
-      if(!codeField){
-        codeField=document.createElement('div');
-        codeField.id='phoneCodeField';
-        codeField.className='field';
-        codeField.innerHTML='<label for="phoneCode">Código recebido por SMS</label><input id="phoneCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="Digite os 6 números">';
-        form.insertBefore(codeField,submit);
-      }
-      document.getElementById('phoneCode').focus();
-      submit.textContent='Confirmar código';
-      showMessage('Enviamos um código por SMS para seu celular. Digite o código acima.','success');
-      submit.disabled=false;
-      return;
     }
     if(await usernameExists(username))throw Object.assign(new Error('Esse nome de usuário já está em uso. Escolha outro.'),{code:'username-already-exists'});
 
@@ -158,7 +136,6 @@ form.addEventListener('submit',async event=>{
   }finally{
     submit.disabled=false;
     if(method==='email')submit.textContent='Criar minha conta';
-    else if(phoneConfirmationResult)submit.textContent='Confirmar código';
-    else submit.textContent='Enviar código por SMS';
+    else submit.textContent='Continuar cadastro';
   }
 });
