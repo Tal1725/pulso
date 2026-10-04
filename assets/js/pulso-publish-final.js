@@ -47,9 +47,24 @@ async function openCamera(){
  }catch(e){cameraStream?.getTracks().forEach(t=>t.stop());cameraStream=null;msg('❌ '+(e.message||'Não foi possível acessar a câmera.'),true);console.error('[PULSO camera]',e)}
 }
 window.pulsoOpenCamera=openCamera;
+let photoStream=null;
+async function openPhotoCamera(){
+ try{
+  if(!navigator.mediaDevices?.getUserMedia)throw Error('Seu navegador não liberou acesso à câmera.');
+  if(photoStream)return;
+  photoStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
+  const m=document.createElement('div');m.id='pulsoPhotoModal';m.style.cssText='position:fixed;inset:0;z-index:100002;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;padding:16px';
+  m.innerHTML='<div style="width:min(520px,100%);background:#17171b;color:#fff;border-radius:20px;padding:16px;text-align:center"><h2>📸 Tirar foto</h2><video id="pulsoPhotoPreview" autoplay playsinline muted style="width:100%;max-height:65vh;object-fit:cover;border-radius:16px;background:#000"></video><div style="display:flex;gap:10px;justify-content:center;margin-top:14px"><button id="pulsoPhotoCapture" type="button">📸 Tirar foto</button><button id="pulsoPhotoClose" type="button">Fechar</button></div><p id="pulsoPhotoMsg"></p></div>';
+  document.body.appendChild(m);const video=$('#pulsoPhotoPreview');video.srcObject=photoStream;
+  const close=()=>{photoStream?.getTracks().forEach(t=>t.stop());photoStream=null;m.remove()};
+  $('#pulsoPhotoCapture').onclick=()=>{if(!video.videoWidth)return;const canvas=document.createElement('canvas');canvas.width=video.videoWidth;canvas.height=video.videoHeight;canvas.getContext('2d').drawImage(video,0,0,canvas.width,canvas.height);canvas.toBlob(blob=>{if(!blob)return;window.pulsoApprovedMedia={file:new File([blob],'pulso-foto-'+Date.now()+'.jpg',{type:'image/jpeg'})};$('#pulsoPhotoMsg').textContent='✅ Foto capturada. Clique em Publicar.';close();msg('📸 Foto capturada. Agora clique em Publicar.');},'image/jpeg',.92)};
+  $('#pulsoPhotoClose').onclick=close;
+ }catch(e){photoStream?.getTracks().forEach(t=>t.stop());photoStream=null;msg('❌ '+(e.message||'Não foi possível acessar a câmera para a foto.'),true);console.error('[PULSO photo]',e)}
+}
+window.pulsoOpenPhoto=openPhotoCamera;
 function bind(){
  const b=$('#publishBtn'),p=$('#photoInput'),v=$('#cameraVideoInput'),pb=document.querySelector('[data-camera-photo]'),vb=document.querySelector('#pulsoCameraButton'),ab=document.querySelector('[data-audio-record]');
- if(pb&&p&&!pb.dataset.bound){pb.dataset.bound=1;pb.onclick=()=>p.click()}
+ if(pb&&!pb.dataset.bound){pb.dataset.bound=1;pb.onclick=e=>{e.preventDefault();e.stopPropagation();openPhotoCamera()}}
  if(vb&&!vb.dataset.bound){vb.dataset.bound=1;vb.onclick=e=>{e.preventDefault();e.stopPropagation();openCamera()}}
  if(ab&&!ab.dataset.bound){ab.dataset.bound=1;ab.onclick=e=>{e.preventDefault();e.stopPropagation();recordAudio()}}
  if(b&&!b.dataset.firebase){b.dataset.firebase=1;b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();publish()})}
