@@ -175,6 +175,7 @@ function bindFeed(){
     reactionMenu?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(!picker)return;const open=picker.style.display!=='none';picker.style.display=open?'none':'flex';reactionMenu.setAttribute('aria-expanded',open?'false':'true');});
     card.querySelectorAll('[data-reaction]').forEach(b=>b.addEventListener('click',async e=>{e.preventDefault();e.stopPropagation();picker&&(picker.style.display='none');reactionMenu?.setAttribute('aria-expanded','false');await toggleReaction(id,b.dataset.reaction);}));
     card.querySelector('[data-follow-user]')?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();toggleFollow(e.currentTarget.dataset.followUser,e.currentTarget);});
+    card.querySelector('[data-share]')?.addEventListener('click',()=>sharePost(id));
     card.querySelector('[data-likers]')?.addEventListener('click',()=>showLikers(id));
     card.querySelector('[data-focus]')?.addEventListener('click',()=>card.querySelector('[data-comment]')?.focus());
     card.querySelector('[data-send]')?.addEventListener('click',()=>addComment(id,card));
