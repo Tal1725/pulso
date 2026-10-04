@@ -97,7 +97,6 @@ form.addEventListener('submit',async event=>{
       showConfirmation('Conta criada para <strong>@'+username+'</strong>.<br><br>Celular cadastrado: <strong>'+phone+'</strong>.','Cadastro realizado com sucesso.');
       return;
     }
-    }
     if(await usernameExists(username))throw Object.assign(new Error('Esse nome de usuário já está em uso. Escolha outro.'),{code:'username-already-exists'});
 
     const {user}=await createUserWithEmailAndPassword(firebaseAuth,email,password);
