@@ -15,7 +15,7 @@ async function getAll(name){const s=await getDocs(collection(firebaseDb,name));r
 async function openProfile(targetId=null){
   const user=firebaseAuth.currentUser;
   if(!user){location.href='entrar.html?next=app';return;}
-  const id=targetId||user.id;
+  const id=targetId||user.uid;
   let m=document.getElementById('pulsoProfileView');
   if(m&&!m.querySelector('#ppBody')){m.remove();m=null;}
   if(!m){
@@ -27,10 +27,15 @@ async function openProfile(targetId=null){
   const body=m.querySelector('#ppBody');body.innerHTML='<div style="padding:20px 0">Carregando perfil e publicações...</div>';
   try{
     const pr=await getDoc(doc(firebaseDb,'Perfis',id));
-    const p=pr.exists()?pr.data():{};
+    let p=pr.exists()?pr.data():null;
+    if(!p){
+      const profiles=await getAll('Perfis');
+      const found=profiles.find(x=>x.user_id===id||x.uid===id||x.auth_uid===id||x.id===id);
+      p=found||{};
+    }
     const all=await getAll('Posts');
     const posts=all.filter(x=>(x.user_id||x.legacy_user_id)===id).sort((a,b)=>timeValue(b.created_at)-timeValue(a.created_at));
-    m.querySelector('#ppTitle').textContent=id===user.id?'Meu perfil':'Perfil do usuário';
+    m.querySelector('#ppTitle').textContent=id===user.uid?'Meu perfil':'Perfil do usuário';
     const avatar=p.avatar_url?'<img src="'+esc(p.avatar_url)+'" alt="Foto de perfil" style="width:86px;height:86px;border-radius:50%;object-fit:cover">':'<div style="width:86px;height:86px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#ee3f91,#7457e8);color:#fff;font-size:34px;font-weight:900">'+esc((p.display_name||p['Nome de usuário']||p['Nome']||'P')[0].toUpperCase())+'</div>';
     const media=x=>{const s=esc(x.media_url||x.video_url||'');if(!s)return '<div style="padding:28px;border-radius:14px;background:#222532;color:#aeb2c2">Mídia indisponível</div>';if(x.media_type==='image')return '<img src="'+s+'" alt="Publicação" loading="lazy" style="display:block;width:100%;max-height:460px;object-fit:contain;border-radius:14px;background:#0b0c10">';if(x.media_type==='audio')return '<audio src="'+s+'" controls preload="none" style="width:100%"></audio>';return '<video data-src="'+s+'" controls playsinline preload="none" style="display:block;width:100%;max-height:460px;border-radius:14px;background:#090a0c"></video>';};
     const pub=posts.length?posts.map(x=>'<article style="padding:16px 0;border-top:1px solid rgba(255,255,255,.08)">'+media(x)+'<div style="margin-top:9px;line-height:1.45">'+esc(x.caption||x.legenda||'')+'</div><div style="margin-top:6px;font-size:12px;color:#9aa0b2">'+(timeValue(x.created_at)?new Date(timeValue(x.created_at)).toLocaleString('pt-BR'):'')+'</div></article>').join(''):'<div style="padding:22px 0;color:#aeb2c2">Nenhuma publicação encontrada para este perfil.</div>';
