@@ -27,8 +27,9 @@ function normalizePhone(value){
 
 async function phoneToSyntheticEmail(phone){
   const normalized=normalizePhone(phone);
-  if(normalized.length<12) throw new Error('Digite um celular válido com DDD.');
-  const snap=await getDocs(query(collection(firebaseDb,'Perfis'),where('phone','==',phone),limit(1)));
+  if(normalized.length<12 || normalized.length>13) throw new Error('Digite um celular válido com DDD.');
+  const storedPhone='+'+normalized;
+  const snap=await getDocs(query(collection(firebaseDb,'Perfis'),where('phone','==',storedPhone),limit(1)));
   if(snap.empty) throw new Error('Celular não encontrado. Verifique o número ou entre com seu e-mail.');
   return normalized+'@phone.pulso.local';
 }
