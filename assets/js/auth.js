@@ -47,14 +47,14 @@ function setMethod(next){
 emailTab.addEventListener('click',()=>setMethod('email'));
 phoneTab.addEventListener('click',()=>setMethod('phone'));
 
-function showConfirmation(text){
+function showConfirmation(text,notice='Cadastro realizado.'){
   form.classList.add('hidden');
   document.getElementById('authTabs').classList.add('hidden');
   formTitle.classList.add('hidden');
   formSubtitle.classList.add('hidden');
   successTitle.classList.remove('hidden');
   successText.innerHTML=text;
-  showMessage('Cadastro realizado. Confirme seu e-mail para continuar.','success');
+  showMessage(notice,'success');
 }
 
 async function usernameExists(username){
@@ -66,7 +66,7 @@ async function usernameExists(username){
 form.addEventListener('submit',async event=>{
   event.preventDefault();
   if(method==='phone' && phoneConfirmationResult){
-    const code=(document.getElementById('phoneCode')?.value||'').replace(/\\D/g,'');
+    const code=(document.getElementById('phoneCode')?.value||'').replace(/\D/g,'');
     if(code.length!==6)return showMessage('Digite o código de 6 dígitos recebido por SMS.','error');
     submit.disabled=true;
     submit.textContent='Confirmando...';
@@ -77,7 +77,7 @@ form.addEventListener('submit',async event=>{
         birth_date:phoneSignupData.birthDate,bio:'',status:'',avatar_url:null,protected_account:phoneSignupData.age<18,
         phone:phoneSignupData.phone,created_at:new Date().toISOString(),updated_at:new Date().toISOString()
       },{merge:true});
-      showConfirmation(`Conta criada para <strong>@${phoneSignupData.username}</strong>.<br><br>Seu celular foi confirmado com sucesso.`);
+      showConfirmation(`Conta criada para <strong>@${phoneSignupData.username}</strong>.<br><br>Seu celular foi confirmado com sucesso.`,'Cadastro realizado. Celular confirmado com sucesso.');
       phoneConfirmationResult=null;
       phoneSignupData=null;
     }catch(error){
@@ -102,9 +102,9 @@ form.addEventListener('submit',async event=>{
 
   if(displayName.length<2)return showMessage('Digite seu nome.','error');
   if(!/^[a-z0-9_.]{3,24}$/.test(username))return showMessage('O usuário deve ter 3–24 caracteres: letras, números, _ ou .','error');
+  if(method==='email'&&!/^\S+@\S+\.\S+$/.test(email))return showMessage('Digite um e-mail válido.','error');
   if(!birthDate||age===null||age<0)return showMessage('Digite uma data de nascimento válida.','error');
   if(age<13)return showMessage('O PULSO não permite cadastro de menores de 13 anos.','error');
-  if(!/^\S+@\S+\.\S+$/.test(email))return showMessage('Digite um e-mail válido.','error');
   if(password.length<8)return showMessage('A senha precisa ter pelo menos 8 caracteres.','error');
   if(password!==passwordConfirm)return showMessage('As senhas não são iguais.','error');
   if(!terms)return showMessage('Aceite os termos e as regras de segurança para continuar.','error');
@@ -118,7 +118,7 @@ form.addEventListener('submit',async event=>{
       if(!/^[a-z0-9_.]{3,24}$/.test(username))throw new Error('O usuário deve ter 3–24 caracteres: letras, números, _ ou .');
       if(!birthDate||age===null||age<0)throw new Error('Digite uma data de nascimento válida.');
       if(age<13)throw new Error('O PULSO não permite cadastro de menores de 13 anos.');
-      if(phone.replace(/\\D/g,'').length<12)throw new Error('Digite um celular válido com DDD.');
+      if(phone.replace(/\D/g,'').length<12)throw new Error('Digite um celular válido com DDD.');
       if(password.length<8)throw new Error('A senha precisa ter pelo menos 8 caracteres.');
       if(password!==passwordConfirm)throw new Error('As senhas não são iguais.');
       if(!terms)throw new Error('Aceite os termos e as regras de segurança para continuar.');
