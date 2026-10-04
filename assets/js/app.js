@@ -250,6 +250,16 @@ function closeModal(){const m=$('#socialModal');if(m)m.hidden=true;}
 function setFeedMode(mode){feedMode=mode;document.querySelectorAll('.feed-switch-btn').forEach(b=>{const a=b.id===(mode==='forYou'?'feedForYou':'feedFollowing');b.classList.toggle('active',a);b.setAttribute('aria-selected',a?'true':'false');});loadFeed();}
 window.pulsoSetFeedMode=setFeedMode;
 
+window.pulsoLogout=async function(){
+  try{
+    await signOut(firebaseAuth);
+  }catch(e){
+    console.error('[PULSO] erro ao sair',e);
+  }finally{
+    location.replace('entrar.html');
+  }
+};
+
 document.addEventListener('click',e=>{
   const b=e.target.closest?.('#profileBtn,#feedForYou,#feedFollowing,#followersBtn,#followingBtn,#modalClose,#logoutBtn');if(!b)return;
   if(b.id==='profileBtn'){e.preventDefault();window.pulsoOpenProfile?.(user?.uid);}\n  if(b.id==='feedForYou'){e.preventDefault();setFeedMode('forYou');}
@@ -257,7 +267,7 @@ document.addEventListener('click',e=>{
   if(b.id==='modalClose'){e.preventDefault();closeModal();}
   if(b.id==='followersBtn'){e.preventDefault();showPeople('followers');}
   if(b.id==='followingBtn'){e.preventDefault();showPeople('following');}
-  if(b.id==='logoutBtn'){e.preventDefault();signOut(firebaseAuth).finally(()=>location.href='entrar.html');}
+  if(b.id==='logoutBtn'){e.preventDefault();window.pulsoLogout?.();}
 },true);
 
 async function showPeople(kind){
