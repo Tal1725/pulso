@@ -14,28 +14,33 @@ async function publish(){
   window.pulsoApprovedMedia=null;['caption','video','photoInput','cameraVideoInput','audioInput'].forEach(id=>{const x=$('#'+id);if(x)x.value=''});msg('✅ Publicado com sucesso!');document.dispatchEvent(new CustomEvent('pulso-published',{detail:{postId:ref.id,mediaType:type,mediaUrl:url}}));
  }catch(e){console.error('[PULSO publish]',e);msg('❌ '+(e.message||'Não foi possível publicar.'),true)}finally{publishing=false;b.disabled=false;b.textContent='Publicar'}
 }
-window.pulsoPublish=publish;window.pulsoPublisherVersion='firebase-v1';
+window.pulsoPublish=publish;window.pulsoPublisherVersion='firebase-v2';
 let audioRecorder=null,audioChunks=[];
 async function recordAudio(){
  try{
+  if(!navigator.mediaDevices?.getUserMedia)throw Error('Seu navegador não liberou acesso ao microfone.');
+  if(typeof MediaRecorder==='undefined')throw Error('Seu navegador não suporta gravação de áudio.');
   if(audioRecorder?.state==='recording'){audioRecorder.stop();return}
   const stream=await navigator.mediaDevices.getUserMedia({audio:true});
   audioChunks=[];
-  audioRecorder=new MediaRecorder(stream);
   const m=document.createElement('div');m.id='pulsoAudioRecorder';m.style.cssText='position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:20px';
-  m.innerHTML='<div style="background:#17171b;color:#fff;border-radius:20px;padding:24px;text-align:center;width:min(420px,100%)"><h2>🎤 Gravando áudio</h2><p id="pulsoAudioTime">Gravando...</p><button id="pulsoStopAudio" type="button" style="padding:12px 22px;border:0;border-radius:12px">⏹ Parar gravação</button><button id="pulsoCancelAudio" type="button" style="padding:12px 22px;border:0;border-radius:12px;margin-left:8px">Cancelar</button></div>';
+  m.innerHTML='<div style="background:#17171b;color:#fff;border-radius:20px;padding:24px;text-align:center;width:min(420px,100%)"><h2>🎤 Gravando áudio</h2><p>O microfone está ativo.</p><button id="pulsoStopAudio" type="button" style="padding:12px 22px;border:0;border-radius:12px">⏹ Parar gravação</button><button id="pulsoCancelAudio" type="button" style="padding:12px 22px;border:0;border-radius:12px;margin-left:8px">Cancelar</button></div>';
   document.body.appendChild(m);
+  const options=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?{mimeType:'audio/webm;codecs=opus'}:{};
+  audioRecorder=new MediaRecorder(stream,options);
   audioRecorder.ondataavailable=e=>{if(e.data.size)audioChunks.push(e.data)};
-  audioRecorder.onstop=()=>{
-   stream.getTracks().forEach(t=>t.stop());
-   const blob=new Blob(audioChunks,{type:audioRecorder.mimeType||'audio/webm'});
-   window.pulsoApprovedMedia={file:new File([blob],'pulso-audio-'+Date.now()+'.webm',{type:blob.type})};
-   $('#pulsoAudioRecorder')?.remove();msg('🎤 Áudio gravado. Aperte Publicar para enviar.');
-  };
-  $('#pulsoStopAudio').onclick=()=>audioRecorder.stop();
-  $('#pulsoCancelAudio').onclick=()=>{audioRecorder.onstop=null;audioRecorder.stop();stream.getTracks().forEach(t=>t.stop());$('#pulsoAudioRecorder')?.remove();audioChunks=[];};
-  audioRecorder.start();
- }catch(e){msg('❌ Não foi possível acessar o microfone. Verifique a permissão do navegador.',true);console.error('[PULSO audio]',e)}
+  audioRecorder.onstop=()=>{stream.getTracks().forEach(t=>t.stop());const blob=new Blob(audioChunks,{type:audioRecorder.mimeType||'audio/webm'});window.pulsoApprovedMedia={file:new File([blob],'pulso-audio-'+Date.now()+'.webm',{type:blob.type})};$('#pulsoAudioRecorder')?.remove();msg('🎤 Áudio gravado. Agora clique em Publicar.');audioRecorder=null};
+  $('#pulsoStopAudio').onclick=()=>audioRecorder?.stop();
+  $('#pulsoCancelAudio').onclick=()=>{if(audioRecorder){audioRecorder.ondataavailable=null;audioRecorder.onstop=null;audioRecorder.stop();audioRecorder=null}stream.getTracks().forEach(t=>t.stop());$('#pulsoAudioRecorder')?.remove();audioChunks=[]};
+  audioRecorder.start(250);
+ }catch(e){msg('❌ '+(e.message||'Não foi possível acessar o microfone.'),true);console.error('[PULSO audio]',e)}
 }
-function bind(){const b=$('#publishBtn'),p=$('#photoInput'),v=$('#cameraVideoInput'),pb=document.querySelector('[data-camera-photo]'),vb=document.querySelector('[data-camera-video]');if(pb&&p&&!pb.dataset.bound){pb.dataset.bound=1;pb.onclick=()=>p.click()}if(vb&&v&&!vb.dataset.bound){vb.dataset.bound=1;vb.onclick=()=>v.click()}const ab=document.querySelector('[data-audio-record]');if(ab&&!ab.dataset.bound){ab.dataset.bound=1;ab.onclick=recordAudio}if(b&&!b.dataset.firebase){b.dataset.firebase=1;b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();publish()})}}
+window.pulsoRecordAudio=recordAudio;
+function bind(){
+ const b=$('#publishBtn'),p=$('#photoInput'),v=$('#cameraVideoInput'),pb=document.querySelector('[data-camera-photo]'),vb=document.querySelector('[data-camera-video]'),ab=document.querySelector('[data-audio-record]');
+ if(pb&&p&&!pb.dataset.bound){pb.dataset.bound=1;pb.onclick=()=>p.click()}
+ if(vb&&v&&!vb.dataset.bound){vb.dataset.bound=1;vb.onclick=()=>v.click()}
+ if(ab&&!ab.dataset.bound){ab.dataset.bound=1;ab.onclick=e=>{e.preventDefault();e.stopPropagation();recordAudio()}}
+ if(b&&!b.dataset.firebase){b.dataset.firebase=1;b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();publish()})}
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
