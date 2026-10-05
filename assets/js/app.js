@@ -22,6 +22,29 @@ async function getAll(name){
   return snap.docs.map(d=>({id:d.id,...(d.data()||{})}));
 }
 
+async function getByPostIds(name,ids){
+  if(!ids.length)return[];
+  const out=[];
+  for(let i=0;i<ids.length;i+=30){
+    const batch=ids.slice(i,i+30);
+    const snap=await getDocs(query(collection(firebaseDb,name),where('post_id','in',batch)));
+    out.push(...snap.docs.map(d=>({id:d.id,...(d.data()||{})})));
+  }
+  return out;
+}
+async function loadProfilesByIds(ids){
+  const unique=[...new Set(ids.filter(Boolean))];
+  await Promise.all(unique.map(async id=>{
+    if(profiles.has(id))return;
+    try{
+      const s=await getDoc(doc(firebaseDb,'Perfis',id));
+      if(s.exists()){const p=normalizeProfile(s.data(),id);profiles.set(id,p);return;}
+      const q=await getDocs(query(collection(firebaseDb,'Perfis'),where('user_id','==',id),limit(1)));
+      if(!q.empty){const p=normalizeProfile(q.docs[0].data(),q.docs[0].id);profiles.set(id,p);}
+    }catch(e){}
+  }));
+}
+
 function normalizeProfile(x={},docId=''){
   return {
     id:x.user_id||x.uid||docId,
@@ -117,10 +140,11 @@ async function loadFeed(){
       return;
     }
     try{
-      indexProfiles(await getAll('Perfis'));
+      profiles=new Map();
+      await loadProfilesByIds(posts.map(p=>p.user_id));
     }catch(e){console.warn('[PULSO] perfis Firebase não carregaram',e);profiles=new Map();}
-    currentLikes=await getAll('Gostos');
-    currentComments=await getAll('comments');
+    const postIds=posts.map(p=>p.id);
+    [currentLikes,currentComments]=await Promise.all([getByPostIds('Gostos',postIds),getByPostIds('comments',postIds)]);
     feed.innerHTML=posts.map(p=>renderPost(p)).join('');
     bindFeed();
     activateLazyMedia(feed);
