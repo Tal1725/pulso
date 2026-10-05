@@ -1,5 +1,5 @@
 import{firebaseAuth,firebaseDb}from'./firebase-config.js';
-import{collection,getDocs,doc,getDoc,setDoc,deleteDoc,addDoc,query,where}from'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
+import{collection,getDocs,doc,getDoc,setDoc,deleteDoc,addDoc,query,where,limit}from'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
 import{onAuthStateChanged,signOut}from'https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js';
 
 const $=s=>document.querySelector(s);
@@ -84,8 +84,9 @@ async function init(){
 
 async function refreshFollowing(){
   try{
-    followRows=await getAll('follows');
-    following=new Set(followRows.filter(x=>x.follower_id===user.uid).map(x=>x.following_id).filter(Boolean));
+    const snap=await getDocs(query(collection(firebaseDb,'follows'),where('follower_id','==',user.uid),limit(500)));
+    followRows=snap.docs.map(d=>({id:d.id,...(d.data()||{})}));
+    following=new Set(followRows.map(x=>x.following_id).filter(Boolean));
   }catch(e){console.warn('[PULSO] follows não carregou',e);following=new Set();}
   window._following=following;
 }
@@ -103,7 +104,7 @@ async function loadSocialStats(){
 async function loadFeed(){
   const feed=$('#feed');if(!feed)return;
   try{
-    let posts=(await getAll('Posts')).map(x=>({
+    let posts=(await getDocs(query(collection(firebaseDb,'Posts'),limit(50)))).docs.map(d=>({id:d.id,...(d.data()||{})})).map(x=>({
       id:x.id,user_id:x.user_id||x.legacy_user_id||'',
       video_url:x.video_url||x.media_url||'',media_url:x.media_url||x.video_url||'',
       media_type:x.media_type||'vídeo',caption:x.caption||x.legenda||'',created_at:x.created_at||''
