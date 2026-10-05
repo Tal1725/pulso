@@ -1,4 +1,4 @@
-import{firebaseAuth,firebaseDb}from'./firebase-config.js';import{collection,getDocs,addDoc,updateDoc,doc,query,where,limit}from'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
+import{firebaseAuth,firebaseDb}from'./firebase-config.js';import{collection,getDocs,addDoc,updateDoc,doc,getDoc,query,where,limit}from'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
 const $=s=>document.querySelector(s),esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 let me=null,current=null,people=[];
 async function all(n){return(await getDocs(collection(firebaseDb,n))).docs.map(d=>({id:d.id,...d.data()}))}
