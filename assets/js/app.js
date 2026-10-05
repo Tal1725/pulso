@@ -12,8 +12,6 @@ let following=new Set();
 let profiles=new Map();
 let currentLikes=[];
 let currentComments=[];
-let likesByPost=new Map();
-let commentsByPost=new Map();
 const REACTIONS={like:'👍',love:'❤️',haha:'😂',wow:'😮',sad:'😢',angry:'😡'};
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const avatarHtml=p=>p?.avatar_url?'<img class="avatar-photo" src="'+esc(p.avatar_url)+'" alt="Foto de perfil" loading="lazy">':'<span>'+esc((p?.display_name||'?').charAt(0).toUpperCase())+'</span>';
@@ -33,19 +31,6 @@ function normalizeProfile(x={},docId=''){
     bio:x.bio||x.Bio||'',
     status:x.status||''
   };
-}
-
-function indexPostRows(){
-  likesByPost=new Map();
-  commentsByPost=new Map();
-  currentLikes.forEach(x=>{
-    const rows=likesByPost.get(x.post_id)||[];
-    rows.push(x);likesByPost.set(x.post_id,rows);
-  });
-  currentComments.forEach(x=>{
-    const rows=commentsByPost.get(x.post_id)||[];
-    rows.push(x);commentsByPost.set(x.post_id,rows);
-  });
 }
 
 function indexProfiles(rows){
@@ -226,7 +211,6 @@ async function toggleReaction(id,reaction){
       await setDoc(doc(firebaseDb,'Gostos',likeId),data);
       currentLikes=currentLikes.filter(x=>!(x.post_id===id&&x.user_id===user.uid));currentLikes.push({id:likeId,...data});
     }
-    indexPostRows();
     updateReactionCard(id);
   }catch(e){console.error('[PULSO] reação',e);if(button)button.title='Não foi possível registrar a reação. Toque novamente.';}
   if(button)button.disabled=false;
@@ -266,7 +250,6 @@ async function addComment(id,card){
   try{
     const ref=await addDoc(collection(firebaseDb,'comments'),{post_id:id,user_id:user.uid,content:text,created_at:new Date().toISOString()});
     currentComments.push({id:ref.id,post_id:id,user_id:user.uid,content:text,created_at:new Date().toISOString()});
-    indexPostRows();
     input.value='';
     const box=card.querySelector('.comments>div');if(box){if(box.querySelector('.file'))box.innerHTML='';const row=document.createElement('div');row.className='comment';row.innerHTML='<b>'+esc($('#name')?.textContent||'Você')+'</b> '+esc(text);box.appendChild(row);}
     const focus=card.querySelector('[data-focus]');if(focus){const m=focus.textContent.match(/\d+/);focus.textContent='💬 '+String(Number(m?.[0]||0)+1);}
@@ -280,7 +263,7 @@ async function deletePost(id,card){
 
 async function showLikers(id){
   try{
-    const rows=likesByPost.get(id)||[];
+    const rows=currentLikes.filter(x=>x.post_id===id);
     const ids=[...new Set(rows.map(x=>x.user_id))];
     await Promise.all(ids.map(ensureProfile));
     openModal('Quem reagiu',rows.map(x=>{const p=profiles.get(x.user_id)||{};return '<div class="person-row"><div class="avatar mini">'+avatarHtml(p)+'</div><div><strong>'+esc(p.display_name||'Usuário')+'</strong><span>'+REACTIONS[x.reaction||'like']+' '+(p.username?'@'+esc(p.username):'')+'</span></div></div>';}).join('')||'Ainda ninguém reagiu.');
