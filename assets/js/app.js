@@ -17,11 +17,6 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&
 const avatarHtml=p=>p?.avatar_url?'<img class="avatar-photo" src="'+esc(p.avatar_url)+'" alt="Foto de perfil" loading="lazy">':'<span>'+esc((p?.display_name||'?').charAt(0).toUpperCase())+'</span>';
 const timeValue=v=>v?.toMillis?v.toMillis():(typeof v==='number'?v:(Date.parse(v)||0));
 
-async function getAll(name){
-  const snap=await getDocs(collection(firebaseDb,name));
-  return snap.docs.map(d=>({id:d.id,...(d.data()||{})}));
-}
-
 async function getByPostIds(name,ids){
   if(!ids.length)return[];
   const out=[];
@@ -72,9 +67,10 @@ async function getCurrentProfile(){
   if(!uid)return{};
   const direct=await getDoc(doc(firebaseDb,'Perfis',uid));
   if(direct.exists())return normalizeProfile(direct.data(),uid);
-  const rows=await getAll('Perfis');
-  const found=rows.find(x=>x.user_id===uid||x.uid===uid||x.auth_uid===uid||x.id===uid);
-  return found?normalizeProfile(found,found.id):{};
+  const q=await getDocs(query(collection(firebaseDb,'Perfis'),where('user_id','==',uid),limit(1)));
+  if(!q.empty)return normalizeProfile(q.docs[0].data(),q.docs[0].id);
+  const q2=await getDocs(query(collection(firebaseDb,'Perfis'),where('uid','==',uid),limit(1)));
+  return q2.empty?{}:normalizeProfile(q2.docs[0].data(),q2.docs[0].id);
 }
 
 async function init(){
@@ -116,9 +112,9 @@ async function refreshFollowing(){
 
 async function loadSocialStats(){
   try{
-    const rows=followRows;
-    const followers=rows.filter(x=>x.following_id===user.uid).length;
-    const followingCount=rows.filter(x=>x.follower_id===user.uid).length;
+    const followingCount=followRows.filter(x=>x.follower_id===user.uid).length;
+    const followersSnap=await getDocs(query(collection(firebaseDb,'follows'),where('following_id','==',user.uid),limit(500)));
+    const followers=followersSnap.size;
     if($('#followersCount'))$('#followersCount').textContent=followers;
     if($('#followingCount'))$('#followingCount').textContent=followingCount;
   }catch(e){console.warn('[PULSO] stats não carregou',e);}
@@ -215,8 +211,7 @@ function bindFeed(){
     const reactionMenu=card.querySelector('[data-reaction-menu]'),picker=card.querySelector('[data-reaction-picker]');
     reactionMenu?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(!picker)return;const open=picker.style.display!=='none';picker.style.display=open?'none':'flex';picker.classList.toggle('is-open',!open);reactionMenu.setAttribute('aria-expanded',open?'false':'true');});
     card.querySelectorAll('[data-reaction]').forEach(b=>b.addEventListener('click',async e=>{e.preventDefault();e.stopPropagation();picker?.classList.remove('is-open');reactionMenu?.setAttribute('aria-expanded','false');await toggleReaction(id,b.dataset.reaction);}));
-    card.querySelector('[data-follow-user]')?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();toggleFollow(e.currentTarget.dataset.followUser,e.currentTarget);});
-    card.querySelector('[data-share]')?.addEventListener('click',()=>sharePost(id));
+      card.querySelector('[data-share]')?.addEventListener('click',()=>sharePost(id));
     card.querySelector('[data-likers]')?.addEventListener('click',()=>showLikers(id));
     card.querySelector('[data-focus]')?.addEventListener('click',()=>card.querySelector('[data-comment]')?.focus());
     card.querySelector('[data-send]')?.addEventListener('click',()=>addComment(id,card));
@@ -248,26 +243,6 @@ function updateReactionCard(id){
   let summary=card.querySelector('.reaction-summary');
   const html=Object.keys(REACTIONS).map(k=>{const n=pl.filter(x=>(x.reaction||'like')===k).length;return n?'<span class="reaction-count">'+REACTIONS[k]+' '+n+'</span>':''}).join('');
   if(html){if(!summary){summary=document.createElement('div');summary.className='reaction-summary';card.querySelector('.actions')?.appendChild(summary);}summary.innerHTML=html;}else summary?.remove();
-}
-
-async function toggleFollow(id,b){
-  b.disabled=true;const exists=following.has(id),followId=user.uid+'_'+id;
-  try{
-    if(exists){
-      await deleteDoc(doc(firebaseDb,'follows',followId));
-      following.delete(id);
-      followRows=followRows.filter(x=>x.id!==followId);
-    }else{
-      const data={follower_id:user.uid,following_id:id,created_at:new Date().toISOString()};
-      await setDoc(doc(firebaseDb,'follows',followId),data);
-      following.add(id);
-      followRows.push({id:followId,...data});
-    }
-    window._following=following;b.textContent=exists?'+ Seguir':'✓ Seguindo';
-    const fc=$('#followingCount');if(fc){const n=Number(fc.textContent||0);fc.textContent=Math.max(0,n+(exists?-1:1));}
-    document.dispatchEvent(new CustomEvent('pulso-follow-changed'));
-  }catch(e){alert('Não foi possível atualizar o seguimento: '+(e.message||e));}
-  b.disabled=false;
 }
 
 async function addComment(id,card){
@@ -323,8 +298,9 @@ document.addEventListener('click',e=>{
 
 async function showPeople(kind){
   try{
-    const rows=followRows;
-    const ids=rows.filter(x=>kind==='followers'?x.following_id===user.uid:x.follower_id===user.uid).map(x=>kind==='followers'?x.follower_id:x.following_id);
+    const q=await getDocs(query(collection(firebaseDb,'follows'),where(kind==='followers'?'following_id':'follower_id','==',user.uid),limit(500)));
+    const rows=q.docs.map(d=>({id:d.id,...(d.data()||{})}));
+    const ids=rows.map(x=>kind==='followers'?x.follower_id:x.following_id).filter(Boolean);
     if(!ids.length){openModal(kind==='followers'?'Quem te seguiu':'Quem você segue','Ainda não há ninguém nesta lista.');return;}
     await Promise.all([...new Set(ids)].map(ensureProfile));
     openModal(kind==='followers'?'Quem te seguiu':'Quem você segue',[...new Set(ids)].map(id=>{const p=profiles.get(id)||{};return '<div class="person-row"><div class="avatar mini">'+avatarHtml(p)+'</div><div><strong>'+esc(p.display_name||'Usuário')+'</strong><span>'+(p.username?'@'+esc(p.username):'membro PULSO')+'</span></div></div>';}).join(''));
