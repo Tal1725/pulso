@@ -6,7 +6,7 @@ const msg=(t,e)=>{const x=$('#publishMsg');if(x){x.textContent=t;x.style.color=e
 async function publish(){
  if(publishing)return;const b=$('#publishBtn');if(!b)return;
  const caption=$('#caption')?.value?.trim()||'',file=window.pulsoApprovedMedia?.file||$('#video')?.files?.[0]||$('#photoInput')?.files?.[0]||$('#cameraVideoInput')?.files?.[0]||$('#audioInput')?.files?.[0],uid=firebaseAuth.currentUser?.uid;
- if(!file&&!caption){msg('Escolha um vídeo, foto, áudio ou escreva algo.',true);return}if(!uid){msg('Sessão expirada. Entre novamente no PULSO.',true)}
+ if(!file&&!caption){msg('Escolha um vídeo, foto, áudio ou escreva algo.',true);return}if(!uid){msg('Sessão expirada. Entre novamente no PULSO.',true);return}
  publishing=true;b.disabled=true;b.textContent='Publicando...';
  try{let type='text',url=null;
   if(file){if(file.size>MAX_UPLOAD)throw Error('A mídia ultrapassa o limite de 50 MB.');const mime=file.type||'';type=mime.startsWith('image/')?'image':mime.startsWith('audio/')?'audio':'video';msg('Enviando mídia...');const endpoint='https://api.cloudinary.com/v1_1/'+CLOUDINARY_CLOUD_NAME+'/'+(type==='image'?'image':'video')+'/upload',form=new FormData();form.append('file',file);form.append('upload_preset',CLOUDINARY_UPLOAD_PRESET);form.append('folder','pulso/'+uid);const r=await fetch(endpoint,{method:'POST',body:form}),d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d?.error?.message||'Cloudinary recusou o arquivo.');url=d.secure_url||d.url;if(!url)throw Error('O armazenamento não retornou a URL da mídia.');}
