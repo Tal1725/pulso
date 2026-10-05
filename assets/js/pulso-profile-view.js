@@ -1,5 +1,5 @@
 import{firebaseAuth,firebaseDb}from'./firebase-config.js';
-import{collection,getDocs,doc,getDoc}from'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
+import{collection,getDocs,doc,getDoc,query,where,limit}from'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
 
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const timeValue=v=>v?.toMillis?v.toMillis():(typeof v==='number'?v:(Date.parse(v)||0));
@@ -33,8 +33,13 @@ async function openProfile(targetId=null){
       const found=profiles.find(x=>x.user_id===id||x.uid===id||x.auth_uid===id||x.id===id);
       p=found||{};
     }
-    const all=await getAll('Posts');
-    const posts=all.filter(x=>(x.user_id||x.legacy_user_id)===id).sort((a,b)=>timeValue(b.created_at)-timeValue(a.created_at));
+    const q=await getDocs(query(collection(firebaseDb,'Posts'),where('user_id','==',id),limit(100)));
+    let posts=q.docs.map(d=>({id:d.id,...(d.data()||{})}));
+    if(!posts.length){
+      const legacy=await getDocs(query(collection(firebaseDb,'Posts'),where('legacy_user_id','==',id),limit(100)));
+      posts=legacy.docs.map(d=>({id:d.id,...(d.data()||{})}));
+    }
+    posts.sort((a,b)=>timeValue(b.created_at)-timeValue(a.created_at));
     m.querySelector('#ppTitle').textContent=id===user.uid?'Meu perfil':'Perfil do usuário';const editBtn=m.querySelector('#ppEdit');if(editBtn)editBtn.style.display=id===user.uid?'inline-block':'none';
     const avatar=p.avatar_url?'<img src="'+esc(p.avatar_url)+'" alt="Foto de perfil" style="width:86px;height:86px;border-radius:50%;object-fit:cover">':'<div style="width:86px;height:86px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#ee3f91,#7457e8);color:#fff;font-size:34px;font-weight:900">'+esc((p.display_name||p['Nome de usuário']||p['Nome']||'P')[0].toUpperCase())+'</div>';
     const media=x=>{const s=esc(x.media_url||x.video_url||'');if(!s)return '<div style="padding:28px;border-radius:14px;background:#222532;color:#aeb2c2">Mídia indisponível</div>';if(x.media_type==='image')return '<img src="'+s+'" alt="Publicação" loading="lazy" style="display:block;width:100%;max-height:460px;object-fit:contain;border-radius:14px;background:#0b0c10">';if(x.media_type==='audio')return '<audio src="'+s+'" controls preload="none" style="width:100%"></audio>';return '<video data-src="'+s+'" controls playsinline preload="none" style="display:block;width:100%;max-height:460px;border-radius:14px;background:#090a0c"></video>';};
