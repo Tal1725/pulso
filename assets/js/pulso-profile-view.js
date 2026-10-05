@@ -10,7 +10,6 @@ function activateLazyMedia(root=document){
   const io=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){load(entry.target);io.unobserve(entry.target);}}),{rootMargin:'500px 0px'});
   videos.forEach(v=>io.observe(v));
 }
-async function getAll(name){const s=await getDocs(collection(firebaseDb,name));return s.docs.map(d=>({id:d.id,...(d.data()||{})}));}
 
 async function openProfile(targetId=null){
   const user=firebaseAuth.currentUser;
@@ -29,9 +28,8 @@ async function openProfile(targetId=null){
     const pr=await getDoc(doc(firebaseDb,'Perfis',id));
     let p=pr.exists()?pr.data():null;
     if(!p){
-      const profiles=await getAll('Perfis');
-      const found=profiles.find(x=>x.user_id===id||x.uid===id||x.auth_uid===id||x.id===id);
-      p=found||{};
+      const lookups=[['user_id',id],['uid',id],['auth_uid',id]];
+      for(const [field,value] of lookups){const s=await getDocs(query(collection(firebaseDb,'Perfis'),where(field,'==',value),limit(1)));if(!s.empty){p=s.docs[0].data();break;}}
     }
     const q=await getDocs(query(collection(firebaseDb,'Posts'),where('user_id','==',id),limit(100)));
     let posts=q.docs.map(d=>({id:d.id,...(d.data()||{})}));
