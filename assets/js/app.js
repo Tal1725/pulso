@@ -5,6 +5,9 @@ import{onAuthStateChanged,signOut}from'https://www.gstatic.com/firebasejs/12.3.0
 const $=s=>document.querySelector(s);
 let user=null;
 let feedMode='forYou';
+let initializedUid='';
+let initializing=false;
+let followRows=[];
 let following=new Set();
 let profiles=new Map();
 let currentLikes=[];
@@ -52,6 +55,8 @@ async function getCurrentProfile(){
 }
 
 async function init(){
+  if(initializing||initializedUid===firebaseAuth.currentUser?.uid)return;
+  initializing=true;
   try{
     const notice=$('#notice');
     if(!firebaseAuth.currentUser){location.href='entrar.html?next=app';return;}
@@ -68,23 +73,26 @@ async function init(){
     await loadFeed();
     await loadSocialStats();
     if(notice)notice.textContent='PULSO carregado.';
+    initializedUid=user.uid;
   }catch(e){
     console.error('[PULSO] inicialização',e);
     const n=$('#notice');if(n)n.textContent='PULSO carregado, mas houve um erro. Recarregue a página.';
+  }finally{
+    initializing=false;
   }
 }
 
 async function refreshFollowing(){
   try{
-    const rows=await getAll('follows');
-    following=new Set(rows.filter(x=>x.follower_id===user.uid).map(x=>x.following_id).filter(Boolean));
+    followRows=await getAll('follows');
+    following=new Set(followRows.filter(x=>x.follower_id===user.uid).map(x=>x.following_id).filter(Boolean));
   }catch(e){console.warn('[PULSO] follows não carregou',e);following=new Set();}
   window._following=following;
 }
 
 async function loadSocialStats(){
   try{
-    const rows=await getAll('follows');
+    const rows=followRows;
     const followers=rows.filter(x=>x.following_id===user.uid).length;
     const followingCount=rows.filter(x=>x.follower_id===user.uid).length;
     if($('#followersCount'))$('#followersCount').textContent=followers;
@@ -220,8 +228,16 @@ function updateReactionCard(id){
 async function toggleFollow(id,b){
   b.disabled=true;const exists=following.has(id),followId=user.uid+'_'+id;
   try{
-    if(exists){await deleteDoc(doc(firebaseDb,'follows',followId));following.delete(id);}
-    else{await setDoc(doc(firebaseDb,'follows',followId),{follower_id:user.uid,following_id:id,created_at:new Date().toISOString()});following.add(id);}
+    if(exists){
+      await deleteDoc(doc(firebaseDb,'follows',followId));
+      following.delete(id);
+      followRows=followRows.filter(x=>x.id!==followId);
+    }else{
+      const data={follower_id:user.uid,following_id:id,created_at:new Date().toISOString()};
+      await setDoc(doc(firebaseDb,'follows',followId),data);
+      following.add(id);
+      followRows.push({id:followId,...data});
+    }
     window._following=following;b.textContent=exists?'+ Seguir':'✓ Seguindo';
     const fc=$('#followingCount');if(fc){const n=Number(fc.textContent||0);fc.textContent=Math.max(0,n+(exists?-1:1));}
     document.dispatchEvent(new CustomEvent('pulso-follow-changed'));
@@ -282,7 +298,7 @@ document.addEventListener('click',e=>{
 
 async function showPeople(kind){
   try{
-    const rows=await getAll('follows');
+    const rows=followRows;
     const ids=rows.filter(x=>kind==='followers'?x.following_id===user.uid:x.follower_id===user.uid).map(x=>kind==='followers'?x.follower_id:x.following_id);
     if(!ids.length){openModal(kind==='followers'?'Quem te seguiu':'Quem você segue','Ainda não há ninguém nesta lista.');return;}
     await Promise.all([...new Set(ids)].map(ensureProfile));
