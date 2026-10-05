@@ -1,11 +1,13 @@
-const CACHE = 'pulso-pwa-v6';
+const CACHE = 'pulso-pwa-v7';
 const APP_SHELL = [
   '/pulso/',
   '/pulso/index.html',
-  '/pulso/manifest.webmanifest',
-  '/pulso/assets/css/styles.css',
+  '/pulso/site.webmanifest',
+  '/pulso/assets/css/home.css',
   '/pulso/assets/js/main.js',
   '/pulso/assets/js/follow.js',
+  '/pulso/app.html',
+  '/pulso/assets/js/firebase-config.js',
   '/pulso/assets/img/logo.svg',
   '/pulso/assets/img/favicon.svg'
 ];
