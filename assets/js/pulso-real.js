@@ -97,6 +97,7 @@ async function refreshPulseReputation(card,postId){
 }
 function showPulseBurst(card){
   const burst=document.createElement('div');burst.className='pulso-heart-burst';
-  for(let i=0;i<12;i++){const h=document.createElement('span');h.textContent='♥';h.style.setProperty('--i',i);burst.appendChild(h);}
-  card.appendChild(burst);setTimeout(()=>burst.remove(),1800);
+  const offsets=[[-110,-130],[-75,-180],[-40,-110],[-10,-210],[30,-145],[65,-190],[105,-125],[-90,-240],[-25,-260],[45,-250],[90,-220],[0,-300]];
+  offsets.forEach(([x,y],i)=>{const h=document.createElement('span');h.textContent='♥';h.style.setProperty('--dx',x+'px');h.style.setProperty('--dy',y+'px');h.style.animationDelay=(i*35)+'ms';burst.appendChild(h);});
+  card.appendChild(burst);setTimeout(()=>burst.remove(),2200);
 }
