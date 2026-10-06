@@ -92,12 +92,26 @@ function addPulseReputation(card,postId){
   const el=document.createElement('div');el.className='pulso-reputation';el.innerHTML='<span class="pulso-reputation-hearts">♡</span><span class="pulso-reputation-text">PULSO REAL <b>0</b></span>';
   card.appendChild(el);refreshPulseReputation(card,postId);
 }
+function addPulseAlert(card,n){
+  let el=card.querySelector('.pulso-real-alert');
+  if(n<10){el?.remove();return;}
+  if(!el){
+    el=document.createElement('div');el.className='pulso-real-alert';
+    card.appendChild(el);
+  }
+  el.innerHTML='<span class="pulso-alert-icon">🔥</span><span>Este vídeo está recebendo muitas pulsações!</span><b>'+n+' pulsações</b>';
+}
 async function refreshPulseReputation(card,postId){
-  const el=card?.querySelector('.pulso-reputation');if(!el)return;const n=await getPulseCount(postId);el.querySelector('b').textContent=n;el.classList.toggle('has-pulses',n>0);el.querySelector('.pulso-reputation-hearts').textContent=n>0?'♥♥♥':'♡';
+  const el=card?.querySelector('.pulso-reputation');if(!el)return;
+  const n=await getPulseCount(postId);
+  el.querySelector('b').textContent=n;
+  el.classList.toggle('has-pulses',n>0);
+  el.querySelector('.pulso-reputation-hearts').textContent=n>0?'♥♥♥':'♡';
+  addPulseAlert(card,n);
 }
 function showPulseBurst(card){
   const burst=document.createElement('div');burst.className='pulso-heart-burst';
-  const offsets=[[-120,-90],[-95,-135],[-70,-180],[-45,-115],[-20,-155],[5,-210],[30,-125],[55,-175],[80,-105],[105,-145],[-105,-220],[-65,-245],[-25,-275],[20,-250],[65,-225],[105,-195],[-85,-305],[-35,-320],[15,-300],[70,-285]];
-  offsets.forEach(([x,y],i)=>{const h=document.createElement('span');h.textContent='♥';h.style.setProperty('--dx',x+'px');h.style.setProperty('--dy',y+'px');h.style.fontSize=(21+(i%4)*3)+'px';h.style.animationDelay=(i*45)+'ms';burst.appendChild(h);});
-  card.appendChild(burst);setTimeout(()=>burst.remove(),4600);
+  const offsets=[[-145,-70],[-125,-120],[-105,-175],[-85,-95],[-65,-145],[-45,-205],[-25,-110],[-5,-165],[15,-225],[35,-120],[55,-180],[75,-105],[95,-155],[115,-215],[-115,-250],[-75,-285],[-30,-315],[20,-285],[65,-265],[110,-240],[-95,-335],[-45,-355],[10,-345],[60,-325],[105,-300]];
+  offsets.forEach(([x,y],i)=>{const h=document.createElement('span');h.textContent='♥';h.style.setProperty('--dx',x+'px');h.style.setProperty('--dy',y+'px');h.style.fontSize=(24+(i%4)*2)+'px';h.style.animationDelay=(i*80)+'ms';burst.appendChild(h);});
+  card.appendChild(burst);setTimeout(()=>burst.remove(),6500);
 }
