@@ -243,6 +243,12 @@ body:before{
 .pulso-reputation{position:absolute;right:14px;bottom:14px;z-index:8;display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:999px;background:rgba(12,10,20,.78);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(10px);color:#fff;font-size:12px;box-shadow:0 8px 24px rgba(0,0,0,.22)}
 .pulso-reputation-hearts{letter-spacing:-3px;font-size:15px;color:#ff3d8e}.pulso-reputation-text b{font-weight:800}.pulso-reputation.has-pulses{border-color:rgba(255,61,142,.38);box-shadow:0 0 22px rgba(255,61,142,.16)}
 .pulso-heart-burst{position:absolute;inset:0;z-index:999;pointer-events:none;overflow:visible}
-.pulso-heart-burst span{position:absolute;left:50%;top:52%;font-size:22px;color:#ff3d8e;opacity:0;animation:pulsoHeartFloat 4.2s ease-out forwards;filter:drop-shadow(0 0 7px rgba(255,61,142,.65))}.pulso-heart-burst span:nth-child(3n){color:#a855f7}.pulso-heart-burst span:nth-child(4n){color:#ff5c8a}@keyframes pulsoHeartFloat{0%{opacity:0;transform:translate(-50%,0) scale(.7)}12%{opacity:1}75%{opacity:.9}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),var(--dy)) scale(1)}}
+.pulso-heart-burst span{position:absolute;left:50%;top:56%;font-size:24px;color:#ff3d8e;opacity:0;animation:pulsoHeartFloat 5.6s ease-out forwards;filter:drop-shadow(0 0 9px rgba(255,61,142,.72))}
+.pulso-heart-burst span:nth-child(3n){color:#a855f7}.pulso-heart-burst span:nth-child(4n){color:#ff5c8a}
+@keyframes pulsoHeartFloat{0%{opacity:0;transform:translate(-50%,0) scale(.72)}10%{opacity:1}72%{opacity:.95}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),var(--dy)) scale(1)}}
+.pulso-real-alert{position:absolute;left:50%;top:18px;transform:translateX(-50%);z-index:1000;display:flex;align-items:center;gap:8px;max-width:calc(100% - 24px);padding:10px 16px;border-radius:999px;background:linear-gradient(100deg,rgba(25,12,28,.94),rgba(48,18,48,.92));border:1px solid rgba(255,61,142,.5);box-shadow:0 10px 30px rgba(0,0,0,.3),0 0 24px rgba(255,61,142,.2);backdrop-filter:blur(12px);color:#fff;font-size:13px;font-weight:800;white-space:nowrap;animation:pulsoAlertIn .45s ease-out}
+.pulso-real-alert .pulso-alert-icon{font-size:17px}.pulso-real-alert b{color:#ff9abd;font-size:11px;margin-left:2px}
+@keyframes pulsoAlertIn{from{opacity:0;transform:translate(-50%,-12px) scale(.94)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@media(max-width:520px){.pulso-real-alert{top:12px;font-size:11px;padding:8px 11px;gap:5px}.pulso-real-alert b{font-size:10px}.pulso-heart-burst span{font-size:21px}}
 [data-post]{position:relative}
 @media(max-width:520px){.pulso-reputation{right:9px;bottom:9px;font-size:11px;padding:6px 9px}}
