@@ -234,3 +234,7 @@ body:before{
 .pulso-heart{font-size:20px;line-height:1;transition:transform .12s ease}.pulso-real-button.is-holding .pulso-heart{animation:pulsoHeart .55s ease-in-out infinite}.pulso-real-button.pulse-success{background:linear-gradient(105deg,rgba(255,61,142,.30),rgba(168,85,247,.26))!important;border-color:rgba(255,61,142,.60)!important}.pulso-beat{animation:pulsoVideoBeat .7s ease-in-out 2}
 @keyframes pulsoHeart{0%,100%{transform:scale(1)}50%{transform:scale(1.32)}}@keyframes pulsoVideoBeat{0%,100%{transform:scale(1)}35%{transform:scale(1.012)}70%{transform:scale(.997)}}
 @media(max-width:520px){.pulso-real-button{min-width:155px!important}.pulso-label{font-size:12px}}
+
+/* PULSO REAL separado do Curtir */
+.actions .pulso-real-button{margin-left:6px!important;flex:0 0 auto!important;}
+.actions .pulso-real-button .pulso-label{white-space:nowrap!important;}
