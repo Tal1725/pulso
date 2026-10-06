@@ -98,6 +98,6 @@ async function refreshPulseReputation(card,postId){
 function showPulseBurst(card){
   const burst=document.createElement('div');burst.className='pulso-heart-burst';
   const offsets=[[-120,-90],[-95,-135],[-70,-180],[-45,-115],[-20,-155],[5,-210],[30,-125],[55,-175],[80,-105],[105,-145],[-105,-220],[-65,-245],[-25,-275],[20,-250],[65,-225],[105,-195],[-85,-305],[-35,-320],[15,-300],[70,-285]];
-  offsets.forEach(([x,y],i)=>{const h=document.createElement('span');h.textContent='♥';h.style.setProperty('--dx',x+'px');h.style.setProperty('--dy',y+'px');h.style.fontSize=(16+(i%4)*3)+'px';h.style.animationDelay=(i*45)+'ms';burst.appendChild(h);});
-  card.appendChild(burst);setTimeout(()=>burst.remove(),2200);
+  offsets.forEach(([x,y],i)=>{const h=document.createElement('span');h.textContent='♥';h.style.setProperty('--dx',x+'px');h.style.setProperty('--dy',y+'px');h.style.fontSize=(21+(i%4)*3)+'px';h.style.animationDelay=(i*45)+'ms';burst.appendChild(h);});
+  card.appendChild(burst);setTimeout(()=>burst.remove(),4600);
 }
