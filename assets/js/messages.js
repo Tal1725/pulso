@@ -17,11 +17,22 @@ async function mutual(id){
   return !a.empty&&!b.empty;
 }
 function modal(){return $('#messagesModal')}function status(t){const x=$('#messageStatus');if(x)x.textContent=t}
-async function refresh(){if(!me||!current)return;const [a,b]=await Promise.all([
-    getDocs(query(collection(firebaseDb,'direct_messages'),where('sender_id','==',me),where('receiver_id','==',current.__uid||current.user_id||current.uid||current.id),limit(100))),
-    getDocs(query(collection(firebaseDb,'direct_messages'),where('sender_id','==',current.__uid||current.user_id||current.uid||current.id),where('receiver_id','==',me),limit(100)))
-  ]);
-  const r=[...a.docs,...b.docs].map(d=>({id:d.id,...d.data()})).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)),box=$('#messageThread');if(!box)return;box.innerHTML=r.map(x=>'<div class="message-bubble '+(x.sender_id===me?'mine':'theirs')+'">'+esc(x.body)+'<small>'+new Date(x.created_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'</small></div>').join('')||'<div class="message-empty">Ainda não há mensagens. Comece a conversa. 👋</div>';box.scrollTop=box.scrollHeight;for(const x of r.filter(x=>x.receiver_id===me&&!x.read_at))await updateDoc(doc(firebaseDb,'direct_messages',x.id),{read_at:new Date().toISOString()})}
+async function refresh(){if(!me||!current)return;const target=current.__uid||current.user_id||current.uid||current.id;
+  try{
+    // Usa consultas por um único campo para evitar dependência de índice composto do Firestore.
+    const [sent,received]=await Promise.all([
+      getDocs(query(collection(firebaseDb,'direct_messages'),where('sender_id','==',me),limit(200))),
+      getDocs(query(collection(firebaseDb,'direct_messages'),where('receiver_id','==',me),limit(200)))
+    ]);
+    const r=[...sent.docs,...received.docs].map(d=>({id:d.id,...d.data()}))
+      .filter(x=>(x.sender_id===me&&x.receiver_id===target)||(x.sender_id===target&&x.receiver_id===me))
+      .sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+    const box=$('#messageThread');if(!box)return;
+    box.innerHTML=r.map(x=>'<div class="message-bubble '+(x.sender_id===me?'mine':'theirs')+'">'+esc(x.body)+'<small>'+new Date(x.created_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'</small></div>').join('')||'<div class="message-empty">Ainda não há mensagens. Comece a conversa. 👋</div>';
+    box.scrollTop=box.scrollHeight;
+    for(const x of r.filter(x=>x.receiver_id===me&&!x.read_at))await updateDoc(doc(firebaseDb,'direct_messages',x.id),{read_at:new Date().toISOString()});
+  }catch(e){console.error('[PULSO] erro ao carregar conversa:',e);status('Não foi possível carregar as mensagens: '+(e?.code||e?.message||'erro desconhecido'))}
+}
 async function loadPeople(){const p=await profile(me);if(p.birth_date&&age(p.birth_date)<18){$('#messagePeople').innerHTML='<div class="message-empty">Mensagens privadas são liberadas somente para adultos.</div>';return}
 const s=await getDocs(query(collection(firebaseDb,'Perfis'),limit(200)));
 people=s.docs.map(d=>({id:d.id,...d.data(),__uid:d.data().user_id||d.data().uid||d.id})).filter(x=>x.__uid&&x.__uid!==me&&(!x.birth_date||age(x.birth_date)>=18));
