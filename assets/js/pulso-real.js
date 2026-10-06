@@ -1,5 +1,5 @@
 import{firebaseAuth,firebaseDb}from'./firebase-config.js';
-import{doc,setDoc}from'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
+import{doc,setDoc,collection,query,where,getDocs}from'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
 
 const HOLD_MS=3000;
 const active=new Map();
@@ -10,6 +10,7 @@ function addPulseButton(likeBtn){
   const postId=card?.dataset.post;
   if(!postId)return;
   likeBtn.dataset.pulsoRealReady='1';
+  addPulseReputation(card,postId);
 
   const btn=document.createElement('button');
   btn.type='button';
@@ -37,6 +38,8 @@ function addPulseButton(likeBtn){
     try{
       const data={post_id:postId,user_id:uid,type:'real_hold',reaction:'pulse',duration_ms:HOLD_MS,created_at:new Date().toISOString()};
       await setDoc(doc(firebaseDb,'PulsosReais',postId+'_'+uid),data);
+      showPulseBurst(card);
+      refreshPulseReputation(card,postId);
       btn.classList.remove('is-holding');
       btn.classList.add('pulse-success');
       btn.querySelector('.pulso-heart').textContent='❤️';
@@ -79,3 +82,21 @@ function enhance(){
 document.addEventListener('pulso-feed-rendered',enhance);
 new MutationObserver(enhance).observe(document.body,{subtree:true,childList:true});
 enhance();
+
+
+async function getPulseCount(postId){
+  try{const snap=await getDocs(query(collection(firebaseDb,'PulsosReais'),where('post_id','==',postId)));return snap.size;}catch(e){console.warn('[PULSO REAL] contador',e);return 0;}
+}
+function addPulseReputation(card,postId){
+  if(card.querySelector('.pulso-reputation'))return;
+  const el=document.createElement('div');el.className='pulso-reputation';el.innerHTML='<span class="pulso-reputation-hearts">♡</span><span class="pulso-reputation-text">PULSO REAL <b>0</b></span>';
+  card.appendChild(el);refreshPulseReputation(card,postId);
+}
+async function refreshPulseReputation(card,postId){
+  const el=card?.querySelector('.pulso-reputation');if(!el)return;const n=await getPulseCount(postId);el.querySelector('b').textContent=n;el.classList.toggle('has-pulses',n>0);el.querySelector('.pulso-reputation-hearts').textContent=n>0?'♥♥♥':'♡';
+}
+function showPulseBurst(card){
+  const burst=document.createElement('div');burst.className='pulso-heart-burst';
+  for(let i=0;i<12;i++){const h=document.createElement('span');h.textContent='♥';h.style.setProperty('--i',i);burst.appendChild(h);}
+  card.appendChild(burst);setTimeout(()=>burst.remove(),1800);
+}
