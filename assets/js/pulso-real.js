@@ -47,9 +47,14 @@ function pulseButton(btn){
 async function finish(btn,postId){
   const uid=firebaseAuth.currentUser?.uid;
   if(!uid){btn.classList.remove('is-holding');return}
-  const ref=doc(firebaseDb,'PulsosReais',postId+'_'+uid);
   try{
-    await setDoc(ref,{post_id:postId,user_id:uid,type:'real_hold',duration_ms:HOLD_MS,created_at:new Date().toISOString()});
+    const data={post_id:postId,user_id:uid,type:'real_hold',reaction:'pulse',duration_ms:HOLD_MS,created_at:new Date().toISOString()};
+    try{
+      await setDoc(doc(firebaseDb,'PulsosReais',postId+'_'+uid),data);
+    }catch(primaryError){
+      console.warn('[PULSO REAL] PulsosReais indisponível; usando fallback Gostos',primaryError);
+      await setDoc(doc(firebaseDb,'Gostos','pulse_'+postId+'_'+uid),data);
+    }
     btn.classList.remove('is-holding');
     btn.classList.add('pulse-success');
     btn.querySelector('.pulso-heart').textContent='❤️';
