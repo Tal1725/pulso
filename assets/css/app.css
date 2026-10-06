@@ -226,3 +226,11 @@ body:before{
 .creator-follow.is-following{background:rgba(255,255,255,.055);color:#cfd3e0}
 .creator-you{color:#ff9abd;background:rgba(255,61,142,.08)}
 @media(max-width:520px){.posthead .avatar{flex-basis:44px;width:44px!important;height:44px!important}.posthead .meta strong{font-size:14px!important}.posthead .meta small{max-width:125px}.creator-follow,.creator-you{padding:7px 9px;font-size:11px;border-radius:10px}}
+
+
+/* PULSO REAL — protótipo de interação */
+.pulso-real-button{position:relative!important;overflow:hidden!important;min-width:170px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;background:linear-gradient(105deg,rgba(255,61,142,.14),rgba(168,85,247,.14))!important;border:1px solid rgba(255,61,142,.28)!important;user-select:none!important;-webkit-user-select:none!important;touch-action:none!important}
+.pulso-real-button::after{content:"";position:absolute;left:0;bottom:0;height:3px;width:var(--pulso-progress,0%);background:linear-gradient(90deg,#ff3d8e,#a855f7,#4f8cff);transition:width .05s linear}
+.pulso-heart{font-size:20px;line-height:1;transition:transform .12s ease}.pulso-real-button.is-holding .pulso-heart{animation:pulsoHeart .55s ease-in-out infinite}.pulso-real-button.pulse-success{background:linear-gradient(105deg,rgba(255,61,142,.30),rgba(168,85,247,.26))!important;border-color:rgba(255,61,142,.60)!important}.pulso-beat{animation:pulsoVideoBeat .7s ease-in-out 2}
+@keyframes pulsoHeart{0%,100%{transform:scale(1)}50%{transform:scale(1.32)}}@keyframes pulsoVideoBeat{0%,100%{transform:scale(1)}35%{transform:scale(1.012)}70%{transform:scale(.997)}}
+@media(max-width:520px){.pulso-real-button{min-width:155px!important}.pulso-label{font-size:12px}}
