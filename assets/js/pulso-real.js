@@ -16,7 +16,8 @@ function addPulseButton(likeBtn){
   btn.className='action pulso-real-button';
   btn.setAttribute('aria-label','Segure por 3 segundos para enviar seu PULSO');
   btn.innerHTML='<span class="pulso-heart">♡</span><span class="pulso-label">Segure para Pulsar</span>';
-  likeBtn.insertAdjacentElement('afterend',btn);
+  const actions=likeBtn.closest('.actions');
+  if(actions) actions.appendChild(btn);
 
   const cancel=()=>{
     const raf=active.get(postId);
