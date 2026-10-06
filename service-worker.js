@@ -1,4 +1,4 @@
-const CACHE = 'pulso-pwa-v8';
+const CACHE = 'pulso-pwa-v9';
 const APP_SHELL = [
   '/pulso/',
   '/pulso/index.html',
@@ -18,6 +18,11 @@ const APP_SHELL = [
   '/pulso/assets/js/pulso-profile-view.js',
   '/pulso/assets/js/messages.js',
   '/pulso/assets/js/notifications.js',
+  '/pulso/assets/js/pulso-real.js',
+  '/pulso/assets/js/pulso-search.js',
+  '/pulso/assets/js/pulso-profile-view.js',
+  '/pulso/assets/js/pulso-opportunities.js',
+  '/pulso/assets/js/pulso-hives.js',
   '/pulso/assets/img/logo.svg',
   '/pulso/assets/img/favicon.svg',
   '/pulso/assets/img/pwa-icon-192.svg',
