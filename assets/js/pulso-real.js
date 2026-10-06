@@ -7,13 +7,17 @@ const active=new Map();
 function pulseButton(btn){
   if(btn.dataset.pulsoReal==='1')return;
   btn.dataset.pulsoReal='1';
-  btn.classList.add('pulso-real-button');
-  btn.setAttribute('aria-label','Segure por 3 segundos para enviar seu PULSO');
-  btn.innerHTML='<span class="pulso-heart">♡</span><span class="pulso-label">Segure para Pulsar</span><span class="pulso-count"></span>';
+  const pulse=document.createElement('button');
+  pulse.type='button';
+  pulse.className='pulso-real-button';
+  pulse.setAttribute('aria-label','Segure por 3 segundos para enviar seu PULSO');
+  pulse.innerHTML='<span class="pulso-heart">♡</span><span class="pulso-label">Segure para Pulsar</span><span class="pulso-count"></span>';
+  btn.insertAdjacentElement('afterend',pulse);
 
   const card=btn.closest('[data-post]');
   const postId=card?.dataset.post;
   if(!postId)return;
+  pulseButton(pulse);
 
   const start=()=>{
     if(active.has(postId))return;
