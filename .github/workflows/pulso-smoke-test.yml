@@ -24,11 +24,17 @@ jobs:
           grep -q 'assets/js/app.js' app.html
           grep -q 'assets/js/pulso-publish-final.js' app.html
           grep -q 'assets/js/notifications.js' app.html
+          grep -q 'assets/js/pulso-real.js' app.html
+          test -f assets/js/pulso-real.js
+          test -f assets/js/pulso-search.js
+          test -f assets/js/pulso-profile-view.js
+          test -f assets/js/pulso-opportunities.js
+          test -f assets/js/pulso-hives.js
           echo "HTML/assets OK"
       - name: Syntax-check JavaScript modules
         run: |
           set -e
-          for f in assets/js/app.js assets/js/auth.js assets/js/login.js assets/js/pulso-publish-final.js assets/js/pulso-profiles.js assets/js/notifications.js assets/js/share.js assets/js/media.js assets/js/messages.js; do
+          for f in assets/js/app.js assets/js/auth.js assets/js/login.js assets/js/pulso-publish-final.js assets/js/pulso-profiles.js assets/js/notifications.js assets/js/share.js assets/js/media.js assets/js/messages.js assets/js/pulso-real.js assets/js/pulso-search.js assets/js/pulso-profile-view.js assets/js/pulso-opportunities.js assets/js/pulso-hives.js; do
             node --check "$f"
           done
           echo "Core JavaScript syntax OK"
