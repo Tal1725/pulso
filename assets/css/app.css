@@ -252,3 +252,372 @@ body:before{
 @media(max-width:520px){.pulso-real-alert{top:12px;font-size:11px;padding:8px 11px;gap:5px}.pulso-real-alert b{font-size:10px}.pulso-heart-burst span{font-size:21px}}
 [data-post]{position:relative}
 @media(max-width:520px){.pulso-reputation{right:9px;bottom:9px;font-size:11px;padding:6px 9px}}
+
+
+/* =========================================================
+   PULSO VISUAL REFERENCE — 2026-10-06
+   Objetivo: aproximar o app real da identidade da peça
+   promocional aprovada: dark cinematic + neon + feed vertical.
+   Somente CSS: nenhuma lógica funcional é alterada.
+   ========================================================= */
+
+:root{
+  --pulso-pink:#ff149f;
+  --pulso-pink-2:#ff3d8e;
+  --pulso-purple:#8b5cf6;
+  --pulso-blue:#168cff;
+  --pulso-cyan:#22d3ee;
+  --pulso-bg:#050611;
+}
+
+body{
+  background:
+    radial-gradient(circle at 18% 0%,rgba(255,20,159,.14),transparent 25%),
+    radial-gradient(circle at 82% 2%,rgba(22,140,255,.16),transparent 27%),
+    radial-gradient(circle at 50% 55%,rgba(139,92,246,.08),transparent 38%),
+    linear-gradient(180deg,#04050d 0%,#080a15 45%,#04050d 100%);
+}
+
+body:after{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:-1;
+  background:
+    linear-gradient(115deg,transparent 0 35%,rgba(255,20,159,.025) 46%,transparent 58%),
+    linear-gradient(245deg,transparent 0 42%,rgba(22,140,255,.025) 53%,transparent 66%);
+}
+
+.top{
+  background:rgba(4,5,13,.76);
+  border-bottom:1px solid rgba(255,255,255,.10);
+  box-shadow:0 12px 45px rgba(0,0,0,.35);
+}
+
+.brand img{
+  filter:drop-shadow(0 0 12px rgba(255,20,159,.55));
+}
+
+.brand span{
+  background:linear-gradient(90deg,#fff,#ff72c5,#a78bfa,#4cc9ff);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+
+.wrap{
+  max-width:1260px;
+  padding:30px 22px 90px;
+}
+
+.grid{
+  grid-template-columns:minmax(0,720px) 300px;
+  gap:34px;
+  align-items:start;
+}
+
+.composer{
+  border-color:rgba(255,20,159,.18);
+  background:
+    linear-gradient(145deg,rgba(22,24,43,.92),rgba(8,10,20,.94));
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.32),
+    0 0 35px rgba(255,20,159,.035);
+}
+
+.composer:before{
+  background:linear-gradient(90deg,transparent,var(--pulso-pink),var(--pulso-purple),var(--pulso-blue),transparent);
+}
+
+.feed-switch{
+  background:rgba(5,7,16,.78);
+  border-color:rgba(255,255,255,.10);
+  box-shadow:0 12px 35px rgba(0,0,0,.28);
+}
+
+.feed-switch-btn.active{
+  background:linear-gradient(100deg,rgba(255,20,159,.26),rgba(139,92,246,.23),rgba(22,140,255,.18));
+  color:#fff;
+  box-shadow:0 0 24px rgba(255,20,159,.08),inset 0 0 0 1px rgba(255,255,255,.10);
+}
+
+/* Feed card becomes the visual center of the application. */
+.post.card{
+  position:relative;
+  width:min(100%,520px);
+  margin:0 auto 26px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:26px;
+  padding:0;
+  background:#05060d;
+  box-shadow:
+    0 25px 70px rgba(0,0,0,.45),
+    0 0 45px rgba(139,92,246,.055);
+}
+
+.post.card:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:5;
+  border-radius:26px;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.035);
+}
+
+.post .posthead{
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  z-index:8;
+  padding:16px 16px 48px;
+  background:linear-gradient(180deg,rgba(0,0,0,.72),rgba(0,0,0,0));
+  cursor:pointer;
+}
+
+.post .avatar{
+  width:42px;
+  height:42px;
+  border:2px solid rgba(255,255,255,.9);
+  box-shadow:0 0 18px rgba(255,20,159,.28);
+}
+
+.post .meta strong{
+  color:#fff;
+  text-shadow:0 2px 10px rgba(0,0,0,.7);
+}
+
+.post .meta span,
+.post .meta small{
+  color:rgba(255,255,255,.78);
+  text-shadow:0 2px 8px rgba(0,0,0,.7);
+}
+
+.post .creator-follow,
+.post .creator-you{
+  border:1px solid rgba(255,255,255,.25);
+  background:rgba(0,0,0,.32);
+  color:#fff;
+  border-radius:999px;
+  padding:7px 11px;
+  backdrop-filter:blur(12px);
+}
+
+.post .video{
+  display:block;
+  width:100%;
+  height:auto;
+  aspect-ratio:9/16;
+  max-height:none;
+  object-fit:cover;
+  background:
+    radial-gradient(circle at 50% 30%,rgba(139,92,246,.22),transparent 35%),
+    #03040a;
+}
+
+.post img.video{
+  object-fit:cover;
+}
+
+.post video.video{
+  object-fit:cover;
+}
+
+.post .caption{
+  position:absolute;
+  left:0;
+  right:76px;
+  bottom:86px;
+  z-index:7;
+  padding:70px 18px 8px;
+  color:#fff;
+  font-size:14px;
+  line-height:1.45;
+  text-shadow:0 2px 10px rgba(0,0,0,.9);
+  background:linear-gradient(0deg,rgba(0,0,0,.72),rgba(0,0,0,0));
+}
+
+.post .actions{
+  position:absolute;
+  right:9px;
+  bottom:78px;
+  z-index:9;
+  width:58px;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:11px;
+}
+
+.post .actions .action{
+  width:52px;
+  min-height:52px;
+  padding:7px 3px;
+  border:0;
+  border-radius:50%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  background:rgba(0,0,0,.36);
+  color:#fff;
+  font-size:0;
+  backdrop-filter:blur(12px);
+  box-shadow:0 7px 22px rgba(0,0,0,.25);
+}
+
+.post .actions .action:before{
+  font-size:23px;
+  line-height:1;
+}
+
+.post .actions [data-like]:before{content:"♡";}
+.post .actions [data-like].active:before{content:"♥";}
+.post .actions [data-reaction-menu]:before{content:"✨";}
+.post .actions [data-likers]:before{content:"👥";}
+.post .actions [data-share]:before{content:"↗";}
+.post .actions [data-focus]:before{content:"💬";}
+.post .actions .delete-action:before{content:"⋯";}
+
+.post .actions .action.active{
+  color:#ff4fae;
+  background:rgba(255,20,159,.17);
+  box-shadow:0 0 24px rgba(255,20,159,.20);
+}
+
+.post .actions .action:hover{
+  transform:scale(1.06);
+  background:rgba(255,255,255,.13);
+}
+
+.post .actions .action[data-like]{
+  position:relative;
+}
+
+.post .actions .action[data-like]::after,
+.post .actions .action[data-focus]::after,
+.post .actions .action[data-share]::after,
+.post .actions .action[data-likers]::after{
+  content:attr(data-count);
+}
+
+.post .reaction-wrap{
+  display:flex;
+  position:relative;
+}
+
+.post .reaction-picker{
+  right:57px;
+  left:auto;
+  bottom:0;
+  transform:translateY(6px) scale(.96);
+  border-radius:18px;
+  padding:7px;
+}
+
+.post .reaction-summary{
+  position:absolute;
+  left:15px;
+  bottom:53px;
+  z-index:10;
+  width:auto;
+  max-width:calc(100% - 95px);
+  margin:0;
+}
+
+.post .reaction-count{
+  color:#fff;
+  background:rgba(0,0,0,.52);
+  border-color:rgba(255,255,255,.10);
+  backdrop-filter:blur(10px);
+}
+
+.post .comments{
+  position:relative;
+  z-index:11;
+  background:linear-gradient(180deg,#0a0b13,#080911);
+  border-top:1px solid rgba(255,255,255,.08);
+  padding:13px 16px;
+}
+
+.post .commentbox{
+  position:relative;
+  z-index:11;
+  margin:0;
+  padding:10px 16px 15px;
+  background:#080911;
+}
+
+.post .commentbox input{
+  background:rgba(255,255,255,.06);
+}
+
+.side{
+  position:sticky;
+  top:94px;
+  background:
+    linear-gradient(145deg,rgba(20,22,39,.90),rgba(8,10,19,.88));
+  border-color:rgba(255,255,255,.10);
+  box-shadow:0 20px 55px rgba(0,0,0,.28);
+}
+
+.side h3{
+  color:#fff;
+}
+
+.side .avatar{
+  box-shadow:0 0 20px rgba(255,20,159,.18);
+}
+
+.primary{
+  background:linear-gradient(100deg,#ff149f 0%,#a855f7 52%,#168cff 100%);
+  box-shadow:0 8px 28px rgba(255,20,159,.20),0 5px 22px rgba(22,140,255,.12);
+}
+
+.notification-badge{
+  background:var(--pulso-pink);
+  box-shadow:0 0 14px rgba(255,20,159,.5);
+}
+
+@media(max-width:850px){
+  .wrap{padding:18px 10px 70px}
+  .grid{grid-template-columns:1fr}
+  .post.card{
+    width:min(100%,520px);
+    border-radius:22px;
+  }
+  .post .video{
+    aspect-ratio:9/16;
+  }
+  .post .posthead{
+    padding:13px 13px 45px;
+  }
+  .post .caption{
+    bottom:82px;
+    right:68px;
+    padding-left:14px;
+    padding-right:8px;
+  }
+  .post .actions{
+    right:7px;
+    bottom:72px;
+  }
+  .side{display:none}
+}
+
+@media(min-width:851px){
+  #feed{
+    min-height:200px;
+  }
+}
+
+/* Make the upload controls feel like the colorful reference artwork. */
+.upload-icon:nth-child(1){box-shadow:0 0 18px rgba(255,20,159,.07)}
+.upload-icon:nth-child(2){box-shadow:0 0 18px rgba(139,92,246,.07)}
+.upload-icon:nth-child(3){box-shadow:0 0 18px rgba(22,140,255,.07)}
+.upload-icon:nth-child(4){box-shadow:0 0 18px rgba(34,211,238,.07)}
