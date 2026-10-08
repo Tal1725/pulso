@@ -255,3 +255,277 @@ body:before{
 
 /* PULSO FUTURISTA MOBILE */
 @media(max-width:850px){body{background:#05060b!important}.top{position:fixed!important;top:0!important;left:0!important;right:0!important;z-index:60!important;background:linear-gradient(180deg,rgba(3,4,9,.9),transparent)!important;border:0!important}.wrap{padding:0!important}.side{display:none!important}.grid{display:block!important}.post.card{position:relative!important;min-height:calc(100vh - 68px)!important;margin:0!important;border-radius:0!important;overflow:hidden!important;background:#05060b!important}.post>video.video,.post>img.video{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-height:none!important;margin:0!important;border-radius:0!important;object-fit:cover!important}.posthead{position:absolute!important;top:0!important;left:0!important;right:0!important;z-index:8!important;background:linear-gradient(180deg,rgba(0,0,0,.65),transparent)!important}.post.card:after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.35),transparent 35%,rgba(0,0,0,.7))}.caption{position:absolute!important;left:14px!important;right:70px!important;bottom:70px!important;z-index:7!important;padding:0!important;color:#fff!important;text-shadow:0 2px 12px #000}.actions{position:absolute!important;right:8px!important;bottom:68px!important;z-index:9!important;display:flex!important;flex-direction:column!important;width:52px!important;padding:0!important}.actions>.action,.actions .reaction-wrap>.action{width:48px!important;min-width:48px!important;height:48px!important;padding:0!important;border-radius:50%!important;background:rgba(5,6,12,.5)!important;backdrop-filter:blur(12px)!important;display:grid!important;place-items:center!important;font-size:0!important}.actions .reaction-wrap>.action:before{content:"♡";font-size:25px}.actions .reaction-wrap>.action.active:before{content:"♥";color:#ff4d94}.actions>.action[data-share]:before{content:"↗";font-size:24px}.actions>.action[data-focus]:before{content:"💬";font-size:20px}.actions>.action[data-likers]:before{content:"👥";font-size:19px}.comments{position:absolute!important;bottom:0!important;left:0!important;right:0!important;z-index:5!important;transform:translateY(100%)!important}.commentbox{position:absolute!important;bottom:0!important;left:0!important;right:0!important;z-index:12!important;padding:8px!important;background:linear-gradient(transparent,rgba(0,0,0,.9))}.composer{margin:76px 10px 12px!important}.feed-switch{margin:0 10px 10px!important}}
+
+
+/* PULSO MOBILE — CORREÇÃO VISUAL PREMIUM 20261008 */
+@media(max-width:850px){
+  body{
+    background:
+      radial-gradient(650px 420px at 10% 0%,rgba(255,61,142,.14),transparent 58%),
+      radial-gradient(650px 420px at 95% 12%,rgba(79,140,255,.13),transparent 58%),
+      #080a12!important;
+  }
+  .wrap{
+    padding:78px 10px 54px!important;
+  }
+  .grid{
+    display:block!important;
+  }
+  .post.card{
+    position:relative!important;
+    min-height:0!important;
+    height:min(76svh,680px)!important;
+    margin:0 0 24px!important;
+    padding:0!important;
+    border-radius:26px!important;
+    overflow:hidden!important;
+    background:
+      linear-gradient(145deg,rgba(25,28,47,.98),rgba(9,11,20,.98))!important;
+    border:1px solid rgba(255,255,255,.15)!important;
+    box-shadow:
+      0 24px 65px rgba(0,0,0,.42),
+      0 0 45px rgba(139,92,246,.09)!important;
+  }
+  .post.card:before{
+    content:""!important;
+    position:absolute!important;
+    inset:0 0 auto!important;
+    height:2px!important;
+    z-index:20!important;
+    background:linear-gradient(90deg,#ff3d8e,#a855f7,#38bdf8)!important;
+  }
+  .post.card:after{
+    content:""!important;
+    position:absolute!important;
+    inset:0!important;
+    z-index:2!important;
+    pointer-events:none!important;
+    background:
+      linear-gradient(180deg,rgba(0,0,0,.50) 0%,transparent 22%,transparent 58%,rgba(0,0,0,.72) 100%)!important;
+  }
+  .posthead{
+    position:absolute!important;
+    top:0!important;
+    left:0!important;
+    right:0!important;
+    z-index:12!important;
+    padding:14px 14px 24px!important;
+    background:linear-gradient(180deg,rgba(4,5,10,.78),rgba(4,5,10,.18),transparent)!important;
+  }
+  .posthead .avatar{
+    width:44px!important;
+    height:44px!important;
+    flex-basis:44px!important;
+  }
+  .posthead .meta strong{
+    font-size:14px!important;
+    color:#fff!important;
+  }
+  .posthead .meta span{
+    font-size:11px!important;
+  }
+  .posthead .meta small{
+    max-width:150px!important;
+    font-size:10px!important;
+  }
+  .creator-follow,.creator-you{
+    padding:7px 9px!important;
+    font-size:11px!important;
+    border-radius:10px!important;
+    background:rgba(12,13,23,.70)!important;
+    backdrop-filter:blur(10px)!important;
+  }
+  .post>video.video,.post>img.video{
+    position:absolute!important;
+    inset:10px!important;
+    width:calc(100% - 20px)!important;
+    height:calc(100% - 20px)!important;
+    max-height:none!important;
+    margin:0!important;
+    border-radius:21px!important;
+    object-fit:cover!important;
+    z-index:1!important;
+    background:#05060b!important;
+    box-shadow:0 18px 45px rgba(0,0,0,.42)!important;
+  }
+  .caption{
+    position:absolute!important;
+    left:17px!important;
+    right:84px!important;
+    bottom:20px!important;
+    z-index:8!important;
+    padding:0!important;
+    color:#fff!important;
+    font-size:13px!important;
+    line-height:1.42!important;
+    text-shadow:0 2px 12px rgba(0,0,0,.9)!important;
+    max-height:88px!important;
+    overflow:hidden!important;
+  }
+  .actions{
+    position:absolute!important;
+    right:12px!important;
+    top:50%!important;
+    bottom:auto!important;
+    transform:translateY(-36%)!important;
+    z-index:14!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    gap:10px!important;
+    width:56px!important;
+    padding:0!important;
+  }
+  .actions>.action,
+  .actions .reaction-wrap>.action{
+    width:54px!important;
+    min-width:54px!important;
+    height:54px!important;
+    min-height:54px!important;
+    padding:0!important;
+    border-radius:17px!important;
+    display:grid!important;
+    place-items:center!important;
+    font-size:0!important;
+    color:#fff!important;
+    background:rgba(8,10,18,.72)!important;
+    border:1px solid rgba(255,255,255,.20)!important;
+    backdrop-filter:blur(14px)!important;
+    -webkit-backdrop-filter:blur(14px)!important;
+    box-shadow:0 10px 26px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.08)!important;
+  }
+  .actions .reaction-wrap{
+    display:block!important;
+  }
+  .actions .reaction-wrap>.action:before{
+    content:"♡"!important;
+    font-size:29px!important;
+    line-height:1!important;
+  }
+  .actions .reaction-wrap>.action.active:before{
+    content:"♥"!important;
+    color:#ff4d94!important;
+    text-shadow:0 0 16px rgba(255,61,142,.55)!important;
+  }
+  .actions>.action[data-share]:before{
+    content:"↗"!important;
+    font-size:29px!important;
+    line-height:1!important;
+  }
+  .actions>.action[data-focus]:before{
+    content:"💬"!important;
+    font-size:22px!important;
+  }
+  .actions>.action[data-likers]:before{
+    content:"👥"!important;
+    font-size:21px!important;
+  }
+  .actions .action[data-follow]:before{
+    content:"+"!important;
+    font-size:28px!important;
+    font-weight:300!important;
+  }
+  .actions .pulso-real-button{
+    min-width:54px!important;
+    width:54px!important;
+    height:54px!important;
+    min-height:54px!important;
+    margin:0!important;
+    padding:0!important;
+    border-radius:17px!important;
+    display:grid!important;
+    place-items:center!important;
+    background:linear-gradient(145deg,rgba(255,61,142,.34),rgba(168,85,247,.30))!important;
+    border:1px solid rgba(255,119,175,.55)!important;
+    box-shadow:0 0 24px rgba(255,61,142,.18),0 10px 28px rgba(0,0,0,.34)!important;
+  }
+  .actions .pulso-real-button .pulso-heart{
+    font-size:25px!important;
+  }
+  .actions .pulso-real-button .pulso-label{
+    display:none!important;
+  }
+  .reaction-picker{
+    left:auto!important;
+    right:62px!important;
+    bottom:0!important;
+    z-index:40!important;
+  }
+  .comments{
+    position:absolute!important;
+    left:10px!important;
+    right:10px!important;
+    bottom:10px!important;
+    z-index:13!important;
+    transform:translateY(110%)!important;
+    border:1px solid rgba(255,255,255,.12)!important;
+    border-radius:18px!important;
+    background:rgba(10,12,21,.94)!important;
+    backdrop-filter:blur(16px)!important;
+  }
+  .commentbox{
+    position:relative!important;
+    left:auto!important;
+    right:auto!important;
+    bottom:auto!important;
+    z-index:auto!important;
+    padding:8px 0 0!important;
+    background:none!important;
+  }
+  .pulso-reputation{
+    right:17px!important;
+    bottom:16px!important;
+    z-index:11!important;
+    font-size:10px!important;
+    padding:6px 9px!important;
+    max-width:150px!important;
+  }
+  .pulso-real-alert{
+    top:18px!important;
+    z-index:30!important;
+  }
+}
+@media(max-width:520px){
+  .wrap{padding:72px 8px 46px!important}
+  .post.card{
+    height:min(74svh,620px)!important;
+    border-radius:23px!important;
+  }
+  .post>video.video,.post>img.video{
+    inset:8px!important;
+    width:calc(100% - 16px)!important;
+    height:calc(100% - 16px)!important;
+    border-radius:19px!important;
+  }
+  .posthead{
+    padding:12px 12px 22px!important;
+  }
+  .actions{
+    right:8px!important;
+    width:52px!important;
+    gap:8px!important;
+  }
+  .actions>.action,
+  .actions .reaction-wrap>.action,
+  .actions .pulso-real-button{
+    width:50px!important;
+    min-width:50px!important;
+    height:50px!important;
+    min-height:50px!important;
+    border-radius:15px!important;
+  }
+  .actions .reaction-wrap>.action:before{font-size:27px!important}
+  .actions>.action[data-share]:before{font-size:27px!important}
+  .actions>.action[data-focus]:before{font-size:20px!important}
+  .actions>.action[data-likers]:before{font-size:19px!important}
+  .caption{
+    left:14px!important;
+    right:72px!important;
+    bottom:17px!important;
+    font-size:12px!important;
+  }
+  .pulso-reputation{
+    right:12px!important;
+    bottom:12px!important;
+  }
+}
