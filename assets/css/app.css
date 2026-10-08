@@ -782,3 +782,123 @@ body:before{
   .post .actions .pulso-real-button{height:39px!important;min-height:39px!important;padding:0 10px!important}
   .post .actions .pulso-real-button .pulso-label{font-size:11px!important}
 }
+
+
+/* PULSO — PARIDADE VISUAL DESKTOP/CELULAR 20261008 */
+@media(max-width:850px){
+  body{
+    background:
+      radial-gradient(760px 420px at 8% 0%,rgba(255,61,142,.14),transparent 60%),
+      radial-gradient(700px 420px at 96% 8%,rgba(79,140,255,.13),transparent 60%),
+      radial-gradient(620px 420px at 50% 100%,rgba(168,85,247,.09),transparent 62%),
+      linear-gradient(180deg,#080a12 0%,#0b0d16 52%,#080a12 100%)!important;
+  }
+  .top{
+    position:sticky!important;top:0!important;left:auto!important;right:auto!important;
+    background:rgba(8,10,18,.84)!important;
+    border-bottom:1px solid rgba(255,255,255,.09)!important;
+    box-shadow:0 10px 35px rgba(0,0,0,.22)!important;
+    backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important;
+  }
+  .topin{height:64px!important;max-width:760px!important;padding:0 12px!important;gap:8px!important}
+  .brand{display:flex!important;align-items:center!important;gap:7px!important;flex:0 0 auto!important}
+  .brand img{width:30px!important;filter:drop-shadow(0 0 10px rgba(255,61,142,.32))!important}
+  .brand span{
+    display:inline!important;font-size:15px!important;font-weight:900!important;
+    letter-spacing:.05em!important;
+    background:linear-gradient(100deg,#fff,#ff9cc2 48%,#b9a1ff)!important;
+    -webkit-background-clip:text!important;background-clip:text!important;color:transparent!important;
+  }
+  .pulso-search{flex:0 0 auto!important;width:36px!important;margin:0!important}
+  .pulso-search button{
+    width:36px!important;height:36px!important;border-radius:12px!important;
+    background:linear-gradient(135deg,rgba(255,61,142,.12),rgba(139,92,246,.12),rgba(56,189,248,.08))!important;
+    border:1px solid rgba(255,255,255,.12)!important;
+  }
+  .nav{gap:4px!important;flex:0 0 auto!important}
+  .nav .pill,.nav .mobile-shortcut,.nav .notification-btn{
+    min-width:33px!important;width:33px!important;height:34px!important;
+    padding:0!important;border-radius:11px!important;font-size:13px!important;
+    box-shadow:0 5px 16px rgba(0,0,0,.15)!important;
+  }
+  .wrap{max-width:760px!important;margin:0 auto!important;padding:18px 12px 44px!important}
+  .notice{border-radius:15px!important}
+  .composer{
+    border-radius:22px!important;padding:14px!important;margin-bottom:17px!important;
+    background:linear-gradient(145deg,rgba(24,27,43,.94),rgba(13,15,26,.91))!important;
+    border:1px solid rgba(255,255,255,.12)!important;
+    box-shadow:0 18px 45px rgba(0,0,0,.22)!important;
+  }
+  .composer textarea{
+    border-radius:15px!important;background:rgba(255,255,255,.025)!important;
+    border:1px solid rgba(255,255,255,.07)!important;padding:12px!important;
+  }
+  .feed-switch{
+    border-radius:17px!important;margin-bottom:15px!important;
+    background:rgba(13,15,25,.72)!important;border:1px solid rgba(255,255,255,.10)!important;
+  }
+  .post.card{
+    border-radius:25px!important;
+    background:linear-gradient(150deg,rgba(20,23,37,.97),rgba(10,12,21,.96))!important;
+    border:1px solid rgba(255,255,255,.12)!important;
+    box-shadow:0 22px 56px rgba(0,0,0,.30),0 0 32px rgba(139,92,246,.06)!important;
+  }
+  .posthead{padding:15px 16px 13px!important;background:linear-gradient(90deg,rgba(255,61,142,.055),rgba(139,92,246,.045),transparent)!important}
+  .posthead .avatar{width:46px!important;height:46px!important;flex-basis:46px!important}
+  .posthead .meta strong{font-size:15px!important}
+  .post>video.video,.post>img.video{
+    width:calc(100% - 22px)!important;margin:0 11px!important;
+    aspect-ratio:9/14!important;max-height:64svh!important;height:auto!important;
+    border-radius:21px!important;object-fit:cover!important;
+    box-shadow:0 20px 44px rgba(0,0,0,.40),0 0 28px rgba(139,92,246,.06)!important;
+  }
+  .post .caption{padding:15px 17px 7px!important;font-size:14px!important;line-height:1.55!important;color:#f1f2f7!important}
+  .post .actions{padding:10px 15px 15px!important;gap:7px!important}
+  .post .actions>.action,.post .actions .reaction-wrap>.action{
+    min-height:40px!important;height:40px!important;border-radius:13px!important;
+    padding:0 12px!important;font-size:12px!important;font-weight:750!important;
+    background:rgba(255,255,255,.045)!important;border:1px solid rgba(255,255,255,.09)!important;
+  }
+  .post .actions .reaction-wrap>.action{
+    background:linear-gradient(100deg,rgba(255,61,142,.13),rgba(168,85,247,.10))!important;
+    border-color:rgba(255,61,142,.20)!important;
+  }
+  .post .actions .pulso-real-button{
+    min-height:40px!important;height:40px!important;border-radius:13px!important;
+    padding:0 12px!important;min-width:0!important;
+  }
+}
+@media(max-width:520px){
+  .topin{padding:0 8px!important;gap:5px!important}
+  .brand{gap:5px!important}
+  .brand img{width:27px!important}
+  .brand span{font-size:14px!important}
+  .nav{gap:3px!important}
+  .nav .pill,.nav .mobile-shortcut,.nav .notification-btn{
+    min-width:30px!important;width:30px!important;height:32px!important;
+    border-radius:10px!important;font-size:12px!important;
+  }
+  .wrap{padding:14px 9px 35px!important}
+  .composer{padding:11px!important;border-radius:18px!important}
+  .post.card{border-radius:21px!important}
+  .posthead{padding:13px 12px 11px!important;gap:8px!important}
+  .posthead .avatar{width:42px!important;height:42px!important;flex-basis:42px!important}
+  .posthead .meta strong{font-size:13px!important}
+  .posthead .meta small{max-width:135px!important}
+  .post>video.video,.post>img.video{
+    width:calc(100% - 16px)!important;margin:0 8px!important;
+    aspect-ratio:9/14!important;max-height:61svh!important;border-radius:17px!important;
+  }
+  .post .caption{padding:12px 13px 5px!important;font-size:12px!important}
+  .post .actions{padding:9px 10px 12px!important;gap:6px!important}
+  .post .actions>.action,.post .actions .reaction-wrap>.action{
+    height:38px!important;min-height:38px!important;padding:0 10px!important;
+    font-size:11px!important;border-radius:12px!important;
+  }
+  .post .actions .pulso-real-button{height:38px!important;min-height:38px!important;padding:0 10px!important}
+}
+@media(max-width:365px){
+  .brand span{font-size:12px!important}
+  .nav{gap:2px!important}
+  .nav .pill,.nav .mobile-shortcut,.nav .notification-btn{min-width:27px!important;width:27px!important}
+}
