@@ -16,14 +16,16 @@ const posts=[
 {src:'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&h=2200&q=85',alt:'Exemplo de paisagem'},
 {src:'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1200&h=2200&q=85',alt:'Exemplo de mar'}
 ];
-let index=0,sx=0,sy=0,changing=false;
+let index=0,sx=0,sy=0,changing=false,gestureHandled=false;
 const media=document.getElementById('media'),hint=document.getElementById('hint');
 function show(i){index=(i+posts.length)%posts.length;media.src=posts[index].src;media.alt=posts[index].alt;changing=false}
 show(0);
 let hintTimer=setTimeout(()=>hint.classList.add('hide'),4500);
-document.addEventListener('touchstart',e=>{if(!e.changedTouches.length)return;sx=e.changedTouches[0].clientX;sy=e.changedTouches[0].clientY},{passive:true});
-document.addEventListener('touchmove',e=>{e.preventDefault()},{passive:false});
-document.addEventListener('touchend',e=>{if(!e.changedTouches.length)return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;if(Math.abs(dy)>35&&Math.abs(dy)>Math.abs(dx)){show(dy<0?index+1:index-1)}},{passive:true});
+const stage=document.querySelector('.stage');
+stage.addEventListener('pointerdown',e=>{sx=e.clientX;sy=e.clientY;gestureHandled=false;try{stage.setPointerCapture(e.pointerId)}catch(_){}},{passive:true});
+stage.addEventListener('pointerup',e=>{const dx=e.clientX-sx,dy=e.clientY-sy;if(Math.abs(dy)>25&&Math.abs(dy)>Math.abs(dx)){gestureHandled=true;show(dy<0?index+1:index-1)}},{passive:true});
+stage.addEventListener('touchstart',e=>{if(e.changedTouches.length){sx=e.changedTouches[0].clientX;sy=e.changedTouches[0].clientY}},{passive:true});
+stage.addEventListener('touchend',e=>{if(!e.changedTouches.length)return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;if(!gestureHandled&&Math.abs(dy)>25&&Math.abs(dy)>Math.abs(dx)){show(dy<0?index+1:index-1)}},{passive:true});
 document.addEventListener('wheel',e=>{if(changing)return;changing=true;show(e.deltaY>0?index+1:index-1)},{passive:true});
 document.addEventListener('keydown',e=>{if(e.key==='ArrowDown'||e.key==='PageDown'){e.preventDefault();show(index+1)}else if(e.key==='ArrowUp'||e.key==='PageUp'){e.preventDefault();show(index-1)}else if(e.key==='Escape'||e.key==='Backspace'){location.href='app.html'}});
 </script>
