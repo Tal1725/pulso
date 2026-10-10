@@ -83,6 +83,8 @@ function addPulseButton(likeBtn){
       if(!holding)return;
       resetHold();
       btn.style.setProperty('--pulso-progress','100%');
+      btn.dataset.pulsoCompletedClick='1';
+      setTimeout(()=>delete btn.dataset.pulsoCompletedClick,900);
       finish();
     },HOLD_MS);
   };
@@ -94,6 +96,8 @@ function addPulseButton(likeBtn){
     if(elapsed>=HOLD_MS){
       resetHold();
       btn.style.setProperty('--pulso-progress','100%');
+      btn.dataset.pulsoCompletedClick='1';
+      setTimeout(()=>delete btn.dataset.pulsoCompletedClick,900);
       finish();
     }else{
       resetHold();
@@ -116,9 +120,7 @@ function addPulseButton(likeBtn){
       delete btn.dataset.pulsoCompletedClick;
       return;
     }
-    btn.dataset.pulsoCompletedClick='1';
     finish();
-    setTimeout(()=>delete btn.dataset.pulsoCompletedClick,700);
   });
 }
 
