@@ -44,9 +44,13 @@ function addPulseButton(likeBtn){
       btn.classList.add('pulse-success');
       btn.querySelector('.pulso-heart').textContent='❤️';
       btn.querySelector('.pulso-label').textContent='PULSO enviado';
-      const video=card.querySelector('video.video');
-      video?.classList.add('pulso-beat');
-      setTimeout(()=>video?.classList.remove('pulso-beat'),1400);
+      const media=card.querySelector('video.video, img.video');
+      if(media){
+        media.classList.remove('pulso-beat');
+        void media.offsetWidth;
+        media.classList.add('pulso-beat');
+        setTimeout(()=>media.classList.remove('pulso-beat'),2800);
+      }
       setTimeout(()=>{btn.classList.remove('pulse-success');btn.querySelector('.pulso-heart').textContent='♡';btn.querySelector('.pulso-label').textContent='Segure para Pulsar'},1800);
     }catch(e){
       console.error('[PULSO REAL]',e);
