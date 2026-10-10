@@ -314,23 +314,26 @@ window.addEventListener('unhandledrejection',e=>console.error('[PULSO]',e.reason
 onAuthStateChanged(firebaseAuth,authUser=>{if(authUser){user=authUser;init();}else{location.href='entrar.html?next=app';}});
 
 
-/* PULSO mobile focus: tap a post's media to fill the phone screen.
-   Taps on the media toggle controls; action buttons run first, then fade away. */
+/* PULSO mobile focus: fullscreen media with tap-to-toggle controls. */
 (function pulsoMobileVideoFocus(){
   if (window.__pulsoMobileVideoFocusBound) return;
   window.__pulsoMobileVideoFocusBound = true;
-  let hideTimer = null;
+  let hideTimer = 0;
   const mobile = () => window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
   const focused = () => document.body.classList.contains('pulso-video-focus');
-  function scheduleHide(post, delay=850) {
+
+  function scheduleHide(post, delay=700) {
     clearTimeout(hideTimer);
-    hideTimer = setTimeout(() => {
+    hideTimer = window.setTimeout(() => {
       if (focused() && post.isConnected) post.classList.add('pulso-controls-hidden');
     }, delay);
   }
   function enter(post) {
     document.body.classList.add('pulso-video-focus');
-    document.querySelectorAll('#feed .post').forEach(p => p.classList.remove('pulso-controls-hidden'));
+    document.querySelectorAll('#feed .post').forEach(p => {
+      p.classList.remove('pulso-controls-hidden','pulso-focused-post');
+    });
+    post.classList.add('pulso-focused-post');
     post.classList.remove('pulso-controls-hidden');
     if (!post.querySelector('[data-exit-video-focus]')) {
       const back = document.createElement('button');
@@ -342,45 +345,44 @@ onAuthStateChanged(firebaseAuth,authUser=>{if(authUser){user=authUser;init();}el
       back.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); exit(); });
       post.appendChild(back);
     }
-    scheduleHide(post, 1600);
+    scheduleHide(post, 2200);
   }
   function exit() {
     clearTimeout(hideTimer);
     document.body.classList.remove('pulso-video-focus');
     document.querySelectorAll('#feed .post').forEach(p => {
-      p.classList.remove('pulso-controls-hidden');
+      p.classList.remove('pulso-controls-hidden','pulso-focused-post');
       p.querySelector('[data-exit-video-focus]')?.remove();
     });
   }
+
   document.addEventListener('click', e => {
     if (!mobile()) return;
     const post = e.target.closest?.('#feed .post');
     if (!post) { if (focused()) exit(); return; }
     if (e.target.closest('[data-exit-video-focus]')) return;
-
     const media = e.target.closest?.('#feed .post > video.video, #feed .post > img.video');
-    const action = e.target.closest?.('.actions button, .posthead button, [data-open-profile]');
+    const action = e.target.closest?.('.actions button, .posthead button, [data-open-profile], input, textarea, a');
+
     if (!focused()) {
-      if (media || (!action && !e.target.closest('input, textarea, a'))) {
-        enter(post);
-      }
+      if (media || !action) enter(post);
       return;
     }
+    if (!post.classList.contains('pulso-focused-post')) return;
     if (action) {
-      // Let the existing action handler run, then hide the controls.
-      scheduleHide(post, 850);
+      scheduleHide(post, 700);
       return;
     }
     if (post.classList.contains('pulso-controls-hidden')) {
       post.classList.remove('pulso-controls-hidden');
-      scheduleHide(post, 1600);
+      scheduleHide(post, 2200);
     } else {
       post.classList.add('pulso-controls-hidden');
       clearTimeout(hideTimer);
     }
   }, true);
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && focused()) exit();
-  });
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && focused()) exit(); });
   window.addEventListener('resize', () => { if (!mobile()) exit(); });
+  window.addEventListener('pageshow', () => { if (!mobile()) exit(); });
 })();
