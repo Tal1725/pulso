@@ -314,31 +314,35 @@ window.addEventListener('unhandledrejection',e=>console.error('[PULSO]',e.reason
 onAuthStateChanged(firebaseAuth,authUser=>{if(authUser){user=authUser;init();}else{location.href='entrar.html?next=app';}});
 
 
-/* Mobile immersive mode: tap the media to enter focus; tap again to reveal controls.
-   Controls fade after interaction, and a back button exits focus mode. */
+/* PULSO mobile focus: tap a post's media to fill the phone screen.
+   Taps on the media toggle controls; action buttons run first, then fade away. */
 (function pulsoMobileVideoFocus(){
   if (window.__pulsoMobileVideoFocusBound) return;
   window.__pulsoMobileVideoFocusBound = true;
   let hideTimer = null;
   const mobile = () => window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
-  function scheduleHide(post) {
+  const focused = () => document.body.classList.contains('pulso-video-focus');
+  function scheduleHide(post, delay=850) {
     clearTimeout(hideTimer);
     hideTimer = setTimeout(() => {
-      if (document.body.classList.contains('pulso-video-focus')) post.classList.add('pulso-controls-hidden');
-    }, 2600);
+      if (focused() && post.isConnected) post.classList.add('pulso-controls-hidden');
+    }, delay);
   }
   function enter(post) {
     document.body.classList.add('pulso-video-focus');
-    document.querySelectorAll('#feed .post').forEach(p => { if (p !== post) p.classList.remove('pulso-controls-hidden'); });
+    document.querySelectorAll('#feed .post').forEach(p => p.classList.remove('pulso-controls-hidden'));
     post.classList.remove('pulso-controls-hidden');
     if (!post.querySelector('[data-exit-video-focus]')) {
       const back = document.createElement('button');
-      back.type = 'button'; back.dataset.exitVideoFocus = '1'; back.setAttribute('aria-label','Sair da tela cheia');
-      back.title = 'Sair da tela cheia'; back.textContent = '‹';
+      back.type = 'button';
+      back.dataset.exitVideoFocus = '1';
+      back.setAttribute('aria-label','Sair da tela cheia');
+      back.title = 'Sair da tela cheia';
+      back.textContent = '‹';
       back.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); exit(); });
       post.appendChild(back);
     }
-    scheduleHide(post);
+    scheduleHide(post, 1600);
   }
   function exit() {
     clearTimeout(hideTimer);
@@ -351,19 +355,32 @@ onAuthStateChanged(firebaseAuth,authUser=>{if(authUser){user=authUser;init();}el
   document.addEventListener('click', e => {
     if (!mobile()) return;
     const post = e.target.closest?.('#feed .post');
-    if (!post) { if (document.body.classList.contains('pulso-video-focus')) exit(); return; }
+    if (!post) { if (focused()) exit(); return; }
     if (e.target.closest('[data-exit-video-focus]')) return;
-    if (e.target.matches('video.video, img.video')) {
-      if (!document.body.classList.contains('pulso-video-focus')) { enter(post); return; }
-      if (post.classList.contains('pulso-controls-hidden')) { post.classList.remove('pulso-controls-hidden'); scheduleHide(post); }
-      else { post.classList.add('pulso-controls-hidden'); clearTimeout(hideTimer); }
+
+    const media = e.target.closest?.('#feed .post > video.video, #feed .post > img.video');
+    const action = e.target.closest?.('.actions button, .posthead button, [data-open-profile]');
+    if (!focused()) {
+      if (media || (!action && !e.target.closest('input, textarea, a'))) {
+        enter(post);
+      }
       return;
     }
-    if (document.body.classList.contains('pulso-video-focus') && e.target.closest('.actions button, .posthead button')) {
+    if (action) {
+      // Let the existing action handler run, then hide the controls.
+      scheduleHide(post, 850);
+      return;
+    }
+    if (post.classList.contains('pulso-controls-hidden')) {
       post.classList.remove('pulso-controls-hidden');
-      scheduleHide(post);
+      scheduleHide(post, 1600);
+    } else {
+      post.classList.add('pulso-controls-hidden');
+      clearTimeout(hideTimer);
     }
   }, true);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('pulso-video-focus')) exit(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && focused()) exit();
+  });
   window.addEventListener('resize', () => { if (!mobile()) exit(); });
 })();
