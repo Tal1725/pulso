@@ -1,31 +1,64 @@
-/* PULSO — modo imersivo experimental. Aplicado somente em app-teste-imersivo.html */
-body.pulso-immersive-test{overflow:hidden;background:#05060b}
-.pulso-immersive-test .top,.pulso-immersive-test .notice,.pulso-immersive-test .composer,.pulso-immersive-test .feed-switch,.pulso-immersive-test .side{display:none!important}
-.pulso-immersive-test .wrap{width:100%;max-width:none;margin:0;padding:0}
-.pulso-immersive-test .grid{display:block}
-.pulso-immersive-test .grid>section{width:100%;min-width:0}
-.pulso-immersive-test #feed{height:100vh;height:100dvh;overflow-y:auto;overscroll-behavior-y:contain;scroll-snap-type:y mandatory;scrollbar-width:none}
-.pulso-immersive-test #feed::-webkit-scrollbar{display:none}
-.pulso-immersive-test .post{position:relative;width:100%;height:100vh;height:100dvh;min-height:100vh;min-height:100dvh;margin:0;padding:0;border:0;border-radius:0;background:#05060b;overflow:hidden;scroll-snap-align:start;scroll-snap-stop:always;isolation:isolate}
-.pulso-immersive-test .post>.video{position:absolute;inset:0;width:100%;height:100%;max-height:none;object-fit:contain;background:#05060b;display:block;border:0}
-.pulso-immersive-test .post>video.video{object-fit:contain}
-.pulso-immersive-test .posthead,.pulso-immersive-test .caption,.pulso-immersive-test .actions,.pulso-immersive-test .comments,.pulso-immersive-test .commentbox{position:absolute;z-index:3;left:0;right:0;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,visibility .18s ease}
-.pulso-immersive-test .posthead{top:0;display:flex;align-items:center;padding:calc(env(safe-area-inset-top,0px) + 14px) 16px 18px;background:linear-gradient(180deg,rgba(4,5,12,.78),transparent);cursor:pointer}
-.pulso-immersive-test .posthead .meta strong{color:#fff;text-shadow:0 1px 8px #000}
-.pulso-immersive-test .posthead .meta span,.pulso-immersive-test .posthead .meta small{color:#eee}
-.pulso-immersive-test .posthead .creator-follow,.pulso-immersive-test .posthead .creator-you{margin-left:auto}
-.pulso-immersive-test .caption{bottom:calc(env(safe-area-inset-bottom,0px) + 142px);padding:20px 18px 10px;color:#fff;white-space:pre-wrap;text-shadow:0 1px 8px rgba(0,0,0,.9);background:linear-gradient(0deg,rgba(4,5,12,.45),transparent)}
-.pulso-immersive-test .actions{bottom:calc(env(safe-area-inset-bottom,0px) + 76px);display:flex;gap:7px;flex-wrap:wrap;padding:10px 14px 14px;background:linear-gradient(0deg,rgba(4,5,12,.78),transparent)}
-.pulso-immersive-test .actions .action{background:rgba(12,12,22,.7);border-color:rgba(255,255,255,.2);color:#fff}
-.pulso-immersive-test .reaction-picker{bottom:calc(100% + 8px)}
-.pulso-immersive-test .comments,.pulso-immersive-test .commentbox{display:none!important}
-.pulso-immersive-test .post.controls-visible .posthead,.pulso-immersive-test .post.controls-visible .caption,.pulso-immersive-test .post.controls-visible .actions{opacity:1;visibility:visible;pointer-events:auto}
-.pulso-immersive-test .post.controls-visible>video.video{cursor:pointer}
-.pulso-immersive-test .posthead .avatar{box-shadow:0 0 0 2px rgba(255,61,126,.8),0 0 18px rgba(168,85,247,.35)}
-.pulso-immersive-test .immersive-exit{margin-left:auto;flex:none;border:1px solid rgba(255,255,255,.24);border-radius:999px;background:rgba(12,12,22,.78);color:#fff;padding:8px 12px;font-size:12px;text-decoration:none}
-.pulso-immersive-test .posthead .creator-follow{margin-left:8px}
-.pulso-immersive-test .posthead .immersive-exit{margin-left:auto}
-.pulso-immersive-test #feed>.empty{height:100vh;display:grid;place-content:center}
-.pulso-immersive-test #feed:empty:after{content:'Carregando seu PULSO…';position:fixed;inset:0;display:grid;place-content:center;color:#c9b8ff}
-@media(min-width:700px){.pulso-immersive-test .post>.video{object-fit:contain}.pulso-immersive-test .posthead,.pulso-immersive-test .caption,.pulso-immersive-test .actions{padding-left:max(18px,calc((100vw - 520px)/2));padding-right:max(18px,calc((100vw - 520px)/2))}.pulso-immersive-test .posthead{padding-top:calc(env(safe-area-inset-top,0px) + 18px)}}
-@media(prefers-reduced-motion:reduce){.pulso-immersive-test .posthead,.pulso-immersive-test .caption,.pulso-immersive-test .actions{transition:none}}
+/* PULSO — teste visual imersivo SOMENTE em telas de celular. Não altera app.css nem o app oficial. */
+@media (max-width:699px){
+  body.pulso-immersive-test{overflow:hidden;background:#05060b}
+  .pulso-immersive-test .top,.pulso-immersive-test .notice,.pulso-immersive-test .side{display:none!important}
+  .pulso-immersive-test .wrap{width:100%;max-width:none;margin:0;padding:0}
+  .pulso-immersive-test .grid{display:block}
+  .pulso-immersive-test .grid>section{width:100%;min-width:0}
+  .pulso-immersive-test .composer,.pulso-immersive-test .feed-switch{display:none!important}
+  .pulso-immersive-test #feed{position:fixed;inset:0 0 0;height:100vh;height:100dvh;overflow-y:auto;overscroll-behavior-y:contain;scroll-snap-type:y mandatory;scrollbar-width:none;background:#05060b}
+  .pulso-immersive-test #feed::-webkit-scrollbar{display:none}
+  .pulso-immersive-test .post{position:relative;width:100%;height:100vh;height:100dvh;min-height:100vh;min-height:100dvh;margin:0;padding:0;border:0;border-radius:0;background:#05060b;overflow:hidden;scroll-snap-align:start;scroll-snap-stop:always;isolation:isolate}
+  .pulso-immersive-test .post>.video{position:absolute;inset:0;width:100%;height:100%;max-height:none;object-fit:cover;background:#05060b;display:block;border:0;border-radius:0}
+  .pulso-immersive-test .post>video.video{object-fit:cover}
+  .pulso-immersive-test .posthead,.pulso-immersive-test .caption,.pulso-immersive-test .actions{position:absolute;z-index:3;opacity:1;visibility:visible;pointer-events:auto}
+  .pulso-immersive-test .posthead{top:0;left:0;right:0;display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top,0px) + 12px) 14px 24px;background:linear-gradient(180deg,rgba(4,5,12,.82),transparent);cursor:pointer}
+  .pulso-immersive-test .posthead .meta{min-width:0;flex:1}
+  .pulso-immersive-test .posthead .meta strong{color:#fff;text-shadow:0 1px 8px #000;font-size:14px}
+  .pulso-immersive-test .posthead .meta span,.pulso-immersive-test .posthead .meta small{color:#f2f2f7}
+  .pulso-immersive-test .posthead .avatar{width:38px;height:38px;box-shadow:0 0 0 2px #ff3d7e,0 0 16px rgba(0,217,255,.35)}
+  .pulso-immersive-test .posthead .creator-follow,.pulso-immersive-test .posthead .creator-you{margin-left:0;flex:none}
+  .pulso-immersive-test .posthead .creator-follow{padding:6px 10px;border:1px solid #ff3d7e;border-radius:999px;background:rgba(10,10,18,.6);color:#fff;font-size:12px}
+  .pulso-immersive-test .posthead .immersive-exit{display:none}
+  .pulso-immersive-test .caption{left:0;right:78px;bottom:calc(env(safe-area-inset-bottom,0px) + 80px);padding:30px 14px 12px;color:#fff;font-size:14px;line-height:1.4;white-space:pre-wrap;text-shadow:0 1px 8px rgba(0,0,0,.95);background:linear-gradient(0deg,rgba(4,5,12,.5),transparent);overflow-wrap:anywhere}
+  .pulso-immersive-test .actions{right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 82px);left:auto;width:58px;display:flex;flex-direction:column;align-items:center;gap:12px;padding:0;background:transparent}
+  .pulso-immersive-test .actions .action{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:48px;min-height:46px;padding:5px 2px;border:0;border-radius:14px;background:rgba(7,8,16,.36);color:#fff;font-size:10px;line-height:1.15;text-align:center;box-shadow:none;backdrop-filter:blur(4px)}
+  .pulso-immersive-test .actions [data-like]{font-size:0}
+  .pulso-immersive-test .actions [data-like]::before{content:'♡';font-size:31px;line-height:30px;color:#fff}
+  .pulso-immersive-test .actions [data-like].active::before{content:'♥';color:#ff3d7e}
+  .pulso-immersive-test .actions [data-like]::after{content:attr(aria-label);font-size:10px}
+  .pulso-immersive-test .actions [data-reaction-menu],.pulso-immersive-test .actions [data-likers],.pulso-immersive-test .actions .reaction-summary,.pulso-immersive-test .actions .follow-action,.pulso-immersive-test .actions .delete-action{display:none!important}
+  .pulso-immersive-test .actions .reaction-wrap{display:flex;flex-direction:column;align-items:center;gap:4px}
+  .pulso-immersive-test .actions .reaction-picker{position:absolute;right:54px;bottom:0;left:auto;flex-direction:column;gap:4px;padding:6px;border-radius:18px;background:rgba(10,10,18,.92)}
+  .pulso-immersive-test .actions [data-share]{font-size:0}
+  .pulso-immersive-test .actions [data-share]::before{content:'↗';font-size:28px;line-height:30px}
+  .pulso-immersive-test .actions [data-share]::after{content:'Enviar';font-size:10px}
+  .pulso-immersive-test .actions [data-focus]{font-size:0}
+  .pulso-immersive-test .actions [data-focus]::before{content:'☰';font-size:26px;line-height:30px}
+  .pulso-immersive-test .actions [data-focus]::after{content:'Comentar';font-size:10px}
+  .pulso-immersive-test .actions [data-save]{font-size:0}
+  .pulso-immersive-test .actions [data-save]::before{content:'▣';font-size:26px;line-height:30px}
+  .pulso-immersive-test .actions [data-save]::after{content:'Salvar';font-size:10px}
+  .pulso-immersive-test .comments,.pulso-immersive-test .commentbox{display:none!important}
+  .pulso-immersive-test .post.comments-visible .comments{display:block!important;position:absolute;z-index:8;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 62px);max-height:42%;overflow:auto;margin:0;padding:18px 16px 12px;border-radius:20px 20px 0 0;background:rgba(12,13,22,.97);color:#fff;box-shadow:0 -10px 40px rgba(0,0,0,.3)}
+  .pulso-immersive-test .post.comments-visible .commentbox{display:flex!important;position:absolute;z-index:9;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 62px);gap:8px;padding:10px 12px;background:rgba(12,13,22,.98);transform:translateY(100%);border-top:1px solid rgba(255,255,255,.1)}
+  .pulso-immersive-test .post.comments-visible .commentbox input{min-width:0;flex:1;background:#20212d;color:#fff;border:1px solid #414252;border-radius:999px;padding:10px}
+  .pulso-immersive-test .post.comments-visible .commentbox button{flex:none}
+  .pulso-immersive-test .post.comments-visible .comments{padding-bottom:64px}
+  .pulso-immersive-test .immersive-bottom-nav{position:fixed;z-index:20;left:0;right:0;bottom:0;height:calc(58px + env(safe-area-inset-bottom,0px));padding:5px 5px env(safe-area-inset-bottom,0px);display:flex;align-items:center;justify-content:space-around;background:rgba(4,5,10,.94);border-top:1px solid rgba(255,255,255,.1);backdrop-filter:blur(14px)}
+  .pulso-immersive-test .immersive-bottom-nav button{min-width:0;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0;background:transparent;color:#d6d6df;font-size:10px;padding:3px 0}
+  .pulso-immersive-test .immersive-bottom-nav .nav-icon{font-size:22px;line-height:24px}
+  .pulso-immersive-test .immersive-bottom-nav .publish-nav .nav-icon{width:42px;height:32px;display:grid;place-items:center;border-radius:10px;background:linear-gradient(110deg,#00d9ff,#fff 45%,#ff3d7e 65%);color:#05060b;font-size:26px;font-weight:800}
+  .pulso-immersive-test .immersive-bottom-nav button:active{transform:scale(.96)}
+  .pulso-immersive-test #feed>.empty{height:100vh;display:grid;place-content:center;padding:24px;color:#fff}
+  .pulso-immersive-test #feed:empty:after{content:'Carregando seu PULSO…';position:fixed;inset:0;display:grid;place-content:center;color:#c9b8ff}
+  .pulso-immersive-test.composer-open .composer{display:block!important;position:fixed;z-index:30;left:12px;right:12px;bottom:calc(66px + env(safe-area-inset-bottom,0px));margin:0;padding:16px;border:1px solid rgba(255,255,255,.16);border-radius:22px;background:rgba(12,13,22,.98);box-shadow:0 10px 50px rgba(0,0,0,.5)}
+  .pulso-immersive-test.composer-open .composer textarea{min-height:70px}
+  .pulso-immersive-test.composer-open .composer .row{flex-wrap:wrap}
+  .pulso-immersive-test .immersive-scrim{position:fixed;z-index:29;inset:0;background:rgba(0,0,0,.45)}
+}
+@media(min-width:700px){
+  body.pulso-immersive-test{background:initial}
+  .pulso-immersive-test .immersive-bottom-nav{display:none!important}
+}
+@media(prefers-reduced-motion:reduce){.pulso-immersive-test .post{scroll-behavior:auto}}
