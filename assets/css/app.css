@@ -1158,3 +1158,57 @@ body:before{
     border: 1px solid rgba(255,255,255,.25) !important;
   }
 }
+
+
+/* PULSO mobile immersive video mode: show the whole frame and fade controls */
+@media (max-width: 600px) {
+  body.pulso-video-focus { overflow: hidden !important; background: #000 !important; }
+  body.pulso-video-focus .top,
+  body.pulso-video-focus .composer,
+  body.pulso-video-focus .feed-switch,
+  body.pulso-video-focus .side,
+  body.pulso-video-focus #notice { display: none !important; }
+  body.pulso-video-focus .wrap {
+    position: fixed !important; inset: 0 !important; z-index: 999 !important;
+    width: 100vw !important; max-width: none !important; height: 100svh !important;
+    margin: 0 !important; padding: 0 !important; overflow-y: auto !important;
+    background: #000 !important;
+  }
+  body.pulso-video-focus .grid,
+  body.pulso-video-focus .grid > section { display: block !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+  body.pulso-video-focus #feed { margin: 0 !important; padding: 0 !important; }
+  body.pulso-video-focus #feed .post.card {
+    width: 100vw !important; height: 100svh !important; min-height: 100svh !important;
+    max-height: 100svh !important; margin: 0 !important; border: 0 !important;
+    border-radius: 0 !important; background: #000 !important; overflow: hidden !important;
+  }
+  body.pulso-video-focus #feed .post > video.video,
+  body.pulso-video-focus #feed .post > img.video {
+    width: 100vw !important; height: 100svh !important; min-height: 100svh !important;
+    max-height: 100svh !important; margin: 0 !important; border: 0 !important;
+    border-radius: 0 !important; object-fit: contain !important; background: #000 !important;
+  }
+  body.pulso-video-focus #feed .post .posthead { top: max(12px, env(safe-area-inset-top)) !important; }
+  body.pulso-video-focus #feed .post .caption { bottom: max(24px, env(safe-area-inset-bottom)) !important; }
+  body.pulso-video-focus #feed .post .actions { bottom: max(26px, env(safe-area-inset-bottom)) !important; }
+  body.pulso-video-focus #feed .post .posthead,
+  body.pulso-video-focus #feed .post .caption,
+  body.pulso-video-focus #feed .post .actions,
+  body.pulso-video-focus #feed .post .pulso-reputation {
+    transition: opacity .22s ease, transform .22s ease !important;
+  }
+  body.pulso-video-focus #feed .post.pulso-controls-hidden .posthead,
+  body.pulso-video-focus #feed .post.pulso-controls-hidden .caption,
+  body.pulso-video-focus #feed .post.pulso-controls-hidden .actions,
+  body.pulso-video-focus #feed .post.pulso-controls-hidden .pulso-reputation {
+    opacity: 0 !important; pointer-events: none !important; transform: translateY(5px) !important;
+  }
+  body.pulso-video-focus #feed .post .comments,
+  body.pulso-video-focus #feed .post .commentbox { display: none !important; }
+  body.pulso-video-focus #feed .post [data-exit-video-focus] {
+    position: absolute !important; z-index: 12 !important; top: max(12px, env(safe-area-inset-top)) !important;
+    left: 12px !important; width: 40px !important; height: 40px !important;
+    border-radius: 50% !important; border: 1px solid rgba(255,255,255,.5) !important;
+    background: rgba(0,0,0,.5) !important; color: #fff !important; font-size: 22px !important;
+  }
+}
