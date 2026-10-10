@@ -1062,3 +1062,99 @@ body:before{
   }
   #feed .post .pulso-real-alert { display: none !important; }
 }
+
+
+/* PULSO mobile action rail — clear, colorful, labeled controls */
+@media (max-width: 600px) {
+  #feed .post .actions {
+    right: 7px !important;
+    width: 62px !important;
+    gap: 10px !important;
+  }
+  #feed .post .actions > .action,
+  #feed .post .actions .reaction-wrap > .action,
+  #feed .post .actions .pulso-real-button {
+    width: 50px !important;
+    min-width: 50px !important;
+    height: 50px !important;
+    min-height: 50px !important;
+    border: 1px solid rgba(255,255,255,.72) !important;
+    color: #fff !important;
+    background: linear-gradient(145deg, rgba(219,39,119,.96), rgba(124,58,237,.94)) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,.48), 0 0 12px rgba(217,70,239,.24) !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,.4) !important;
+  }
+  #feed .post .actions [data-like] {
+    background: linear-gradient(145deg, #ff477e, #d4145a) !important;
+  }
+  #feed .post .actions [data-like]::before {
+    content: "♥" !important;
+    display: block !important;
+    font-size: 25px !important;
+    line-height: 1 !important;
+  }
+  #feed .post .actions [data-like]::after {
+    content: "Curtir" !important;
+    display: block !important;
+    font-size: 9px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    margin-top: 2px !important;
+  }
+  #feed .post .actions [data-reaction-menu] {
+    flex-direction: column !important;
+    gap: 1px !important;
+    font-size: 20px !important;
+    background: linear-gradient(145deg, #f59e0b, #ea580c) !important;
+  }
+  #feed .post .actions [data-reaction-menu]::after {
+    content: "Reagir" !important;
+    font-size: 9px !important;
+    font-weight: 800 !important;
+  }
+  #feed .post .actions [data-likers] {
+    flex-direction: column !important;
+    gap: 1px !important;
+    background: linear-gradient(145deg, #0ea5e9, #2563eb) !important;
+  }
+  #feed .post .actions [data-likers]::before { content: "♧" !important; font-size: 23px !important; }
+  #feed .post .actions [data-likers]::after { content: "Curtidas" !important; font-size: 8px !important; font-weight: 800 !important; }
+  #feed .post .actions [data-share] {
+    flex-direction: column !important;
+    gap: 1px !important;
+    background: linear-gradient(145deg, #10b981, #047857) !important;
+  }
+  #feed .post .actions [data-share]::before { content: "↗" !important; font-size: 25px !important; }
+  #feed .post .actions [data-share]::after { content: "Enviar" !important; font-size: 9px !important; font-weight: 800 !important; }
+  #feed .post .actions [data-focus] {
+    flex-direction: column !important;
+    gap: 1px !important;
+    background: linear-gradient(145deg, #8b5cf6, #6d28d9) !important;
+  }
+  #feed .post .actions [data-focus]::before { content: "▢" !important; font-size: 25px !important; }
+  #feed .post .actions [data-focus]::after { content: "Comentar" !important; font-size: 8px !important; font-weight: 800 !important; }
+  #feed .post .actions [data-delete] {
+    flex-direction: column !important;
+    gap: 1px !important;
+    background: linear-gradient(145deg, #ef4444, #991b1b) !important;
+  }
+  #feed .post .actions [data-delete]::before { content: "×" !important; font-size: 25px !important; }
+  #feed .post .actions [data-delete]::after { content: "Excluir" !important; font-size: 8px !important; font-weight: 800 !important; }
+  #feed .post .actions .pulso-real-button {
+    flex-direction: column !important;
+    gap: 1px !important;
+    background: linear-gradient(145deg, #ec4899, #9333ea) !important;
+  }
+  #feed .post .actions .pulso-real-button .pulso-heart { font-size: 20px !important; }
+  #feed .post .actions .pulso-real-button .pulso-label {
+    display: block !important;
+    font-size: 8px !important;
+    line-height: 1 !important;
+    font-weight: 800 !important;
+  }
+  #feed .post .actions .reaction-picker {
+    right: 58px !important;
+    background: rgba(16,18,32,.97) !important;
+    border: 1px solid rgba(255,255,255,.25) !important;
+  }
+}
