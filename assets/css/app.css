@@ -956,3 +956,94 @@ body:before{
     background: rgba(0,0,0,.5) !important; color: #fff !important; font-size: 22px !important;
   }
 }
+
+
+/* PULSO mobile fullscreen hardening: keep the media and overlays on the viewport. */
+@media (max-width: 600px) {
+  body.pulso-video-focus { overflow: hidden !important; width: 100% !important; height: 100dvh !important; }
+  body.pulso-video-focus .wrap {
+    position: fixed !important; inset: 0 !important; width: 100vw !important;
+    height: 100dvh !important; max-height: 100dvh !important; overflow: hidden !important;
+  }
+  body.pulso-video-focus #feed { position: relative !important; width: 100vw !important; height: 100dvh !important; overflow: hidden !important; }
+  body.pulso-video-focus #feed .post:not(.pulso-focused-post) { display: none !important; }
+  body.pulso-video-focus #feed .post.pulso-focused-post {
+    position: fixed !important; inset: 0 !important; z-index: 1000 !important;
+    display: block !important; width: 100vw !important; height: 100dvh !important;
+    min-height: 100dvh !important; max-height: 100dvh !important; padding: 0 !important;
+    margin: 0 !important; overflow: hidden !important; border: 0 !important;
+    border-radius: 0 !important; background: #000 !important;
+  }
+  body.pulso-video-focus #feed .post.pulso-focused-post > video.video,
+  body.pulso-video-focus #feed .post.pulso-focused-post > img.video {
+    position: absolute !important; inset: 0 !important; display: block !important;
+    width: 100vw !important; height: 100dvh !important; min-height: 100dvh !important;
+    max-height: 100dvh !important; margin: 0 !important; padding: 0 !important;
+    border: 0 !important; border-radius: 0 !important; object-fit: cover !important;
+    background: #000 !important; z-index: 1 !important;
+  }
+  body.pulso-video-focus #feed .post.pulso-focused-post > .posthead {
+    position: absolute !important; inset: max(12px, env(safe-area-inset-top)) 12px auto 12px !important;
+    z-index: 5 !important; margin: 0 !important;
+  }
+  body.pulso-video-focus #feed .post.pulso-focused-post > .caption {
+    position: absolute !important; left: 14px !important; right: 74px !important;
+    bottom: max(26px, env(safe-area-inset-bottom)) !important; z-index: 5 !important;
+    max-height: 25vh !important; overflow: hidden !important;
+  }
+  body.pulso-video-focus #feed .post.pulso-focused-post > .actions {
+    position: absolute !important; right: 10px !important; bottom: max(24px, env(safe-area-inset-bottom)) !important;
+    z-index: 6 !important; display: flex !important; flex-direction: column !important;
+    align-items: flex-end !important; max-width: 70vw !important; gap: 8px !important;
+  }
+  body.pulso-video-focus #feed .post.pulso-focused-post .pulso-reputation {
+    position: absolute !important; left: 12px !important; right: auto !important;
+    bottom: max(12px, env(safe-area-inset-bottom)) !important; z-index: 5 !important;
+  }
+  body.pulso-video-focus #feed .post.pulso-focused-post .comments,
+  body.pulso-video-focus #feed .post.pulso-focused-post .commentbox { display: none !important; }
+  body.pulso-video-focus #feed .post.pulso-focused-post.pulso-controls-hidden > .posthead,
+  body.pulso-video-focus #feed .post.pulso-focused-post.pulso-controls-hidden > .caption,
+  body.pulso-video-focus #feed .post.pulso-focused-post.pulso-controls-hidden > .actions,
+  body.pulso-video-focus #feed .post.pulso-focused-post.pulso-controls-hidden .pulso-reputation {
+    opacity: 0 !important; visibility: hidden !important; pointer-events: none !important;
+    transform: translateY(8px) !important;
+  }
+  body.pulso-video-focus #feed .post.pulso-focused-post > .posthead,
+  body.pulso-video-focus #feed .post.pulso-focused-post > .caption,
+  body.pulso-video-focus #feed .post.pulso-focused-post > .actions,
+  body.pulso-video-focus #feed .post.pulso-focused-post .pulso-reputation {
+    transition: opacity .22s ease, transform .22s ease, visibility .22s ease !important;
+  }
+  body.pulso-video-focus #feed .post.pulso-focused-post [data-exit-video-focus] {
+    position: fixed !important; top: max(12px, env(safe-area-inset-top)) !important;
+    left: 12px !important; z-index: 1010 !important; width: 42px !important; height: 42px !important;
+    display: grid !important; place-items: center !important; border-radius: 50% !important;
+    border: 1px solid rgba(255,255,255,.55) !important; background: rgba(0,0,0,.58) !important;
+    color: #fff !important; font-size: 27px !important;
+  }
+}
+
+/* A stronger, more tactile PULSO reaction when holding and when it succeeds. */
+.pulso-real-button { isolation: isolate; transform-origin: center; }
+.pulso-real-button.is-holding {
+  animation: pulsoButtonThrob .48s ease-in-out infinite !important;
+  box-shadow: 0 0 0 3px rgba(255,61,142,.18), 0 0 28px rgba(255,61,142,.55), 0 0 46px rgba(168,85,247,.28) !important;
+  filter: saturate(1.45) brightness(1.12) !important;
+}
+.pulso-real-button.is-holding::after {
+  content: ""; position: absolute; inset: -7px; border: 2px solid rgba(255,61,142,.75);
+  border-radius: inherit; pointer-events: none; animation: pulsoButtonRipple .9s ease-out infinite;
+}
+.pulso-real-button.is-holding .pulso-heart { animation: pulsoHeartStrong .42s ease-in-out infinite !important; }
+.pulso-real-button.pulse-success { animation: pulsoButtonSuccess .34s ease-in-out 4 !important; }
+.pulso-real-button.pulse-success .pulso-heart { display: inline-block; animation: pulsoHeartStrong .34s ease-in-out 4 !important; }
+@keyframes pulsoButtonThrob { 0%,100% { transform: scale(1); } 50% { transform: scale(1.09); } }
+@keyframes pulsoHeartStrong { 0%,100% { transform: scale(1) rotate(0); } 35% { transform: scale(1.55) rotate(-8deg); } 70% { transform: scale(1.18) rotate(7deg); } }
+@keyframes pulsoButtonRipple { 0% { opacity:.85; transform:scale(.94); } 100% { opacity:0; transform:scale(1.18); } }
+@keyframes pulsoButtonSuccess { 0%,100% { transform:scale(1); } 45% { transform:scale(1.16); } 70% { transform:scale(.97); } }
+@media (prefers-reduced-motion: reduce) {
+  .pulso-real-button.is-holding, .pulso-real-button.is-holding::after,
+  .pulso-real-button.is-holding .pulso-heart, .pulso-real-button.pulse-success,
+  .pulso-real-button.pulse-success .pulso-heart { animation-duration: 1.5s !important; }
+}
