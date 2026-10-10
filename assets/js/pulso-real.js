@@ -21,8 +21,9 @@ function addPulseButton(likeBtn){
   if(actions) actions.appendChild(btn);
 
   const cancel=()=>{
-    const raf=active.get(postId);
-    if(raf)cancelAnimationFrame(raf);
+    const run=active.get(postId);
+    if(run?.raf)cancelAnimationFrame(run.raf);
+    if(run?.timer)clearTimeout(run.timer);
     active.delete(postId);
     btn.classList.remove('is-holding');
     btn.style.removeProperty('--pulso-progress');
@@ -62,21 +63,42 @@ function addPulseButton(likeBtn){
 
   const start=()=>{
     if(active.has(postId))return;
-    const started=performance.now();
+    const started=Date.now();
     btn.classList.add('is-holding');
+    const run={raf:0,timer:0};
     const tick=()=>{
-      const elapsed=performance.now()-started;
+      if(!active.has(postId))return;
+      const elapsed=Date.now()-started;
       btn.style.setProperty('--pulso-progress',Math.min(100,elapsed/HOLD_MS*100)+'%');
-      if(elapsed>=HOLD_MS){active.delete(postId);finish();return;}
-      active.set(postId,requestAnimationFrame(tick));
+      if(elapsed<HOLD_MS)run.raf=requestAnimationFrame(tick);
     };
-    active.set(postId,requestAnimationFrame(tick));
+    run.raf=requestAnimationFrame(tick);
+    // Timer completes the hold even if mobile browsers throttle animation frames.
+    run.timer=setTimeout(()=>{
+      if(!active.has(postId))return;
+      active.delete(postId);
+      if(run.raf)cancelAnimationFrame(run.raf);
+      btn.style.setProperty('--pulso-progress','100%');
+      finish();
+    },HOLD_MS);
+    active.set(postId,run);
   };
 
-  btn.addEventListener('pointerdown',e=>{e.preventDefault();btn.setPointerCapture?.(e.pointerId);start()});
-  btn.addEventListener('pointerup',e=>{e.preventDefault();if(active.has(postId))cancel()});
+  btn.addEventListener('pointerdown',e=>{
+    e.preventDefault();
+    try{btn.setPointerCapture?.(e.pointerId)}catch(_){}
+    start();
+  });
+  btn.addEventListener('pointerup',e=>{
+    e.preventDefault();
+    if(active.has(postId))cancel();
+  });
   btn.addEventListener('pointercancel',cancel);
-  btn.addEventListener('pointerleave',e=>{if(e.buttons===0)cancel()});
+  btn.addEventListener('lostpointercapture',()=>{if(active.has(postId))cancel()});
+  btn.addEventListener('pointerleave',e=>{if(e.buttons===0&&active.has(postId))cancel()});
+  // Compatibility fallback for browsers that do not deliver Pointer Events reliably.
+  btn.addEventListener('touchstart',e=>{e.preventDefault();start()},{passive:false});
+  btn.addEventListener('touchend',()=>{if(active.has(postId))cancel()},{passive:true});
 }
 
 function enhance(){
