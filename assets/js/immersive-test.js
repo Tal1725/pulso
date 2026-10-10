@@ -28,7 +28,7 @@
       }
     });
     post.querySelector('[data-focus]')?.addEventListener('click',e=>{
-      e.preventDefault();e.stopPropagation();
+      e.preventDefault();e.stopImmediatePropagation();
       const open=post.classList.toggle('comments-visible');
       if(open)setTimeout(()=>post.querySelector('[data-comment]')?.focus(),80);
     },true);
