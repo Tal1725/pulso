@@ -109,6 +109,17 @@ function addPulseButton(likeBtn){
   btn.addEventListener('mousedown',e=>{if(e.button===0)start();});
   btn.addEventListener('mouseup',stop);
   btn.addEventListener('mouseleave',e=>{if(e.buttons===0&&holding)stop(e);});
+  // Fallback: if a mobile browser suppresses hold events, a normal click still responds.
+  btn.addEventListener('click',()=>{
+    if(holding)return;
+    if(btn.dataset.pulsoCompletedClick==='1'){
+      delete btn.dataset.pulsoCompletedClick;
+      return;
+    }
+    btn.dataset.pulsoCompletedClick='1';
+    finish();
+    setTimeout(()=>delete btn.dataset.pulsoCompletedClick,700);
+  });
 }
 
 function enhance(){
