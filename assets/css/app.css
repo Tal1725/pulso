@@ -1025,25 +1025,37 @@ body:before{
 }
 
 /* A stronger, more tactile PULSO reaction when holding and when it succeeds. */
-.pulso-real-button { isolation: isolate; transform-origin: center; }
-.pulso-real-button.is-holding {
-  animation: pulsoButtonThrob .48s ease-in-out infinite !important;
-  box-shadow: 0 0 0 3px rgba(255,61,142,.18), 0 0 28px rgba(255,61,142,.55), 0 0 46px rgba(168,85,247,.28) !important;
-  filter: saturate(1.45) brightness(1.12) !important;
-}
-.pulso-real-button.is-holding::after {
-  content: ""; position: absolute; inset: -7px; border: 2px solid rgba(255,61,142,.75);
-  border-radius: inherit; pointer-events: none; animation: pulsoButtonRipple .9s ease-out infinite;
-}
-.pulso-real-button.is-holding .pulso-heart { animation: pulsoHeartStrong .42s ease-in-out infinite !important; }
-.pulso-real-button.pulse-success { animation: pulsoButtonSuccess .34s ease-in-out 4 !important; }
-.pulso-real-button.pulse-success .pulso-heart { display: inline-block; animation: pulsoHeartStrong .34s ease-in-out 4 !important; }
-@keyframes pulsoButtonThrob { 0%,100% { transform: scale(1); } 50% { transform: scale(1.09); } }
-@keyframes pulsoHeartStrong { 0%,100% { transform: scale(1) rotate(0); } 35% { transform: scale(1.55) rotate(-8deg); } 70% { transform: scale(1.18) rotate(7deg); } }
-@keyframes pulsoButtonRipple { 0% { opacity:.85; transform:scale(.94); } 100% { opacity:0; transform:scale(1.18); } }
-@keyframes pulsoButtonSuccess { 0%,100% { transform:scale(1); } 45% { transform:scale(1.16); } 70% { transform:scale(.97); } }
+.pulso-real-button { isolation: isolate; }
+.pulso-real-button.is-holding,
+.pulso-real-button.is-holding .pulso-heart,
+.pulso-real-button.pulse-success,
+.pulso-real-button.pulse-success .pulso-heart { animation: none !important; }
+.pulso-real-button.is-holding::after { content: none !important; }
+@keyframes pulsoHeartStrong { 0%,100% { transform:scale(1); } }
 @media (prefers-reduced-motion: reduce) {
   .pulso-real-button.is-holding, .pulso-real-button.is-holding::after,
   .pulso-real-button.is-holding .pulso-heart, .pulso-real-button.pulse-success,
   .pulso-real-button.pulse-success .pulso-heart { animation-duration: 1.5s !important; }
+}
+
+
+/* The VIDEO itself beats while a user holds PULSAR. Keep the button still. */
+#feed .post video.video.pulso-beat,
+#feed .post img.video.pulso-beat {
+  transform-origin: center center !important;
+  animation: pulsoMediaHeartbeat .52s cubic-bezier(.2,.8,.3,1) 5 !important;
+  filter: saturate(1.25) brightness(1.08) drop-shadow(0 0 18px rgba(255,61,142,.62)) !important;
+  will-change: transform, filter;
+}
+@keyframes pulsoMediaHeartbeat {
+  0% { transform:scale(1); filter:saturate(1) brightness(1); }
+  18% { transform:scale(1.045); filter:saturate(1.45) brightness(1.18) drop-shadow(0 0 25px rgba(255,61,142,.75)); }
+  35% { transform:scale(1.012); filter:saturate(1.2) brightness(1.08) drop-shadow(0 0 14px rgba(168,85,247,.65)); }
+  52% { transform:scale(1.055); filter:saturate(1.5) brightness(1.2) drop-shadow(0 0 30px rgba(255,61,142,.82)); }
+  72% { transform:scale(1.018); filter:saturate(1.2) brightness(1.08); }
+  100% { transform:scale(1); filter:saturate(1) brightness(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #feed .post video.video.pulso-beat,
+  #feed .post img.video.pulso-beat { animation-duration:1.2s !important; }
 }
