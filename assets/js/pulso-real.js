@@ -20,10 +20,14 @@ function addPulseButton(likeBtn){
   const actions=likeBtn.closest('.actions');
   if(actions) actions.appendChild(btn);
 
-  const cancel=()=>{
-    const run=active.get(postId);
-    if(run?.raf)cancelAnimationFrame(run.raf);
-    if(run?.timer)clearTimeout(run.timer);
+  let holdStartedAt=0;
+  let holdTimer=0;
+  let holding=false;
+
+  const resetHold=()=>{
+    holding=false;
+    clearTimeout(holdTimer);
+    holdTimer=0;
     active.delete(postId);
     btn.classList.remove('is-holding');
     btn.style.removeProperty('--pulso-progress');
@@ -56,49 +60,55 @@ function addPulseButton(likeBtn){
     }catch(e){
       console.error('[PULSO REAL]',e);
       btn.classList.remove('is-holding');
-      btn.querySelector('.pulso-label').textContent='Tente novamente';
-      setTimeout(()=>btn.querySelector('.pulso-label').textContent='Segure para Pulsar',1600);
+      btn.querySelector('.pulso-label').textContent='Erro ao enviar — tente novamente';
+      setTimeout(()=>btn.querySelector('.pulso-label').textContent='Segure para Pulsar',2200);
     }
   };
 
   const start=()=>{
-    if(active.has(postId))return;
-    const started=Date.now();
+    if(holding)return;
+    holding=true;
+    holdStartedAt=Date.now();
+    active.set(postId,true);
     btn.classList.add('is-holding');
-    const run={raf:0,timer:0};
-    const tick=()=>{
-      if(!active.has(postId))return;
-      const elapsed=Date.now()-started;
+    btn.querySelector('.pulso-label').textContent='Continue segurando…';
+    const updateProgress=()=>{
+      if(!holding)return;
+      const elapsed=Date.now()-holdStartedAt;
       btn.style.setProperty('--pulso-progress',Math.min(100,elapsed/HOLD_MS*100)+'%');
-      if(elapsed<HOLD_MS)run.raf=requestAnimationFrame(tick);
+      if(elapsed<HOLD_MS)requestAnimationFrame(updateProgress);
     };
-    run.raf=requestAnimationFrame(tick);
-    // Timer completes the hold even if mobile browsers throttle animation frames.
-    run.timer=setTimeout(()=>{
-      if(!active.has(postId))return;
-      active.delete(postId);
-      if(run.raf)cancelAnimationFrame(run.raf);
+    requestAnimationFrame(updateProgress);
+    holdTimer=setTimeout(()=>{
+      if(!holding)return;
+      resetHold();
       btn.style.setProperty('--pulso-progress','100%');
       finish();
     },HOLD_MS);
-    active.set(postId,run);
   };
 
-  btn.addEventListener('pointerdown',e=>{
-    e.preventDefault();
-    try{btn.setPointerCapture?.(e.pointerId)}catch(_){}
-    start();
-  });
-  btn.addEventListener('pointerup',e=>{
-    e.preventDefault();
-    if(active.has(postId))cancel();
-  });
-  btn.addEventListener('pointercancel',cancel);
-  btn.addEventListener('lostpointercapture',()=>{if(active.has(postId))cancel()});
-  btn.addEventListener('pointerleave',e=>{if(e.buttons===0&&active.has(postId))cancel()});
-  // Compatibility fallback for browsers that do not deliver Pointer Events reliably.
-  btn.addEventListener('touchstart',e=>{e.preventDefault();start()},{passive:false});
-  btn.addEventListener('touchend',()=>{if(active.has(postId))cancel()},{passive:true});
+  const stop=(e)=>{
+    if(!holding)return;
+    if(e?.cancelable)e.preventDefault();
+    const elapsed=Date.now()-holdStartedAt;
+    if(elapsed>=HOLD_MS){
+      resetHold();
+      btn.style.setProperty('--pulso-progress','100%');
+      finish();
+    }else{
+      resetHold();
+    }
+  };
+
+  btn.addEventListener('pointerdown',e=>{if(e.button!==undefined&&e.button!==0)return;e.preventDefault();start();});
+  btn.addEventListener('pointerup',stop);
+  btn.addEventListener('pointercancel',resetHold);
+  btn.addEventListener('touchstart',e=>{e.preventDefault();start();},{passive:false});
+  btn.addEventListener('touchend',stop,{passive:false});
+  btn.addEventListener('touchcancel',resetHold);
+  btn.addEventListener('mousedown',e=>{if(e.button===0)start();});
+  btn.addEventListener('mouseup',stop);
+  btn.addEventListener('mouseleave',e=>{if(e.buttons===0&&holding)stop(e);});
 }
 
 function enhance(){
