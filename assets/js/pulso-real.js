@@ -113,14 +113,15 @@ function addPulseButton(likeBtn){
   btn.addEventListener('mousedown',e=>{if(e.button===0)start();});
   btn.addEventListener('mouseup',stop);
   btn.addEventListener('mouseleave',e=>{if(e.buttons===0&&holding)stop(e);});
-  // Fallback: if a mobile browser suppresses hold events, a normal click still responds.
-  btn.addEventListener('click',()=>{
+  // A tap shorter than 3 seconds must not bypass "Segure para Pulsar".
+  // Keep keyboard activation available when the browser emits a detail=0 click.
+  btn.addEventListener('click',e=>{
     if(holding)return;
     if(btn.dataset.pulsoCompletedClick==='1'){
       delete btn.dataset.pulsoCompletedClick;
       return;
     }
-    finish();
+    if(e.detail===0)finish();
   });
 }
 
