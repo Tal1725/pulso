@@ -64,6 +64,13 @@ async function openPhotoCamera(){
 window.pulsoOpenPhoto=openPhotoCamera;
 function bind(){
  const b=$('#publishBtn'),p=$('#photoInput'),v=$('#cameraVideoInput'),pb=document.querySelector('#pulsoPhotoButton'),vb=document.querySelector('#pulsoCameraButton'),ab=document.querySelector('[data-audio-record]');
+ ['video','photoInput','cameraVideoInput','audioInput'].forEach(id=>{
+  const input=$('#'+id);
+  if(input&&!input.dataset.approvedMediaReset){
+   input.dataset.approvedMediaReset='1';
+   input.addEventListener('change',()=>{if(input.files?.length)window.pulsoApprovedMedia=null;});
+  }
+ });
  if(pb&&!pb.dataset.bound){pb.dataset.bound=1;pb.onclick=e=>{e.preventDefault();e.stopPropagation();openPhotoCamera()}}
  if(vb&&!vb.dataset.bound){vb.dataset.bound=1;vb.onclick=e=>{e.preventDefault();e.stopPropagation();openCamera()}}
  if(ab&&!ab.dataset.bound){ab.dataset.bound=1;ab.onclick=e=>{e.preventDefault();e.stopPropagation();recordAudio()}}
