@@ -72,5 +72,23 @@ async function toggle(id,action){
 function boot(){
  const b=document.getElementById('myHivesBtn');if(b)b.addEventListener('click',()=>{const m=ensureModal();m.hidden=false;render()});
  window.pulsoOpenHives=()=>{const m=ensureModal();m.hidden=false;render()};
+  // Corrige os links de Colmeias vindos da pesquisa: a função chamada não existia.
+  window.pulsoOpenHive=async id=>{
+    const m=ensureModal();
+    m.hidden=false;
+    await render();
+    if(!id)return;
+    const button=[...m.querySelectorAll('[data-hive]')].find(el=>el.dataset.hive===String(id));
+    const article=button?.closest('article');
+    if(article){
+      article.scrollIntoView({behavior:'smooth',block:'center'});
+      const previousOutline=article.style.outline;
+      article.style.outline='2px solid #ff3d7e';
+      setTimeout(()=>{if(article.isConnected)article.style.outline=previousOutline;},2200);
+    }else{
+      const body=m.querySelector('#hivesBody');
+      if(body)body.insertAdjacentHTML('afterbegin','<p class="file">Esta Colmeia não está mais disponível.</p>');
+    }
+  };
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
