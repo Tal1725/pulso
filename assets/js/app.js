@@ -83,14 +83,12 @@ async function init(){
     const adminBtn=$('#adminBtn');
     const isAdmin=(user.email||'').toLowerCase()==='ayslan.tal@gmail.com';
     if(adminBtn){adminBtn.hidden=!isAdmin;if(isAdmin)document.body.classList.add('pulso-admin-user');}
-    const p=await getCurrentProfile();
+    const [p]=await Promise.all([getCurrentProfile(),refreshFollowing()]);
     $('#name')?.replaceChildren(document.createTextNode(p.display_name||user.email||'Membro PULSO'));
     if($('#handle'))$('#handle').textContent=p.username?'@'+p.username:'';
     if($('#avatar'))$('#avatar').innerHTML=avatarHtml(p);
     if(notice)notice.textContent='Você está dentro do PULSO. Carregando publicações...';
-    await refreshFollowing();
-    await loadFeed();
-    await loadSocialStats();
+    await Promise.all([loadFeed(),loadSocialStats()]);
     if(notice)notice.textContent='PULSO carregado.';
     initializedUid=user.uid;
   }catch(e){
@@ -135,13 +133,20 @@ async function loadFeed(){
         :'<div class="card empty">Ainda não há publicações.<br>Seja o primeiro a dar o primeiro PULSO.</div>';
       return;
     }
-    try{
-      profiles=new Map();
-      await loadProfilesByIds(posts.map(p=>p.user_id));
-    }catch(e){console.warn('[PULSO] perfis Firebase não carregaram',e);profiles=new Map();}
+    profiles=new Map();
     const postIds=posts.map(p=>p.id);
-    [currentLikes,currentComments]=await Promise.all([getByPostIds('Gostos',postIds),getByPostIds('comments',postIds)]);
-    feed.innerHTML=posts.map(p=>renderPost(p)).join('');
+    const [profileResult,reactionResult]=await Promise.allSettled([
+      loadProfilesByIds(posts.map(p=>p.user_id)),
+      Promise.all([getByPostIds('Gostos',postIds),getByPostIds('comments',postIds)])
+    ]);
+    if(profileResult.status==='rejected')console.warn('[PULSO] perfis Firebase não carregaram',profileResult.reason);
+    if(reactionResult.status==='fulfilled'){
+      [currentLikes,currentComments]=reactionResult.value;
+    }else{
+      console.warn('[PULSO] gostos/comentários não carregaram',reactionResult.reason);
+      currentLikes=[];currentComments=[];
+    }
+    feed.innerHTML=posts.map((p,index)=>renderPost(p,index)).join('');
     bindFeed();
     activateLazyMedia(feed);
     document.dispatchEvent(new CustomEvent('pulso-feed-rendered'));
@@ -179,7 +184,7 @@ function activateLazyMedia(root=document){
 window.pulsoActivateLazyMedia=activateLazyMedia;
 window.loadFeed=loadFeed;
 
-function renderPost(p){
+function renderPost(p,index=99){
   const prof=profiles.get(p.user_id)||{};
   const pl=currentLikes.filter(x=>x.post_id===p.id);
   const mine=pl.find(x=>x.user_id===user.uid);
@@ -188,6 +193,7 @@ function renderPost(p){
   let media='';
   if(p.media_type==='image')media='<img class="video" src="'+esc(src)+'" alt="Publicação PULSO" loading="lazy">';
   else if(p.media_type==='audio')media='<audio class="video" src="'+esc(src)+'" controls preload="none"></audio>';
+  else if(index<3)media='<video class="video" src="'+esc(src)+'" controls playsinline preload="metadata" muted></video>';
   else media='<video class="video" data-src="'+esc(src)+'" controls playsinline preload="none" muted></video>';
   const reactionCounts=Object.keys(REACTIONS).map(k=>{const n=pl.filter(x=>(x.reaction||'like')===k).length;return n?'<span class="reaction-count">'+REACTIONS[k]+' '+n+'</span>':''}).join('');
   const comments=cs.map(c=>{const cp=profiles.get(c.user_id)||{};return '<div class="comment"><b>'+esc(cp.display_name||'Usuário')+'</b> '+esc(c.content)+'</div>';}).join('')||'<div class="file">Seja o primeiro a comentar.</div>';
