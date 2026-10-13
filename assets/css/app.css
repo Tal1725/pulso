@@ -956,3 +956,27 @@ main.wrap{background-color:#05060b}
 #feed>.post{background-color:#05060b}
 #feed video.video,#feed img.video{display:block;background-color:#05060b}
 @media(max-width:640px){#feed video.video{width:100%;max-height:none;aspect-ratio:9/16;object-fit:cover}#feed img.video{width:100%;height:auto;max-height:none}}
+
+
+/* PULSO mobile feed gap fix 20261013 — remove card spacing that exposes the page beneath */
+@media(max-width:850px){
+  html,body,main.wrap,.grid,#feed{background:#05060b!important}
+  #feed{display:block!important;gap:0!important}
+  #feed>.post,
+  #feed>.post.card,
+  #feed>.post+.post{
+    margin-top:0!important;
+    margin-bottom:0!important;
+    border-radius:0!important;
+    background:#05060b!important;
+  }
+  #feed>.post.card{
+    min-height:100dvh!important;
+    height:100dvh!important;
+    box-sizing:border-box!important;
+  }
+  #feed>.post>video.video,
+  #feed>.post>img.video{
+    background:#05060b!important;
+  }
+}
