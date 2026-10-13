@@ -1067,3 +1067,12 @@ body:before{
   .post>video.video:not([data-ready="1"]){background:#05060b!important;}
 }
 video.video{background-color:#05060b!important;}
+
+/* PULSO feed stability patch — prevent white flashes/gaps during mobile scrolling */
+html{background-color:#05060b;min-height:100%;overscroll-behavior-y:contain}
+body{background-color:#05060b;min-height:100vh;min-height:100dvh}
+main.wrap{background-color:#05060b}
+#feed{background-color:#05060b;min-height:35vh}
+#feed>.post{background-color:#05060b}
+#feed video.video,#feed img.video{display:block;background-color:#05060b}
+@media(max-width:640px){#feed video.video{width:100%;max-height:none;aspect-ratio:9/16;object-fit:cover}#feed img.video{width:100%;height:auto;max-height:none}}
