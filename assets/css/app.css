@@ -1059,3 +1059,11 @@ body:before{
   #feed .post video.video.pulso-beat,
   #feed .post img.video.pulso-beat { animation-duration:1.2s !important; }
 }
+
+/* PULSO performance patch: keep media surfaces dark while the next frame loads. */
+@media(max-width:850px){
+  .post.card{background:#05060b!important;contain:layout paint;}
+  .post>video.video,.post>img.video{background-color:#05060b!important;backface-visibility:hidden;}
+  .post>video.video:not([data-ready="1"]){background:#05060b!important;}
+}
+video.video{background-color:#05060b!important;}
