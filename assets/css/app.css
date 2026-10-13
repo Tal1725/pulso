@@ -958,25 +958,37 @@ main.wrap{background-color:#05060b}
 @media(max-width:640px){#feed video.video{width:100%;max-height:none;aspect-ratio:9/16;object-fit:cover}#feed img.video{width:100%;height:auto;max-height:none}}
 
 
-/* PULSO mobile feed gap fix 20261013 — remove card spacing that exposes the page beneath */
+/* PULSO mobile feed gap fix 20261013b — remove forced viewport height and card spacing */
 @media(max-width:850px){
   html,body,main.wrap,.grid,#feed{background:#05060b!important}
   #feed{display:block!important;gap:0!important}
-  #feed>.post,
-  #feed>.post.card,
-  #feed>.post+.post{
-    margin-top:0!important;
-    margin-bottom:0!important;
-    border-radius:0!important;
-    background:#05060b!important;
-  }
-  #feed>.post.card{
-    min-height:100dvh!important;
-    height:100dvh!important;
+  #feed>article.post.card{
+    display:flex!important;
+    flex-direction:column!important;
+    height:auto!important;
+    min-height:0!important;
+    margin:0 0 0!important;
     box-sizing:border-box!important;
-  }
-  #feed>.post>video.video,
-  #feed>.post>img.video{
     background:#05060b!important;
   }
+  #feed>article.post.card+article.post.card{margin-top:0!important}
+  #feed>article.post.card>.posthead{flex:0 0 auto}
+  #feed>article.post.card>video.video,
+  #feed>article.post.card>img.video{
+    display:block!important;
+    flex:0 0 auto!important;
+    background:#05060b!important;
+    margin-left:6px!important;
+    margin-right:6px!important;
+    width:calc(100% - 12px)!important;
+    max-height:74dvh!important;
+    height:auto!important;
+    aspect-ratio:9/14;
+    object-fit:cover!important;
+    border-radius:19px!important;
+  }
+  #feed>article.post.card>.caption,
+  #feed>article.post.card>.actions,
+  #feed>article.post.card>.comments,
+  #feed>article.post.card>.commentbox{flex:0 0 auto}
 }
