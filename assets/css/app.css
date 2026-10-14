@@ -992,3 +992,101 @@ main.wrap{background-color:#05060b}
   #feed>article.post.card>.comments,
   #feed>article.post.card>.commentbox{flex:0 0 auto}
 }
+
+
+/* PULSO mobile feed — fix white gaps between consecutive videos without changing desktop */
+@media (max-width: 850px) {
+  html, body {
+    background: #05060b !important;
+    overscroll-behavior-y: contain;
+  }
+  main.wrap, .grid, #feed {
+    background: #05060b !important;
+  }
+  #feed {
+    display: block !important;
+    min-height: 0 !important;
+    gap: 0 !important;
+  }
+  #feed > article.post.card {
+    position: relative !important;
+    display: block !important;
+    width: 100% !important;
+    height: calc(100vh - 64px) !important;
+    height: calc(100dvh - 64px) !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    background: #05060b !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    contain: layout paint;
+  }
+  #feed > article.post.card + article.post.card {
+    margin-top: 0 !important;
+  }
+  #feed > article.post.card > video.video,
+  #feed > article.post.card > img.video {
+    position: absolute !important;
+    inset: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    aspect-ratio: auto !important;
+    object-fit: cover !important;
+    background: #05060b !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    backface-visibility: hidden;
+  }
+  #feed > article.post.card > .posthead {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 8 !important;
+    background: linear-gradient(180deg, rgba(0,0,0,.65), transparent) !important;
+  }
+  #feed > article.post.card > .caption {
+    position: absolute !important;
+    left: 14px !important;
+    right: 70px !important;
+    bottom: 70px !important;
+    z-index: 7 !important;
+    padding: 0 !important;
+    color: #fff !important;
+    text-shadow: 0 2px 12px #000 !important;
+  }
+  #feed > article.post.card > .actions {
+    position: absolute !important;
+    right: 8px !important;
+    bottom: 68px !important;
+    z-index: 9 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    width: 52px !important;
+    padding: 0 !important;
+  }
+  #feed > article.post.card > .comments {
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 5 !important;
+    transform: translateY(100%) !important;
+  }
+  #feed > article.post.card > .commentbox {
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 12 !important;
+    padding: 8px !important;
+    background: linear-gradient(transparent, rgba(0,0,0,.9)) !important;
+  }
+}
