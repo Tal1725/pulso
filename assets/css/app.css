@@ -992,3 +992,127 @@ main.wrap{background-color:#05060b}
   #feed>article.post.card>.comments,
   #feed>article.post.card>.commentbox{flex:0 0 auto}
 }
+
+/* Restore classic PULSO web-card layout on mobile: no fullscreen/reel styling. */
+@media (max-width: 850px) {
+  body {
+    background: #05060b !important;
+    min-height: 100vh;
+  }
+  .top {
+    position: sticky !important;
+    top: 0 !important;
+    left: auto !important;
+    right: auto !important;
+    background: rgba(5,6,11,.88) !important;
+    backdrop-filter: blur(18px) !important;
+    border-bottom: 1px solid rgba(255,255,255,.08) !important;
+  }
+  .topin { height: 68px !important; }
+  .wrap { max-width: 1120px !important; margin: 0 auto !important; padding: 28px 18px 70px !important; }
+  .grid { display: block !important; }
+  .side { display: none !important; }
+  #feed { display: block !important; gap: normal !important; min-height: 0 !important; }
+  #feed > article.post.card,
+  .post.card {
+    display: block !important;
+    position: relative !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 0 18px !important;
+    padding: 18px !important;
+    overflow: hidden !important;
+    border: 1px solid rgba(255,255,255,.1) !important;
+    border-radius: 22px !important;
+    background: rgba(255,255,255,.045) !important;
+    box-shadow: none !important;
+    contain: none !important;
+  }
+  .post.card:before, .post.card:after { content: none !important; display: none !important; }
+  .posthead {
+    position: relative !important;
+    inset: auto !important;
+    display: flex !important;
+    padding: 15px !important;
+    background: transparent !important;
+    z-index: auto !important;
+  }
+  .post > video.video, .post > img.video,
+  #feed > article.post.card > video.video,
+  #feed > article.post.card > img.video {
+    position: relative !important;
+    inset: auto !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: 650px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    aspect-ratio: auto !important;
+    object-fit: contain !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #000 !important;
+    z-index: auto !important;
+  }
+  .caption {
+    position: relative !important;
+    inset: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 14px 15px 5px !important;
+    color: #f5f7fb !important;
+    font-size: 14px !important;
+    line-height: normal !important;
+    text-shadow: none !important;
+    z-index: auto !important;
+  }
+  .actions {
+    position: relative !important;
+    inset: auto !important;
+    transform: none !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    width: auto !important;
+    padding: 10px 15px 15px !important;
+    z-index: auto !important;
+  }
+  .actions > .action, .actions .reaction-wrap > .action {
+    display: inline-flex !important;
+    place-items: initial !important;
+    width: auto !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 8px 13px !important;
+    border-radius: 999px !important;
+    background: rgba(255,255,255,.05) !important;
+    backdrop-filter: none !important;
+    font-size: 13px !important;
+  }
+  .actions .reaction-wrap > .action:before,
+  .actions > .action[data-share]:before,
+  .actions > .action[data-focus]:before,
+  .actions > .action[data-likers]:before { content: none !important; }
+  .comments {
+    position: relative !important;
+    inset: auto !important;
+    transform: none !important;
+    padding: 12px 15px !important;
+    border-top: 1px solid rgba(255,255,255,.07) !important;
+    z-index: auto !important;
+  }
+  .commentbox {
+    position: relative !important;
+    inset: auto !important;
+    padding: 0 !important;
+    margin-top: 8px !important;
+    background: transparent !important;
+    z-index: auto !important;
+  }
+}
+
