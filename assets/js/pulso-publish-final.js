@@ -71,7 +71,7 @@ function bind(){
    input.addEventListener('change',()=>{if(input.files?.length)window.pulsoApprovedMedia=null;});
   }
  });
- if(pb&&!pb.dataset.bound){pb.dataset.bound=1;pb.onclick=e=>{e.preventDefault();e.stopPropagation();openPhotoCamera()}}
+ if(pb&&!pb.dataset.bound){pb.dataset.bound=1;pb.onclick=e=>{e.preventDefault();e.stopPropagation();p?.click()}}
  if(vb&&!vb.dataset.bound){vb.dataset.bound=1;vb.onclick=e=>{e.preventDefault();e.stopPropagation();openCamera()}}
  if(ab&&!ab.dataset.bound){ab.dataset.bound=1;ab.onclick=e=>{e.preventDefault();e.stopPropagation();recordAudio()}}
  if(b&&!b.dataset.firebase){b.dataset.firebase=1;b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();publish()})}
