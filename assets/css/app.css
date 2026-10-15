@@ -992,3 +992,61 @@ main.wrap{background-color:#05060b}
   #feed>article.post.card>.comments,
   #feed>article.post.card>.commentbox{flex:0 0 auto}
 }
+
+
+/* PULSO MOBILE CLASSIC FEED — final override: large media and actions below */
+@media (max-width: 850px) {
+  #feed > article.post.card {
+    display: flex !important;
+    flex-direction: column !important;
+    position: relative !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    margin: 0 0 18px !important;
+  }
+  #feed > article.post.card > video.video,
+  #feed > article.post.card > img.video {
+    position: relative !important;
+    inset: auto !important;
+    display: block !important;
+    flex: 0 0 auto !important;
+    width: calc(100% - 12px) !important;
+    max-width: calc(100% - 12px) !important;
+    height: auto !important;
+    max-height: none !important;
+    aspect-ratio: 9 / 14 !important;
+    margin: 0 6px !important;
+    object-fit: cover !important;
+    border-radius: 16px !important;
+  }
+  #feed > article.post.card > .caption {
+    position: relative !important;
+    order: 2 !important;
+    flex: 0 0 auto !important;
+  }
+  #feed > article.post.card > .actions {
+    position: relative !important;
+    inset: auto !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    order: 3 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    flex-wrap: wrap !important;
+    width: auto !important;
+    padding: 10px 12px 14px !important;
+    gap: 7px !important;
+  }
+  #feed > article.post.card > .posthead {
+    position: relative !important;
+    order: 0 !important;
+    flex: 0 0 auto !important;
+  }
+}
