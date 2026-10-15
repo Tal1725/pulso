@@ -5,6 +5,7 @@ import{onAuthStateChanged,signOut}from'https://www.gstatic.com/firebasejs/12.3.0
 const $=s=>document.querySelector(s);
 let user=null;
 let feedMode='forYou';
+let feedRequestId=0;
 let initializedUid='';
 let initializing=false;
 let followRows=[];
@@ -120,12 +121,15 @@ async function loadSocialStats(){
 
 async function loadFeed(){
   const feed=$('#feed');if(!feed)return;
+  // Ignore results from older requests when the user switches between feeds quickly.
+  const requestId=++feedRequestId;
   try{
     let posts=(await getDocs(query(collection(firebaseDb,'Posts'),limit(50)))).docs.map(d=>({id:d.id,...(d.data()||{})})).map(x=>({
       id:x.id,user_id:x.user_id||x.legacy_user_id||'',
       video_url:x.video_url||x.media_url||'',media_url:x.media_url||x.video_url||'',
       media_type:x.media_type||'vídeo',caption:x.caption||x.legenda||'',created_at:x.created_at||''
     })).sort((a,b)=>timeValue(b.created_at)-timeValue(a.created_at));
+    if(requestId!==feedRequestId)return;
     if(feedMode==='following')posts=posts.filter(p=>following.has(p.user_id)||p.user_id===user.uid);
     if(!posts.length){
       feed.innerHTML=feedMode==='following'
@@ -139,6 +143,8 @@ async function loadFeed(){
       loadProfilesByIds(posts.map(p=>p.user_id)),
       Promise.all([getByPostIds('Gostos',postIds),getByPostIds('comments',postIds)])
     ]);
+    // Do not let a slow response replace the currently selected feed.
+    if(requestId!==feedRequestId)return;
     if(profileResult.status==='rejected')console.warn('[PULSO] perfis Firebase não carregaram',profileResult.reason);
     if(reactionResult.status==='fulfilled'){
       [currentLikes,currentComments]=reactionResult.value;
@@ -151,6 +157,7 @@ async function loadFeed(){
     activateLazyMedia(feed);
     document.dispatchEvent(new CustomEvent('pulso-feed-rendered'));
   }catch(e){
+    if(requestId!==feedRequestId)return;
     console.error('[PULSO] feed Firebase',e);
     feed.innerHTML='<div class="card empty"><strong>Erro no feed</strong><br>Não foi possível carregar as publicações agora.</div>';
   }
